@@ -48,7 +48,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // Background image
           Positioned.fill(
             child: Image.asset(
-              'assets/background.jpg', // Replace with your image path
+              'assets/images/LogInBG.jpg', // Replace with your image path
               fit: BoxFit.cover,
             ),
           ),
