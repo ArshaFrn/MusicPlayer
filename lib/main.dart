@@ -20,7 +20,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Hertz',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
+        ),
         brightness: Brightness.dark, // Dark theme
       ),
       themeMode: ThemeMode.dark,
@@ -47,16 +50,12 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           // Background image
           Positioned.fill(
-            child: Image.asset(
-              'assets/images/LogInBG.jpg', // Replace with your image path
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset('assets/images/LogInBG.jpg', fit: BoxFit.cover),
           ),
-          // Add your other widgets here
           Center(
             child: Column(
               children: [
-                const SizedBox(height: 100),
+                const SizedBox(height: 110),
                 const Text(
                   'Hertz',
                   style: TextStyle(
@@ -65,17 +64,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Your subtitle here',
-                  style: TextStyle(
-                    fontSize: 20,
-                    color: Colors.white,
-                  ),
-                ),
+                Image.asset('assets/images/logoTP.png', width: 150, height: 130),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
