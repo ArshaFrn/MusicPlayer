@@ -164,7 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SizedBox(height: 10),
+                              SizedBox(height: 15),
                               TextField(
                                 style: TextStyle(color: Colors.white),
                                 decoration: InputDecoration(
@@ -195,7 +195,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 20),
+                              SizedBox(height: 25),
                               TextField(
                                 obscureText: true,
                                 style: TextStyle(color: Colors.white),
@@ -227,10 +227,15 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 25),
+                              SizedBox(height: 30),
                               ElevatedButton(
                                 onPressed: () {},
-                                child: Text('Log In'),
+                                child: Text('Log In',style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  letterSpacing: 2,
+                                ),),
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Color(0xFFFF5AF7),
                                   // Neon pink
