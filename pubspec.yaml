@@ -59,7 +59,8 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/
+    - assets/
+    - assets/images/logoTPP.png
   # assets:
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
@@ -74,6 +75,20 @@ flutter:
   # in this "flutter" section. Each entry in this list should have a
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
+  fonts:
+    - family: Orbitron
+      fonts:
+        - asset: assets/fonts/orbitron/Orbitron-Regular.ttf
+        - asset: assets/fonts/orbitron/Orbitron-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/orbitron/Orbitron-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/orbitron/Orbitron-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/orbitron/Orbitron-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/orbitron/Orbitron-Black.ttf
+          weight: 900
   # example:
   # fonts:
   #   - family: Schyler
