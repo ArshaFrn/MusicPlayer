@@ -95,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 //Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
-                SizedBox(height: 90),
+                SizedBox(height: 95),
                 //Login form
                 Container(
                   width: 350,
