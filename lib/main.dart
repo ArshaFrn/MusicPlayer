@@ -95,17 +95,17 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 //Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
-                SizedBox(height: 110),
+                SizedBox(height: 90),
                 //Login form
                 Container(
                   width: 350,
-                  height: 400,
+                  height: 435,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.5),
+                        color: Colors.black.withValues(alpha: 0.5),
                         blurRadius: 20,
                         offset: Offset(0, 10),
                       ),
@@ -133,18 +133,18 @@ class _MyHomePageState extends State<MyHomePage> {
                               'LOG IN',
                               style: TextStyle(
                                 fontSize: 40,
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w500,
                                 color: Colors.white,
                                 letterSpacing: 3,
                                 shadows: [
                                   Shadow(
-                                    blurRadius: 16,
+                                    blurRadius: 15,
                                     color: Color(0xFF8456FF),
                                     // Neon purple glow
-                                    offset: Offset(0, 0),
+                                    offset: Offset(1, 3),
                                   ),
                                   Shadow(
-                                    blurRadius: 16,
+                                    blurRadius: 15,
                                     color: Color(0xFFB388FF),
                                     // Lighter purple glow
                                     offset: Offset(0, 0),
@@ -156,13 +156,13 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                       Positioned.fill(
-                        top: 80,
+                        top: 75,
                         child: Padding(
                           padding: EdgeInsets.symmetric(horizontal: 25.0),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SizedBox(height: 15),
+                              SizedBox(height: 35),
                               TextField(
                                 style: TextStyle(color: Colors.white),
                                 decoration: InputDecoration(
@@ -173,7 +173,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                   hintText: 'Username',
                                   hintStyle: TextStyle(color: Colors.white70),
                                   filled: true,
-                                  fillColor: Colors.white.withValues(alpha: 0.15),                                  contentPadding: EdgeInsets.symmetric(
+                                  fillColor: Colors.white.withValues(
+                                    alpha: 0.15,
+                                  ),
+                                  contentPadding: EdgeInsets.symmetric(
                                     vertical: 18,
                                   ),
                                   enabledBorder: OutlineInputBorder(
@@ -204,7 +207,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                   hintText: 'Password',
                                   hintStyle: TextStyle(color: Colors.white70),
                                   filled: true,
-                                  fillColor: Colors.white.withValues(alpha: 0.15),
+                                  fillColor: Colors.white.withValues(
+                                    alpha: 0.15,
+                                  ),
                                   contentPadding: EdgeInsets.symmetric(
                                     vertical: 18,
                                   ),
@@ -227,26 +232,62 @@ class _MyHomePageState extends State<MyHomePage> {
                               SizedBox(height: 30),
                               ElevatedButton(
                                 onPressed: () {},
-                                child: Text('Log In',style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  letterSpacing: 2,
-                                ),),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color(0xFFFF5AF7),
-                                  // Neon pink
+                                  backgroundColor: Color(0xFF671BAF),
+                                  // Deep dark purple
                                   foregroundColor: Colors.white,
                                   padding: EdgeInsets.symmetric(
-                                    horizontal: 40,
-                                    vertical: 15,
+                                    horizontal: 30,
+                                    vertical: 14,
                                   ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      10,
-                                    ),
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
+                                child: Text(
+                                  'Log In',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: 2,
+                                    shadows: [
+                                      Shadow(
+                                        blurRadius: 15,
+                                        color: Color(0xFF8456FF),
+                                        offset: Offset(1, 2),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Not registered on Hertz yet?",
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      // TODO: Navigate to sign up page
+                                    },
+                                    child: Text(
+                                      "Sign Up",
+                                      style: TextStyle(
+                                        color: Color(0xFFD644FF),
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 16,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
