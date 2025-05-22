@@ -50,8 +50,8 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           Center(
             child: SingleChildScrollView(
-              child: Container(
-                height: 650,
+              child: SizedBox(
+                height: 670,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -96,8 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     //Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
-                    SizedBox(height: 90),
-                    //Login form
+                    SizedBox(height: 85),
                     Container(
                       width: 350,
                       height: 435,
@@ -280,7 +279,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                       ),
                                       TextButton(
                                         onPressed: () {
-                                          // TODO: Navigate to sign up page
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (context) => SignUpPage(),
+                                            ),
+                                          );
                                         },
                                         child: Text(
                                           "Sign Up",
@@ -309,6 +314,21 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
+
+  @override
+  State<SignUpPage> createState() => _SignUpPageState();
+}
+
+class _SignUpPageState extends State<SignUpPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
     );
   }
 }
