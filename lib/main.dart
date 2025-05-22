@@ -95,8 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 //Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
-                SizedBox(height: 70),
-
+                SizedBox(height: 90),
                 //Login form
                 Container(
                   width: 350,
@@ -156,7 +155,6 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                         ),
                       ),
-                      // Form fields and button
                       Positioned.fill(
                         top: 80,
                         child: Padding(
