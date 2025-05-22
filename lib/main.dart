@@ -95,7 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
                 //Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
-                SizedBox(height: 95),
+                SizedBox(height: 110),
                 //Login form
                 Container(
                   width: 350,
@@ -173,8 +173,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   hintText: 'Username',
                                   hintStyle: TextStyle(color: Colors.white70),
                                   filled: true,
-                                  fillColor: Colors.white.withOpacity(0.15),
-                                  contentPadding: EdgeInsets.symmetric(
+                                  fillColor: Colors.white.withValues(alpha: 0.15),                                  contentPadding: EdgeInsets.symmetric(
                                     vertical: 18,
                                   ),
                                   enabledBorder: OutlineInputBorder(
@@ -205,7 +204,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   hintText: 'Password',
                                   hintStyle: TextStyle(color: Colors.white70),
                                   filled: true,
-                                  fillColor: Colors.white.withOpacity(0.15),
+                                  fillColor: Colors.white.withValues(alpha: 0.15),
                                   contentPadding: EdgeInsets.symmetric(
                                     vertical: 18,
                                   ),
