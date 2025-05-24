@@ -51,7 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Center(
             child: SingleChildScrollView(
               child: SizedBox(
-                height: 670,
+                height: 600,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -96,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     //Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
-                    SizedBox(height: 85),
+                    SizedBox(height: 60),
                     Container(
                       width: 350,
                       height: 435,
@@ -320,7 +320,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
-
   @override
   State<SignUpPage> createState() => _SignUpPageState();
 }
@@ -329,6 +328,13 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset('assets/images/LogInBG.jpg', fit: BoxFit.cover),
+          ),
+        ],
+      ),
     );
   }
 }
