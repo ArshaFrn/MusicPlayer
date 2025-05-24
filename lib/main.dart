@@ -51,7 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Center(
             child: SingleChildScrollView(
               child: SizedBox(
-                height: 600,
+                height: 625,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -96,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     //Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
-                    SizedBox(height: 60),
+                    SizedBox(height: 65),
                     Container(
                       width: 350,
                       height: 435,
