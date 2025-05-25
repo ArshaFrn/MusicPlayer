@@ -40,6 +40,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -320,6 +321,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
+
   @override
   State<SignUpPage> createState() => _SignUpPageState();
 }
@@ -332,6 +334,58 @@ class _SignUpPageState extends State<SignUpPage> {
         children: [
           Positioned.fill(
             child: Image.asset('assets/images/LogInBG.jpg', fit: BoxFit.cover),
+          ),
+          Center(
+            child: SingleChildScrollView(
+              child: SizedBox(
+                height: 625,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 0),
+                    ShaderMask(
+                      shaderCallback: (Rect bounds) {
+                        return const LinearGradient(
+                          colors: [
+                            Color(0xFFFF5AF7),
+                            Color(0xFF8456FF),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ).createShader(bounds);
+                      },
+                      child: Text(
+                        'Hertz',
+                        style: TextStyle(
+                          fontSize: 52,
+                          fontWeight: FontWeight.w300,
+                          fontFamily: 'Orbitron',
+                          color: Colors.white,
+                          letterSpacing: 5,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 24,
+                              color: Color(0xFFFF5AF7), // Neon pink glow
+                              offset: Offset(0, 0),
+                            ),
+                            Shadow(
+                              blurRadius: 48,
+                              color: Color(0xFF8456FF), // Neon purple glow
+                              offset: Offset(0, 0),
+                            ),
+                            Shadow(
+                              blurRadius: 2,
+                              color: Colors.white,
+                              offset: Offset(0, 0),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
