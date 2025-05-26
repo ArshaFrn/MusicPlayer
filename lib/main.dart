@@ -40,7 +40,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -383,10 +383,10 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
                     //Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
-                    SizedBox(height: 40),
+                    SizedBox(height: 65),
                     Container(
                       width: 350,
-                      height: 510,
+                      height: 470,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
@@ -450,76 +450,6 @@ class _SignUpPageState extends State<SignUpPage> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   SizedBox(height: 35),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextField(
-                                          style: TextStyle(color: Colors.white),
-                                          decoration: InputDecoration(
-                                            hintText: 'First Name',
-                                            hintStyle: TextStyle(
-                                              color: Colors.white70,
-                                            ),
-                                            filled: true,
-                                            fillColor: Colors.white.withValues(
-                                              alpha: 0.15,
-                                            ),
-                                            contentPadding:
-                                                EdgeInsets.symmetric(vertical: 16,horizontal: 29),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(14),
-                                              borderSide: BorderSide(
-                                                color: Colors.white24,
-                                                width: 1.3,
-                                              ),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(14),
-                                              borderSide: BorderSide(
-                                                color: Color(0xFF8456FF),
-                                                width: 2,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(width: 17),
-                                      Expanded(
-                                        child: TextField(
-                                          style: TextStyle(color: Colors.white),
-                                          decoration: InputDecoration(
-                                            hintText: 'Last Name',
-                                            hintStyle: TextStyle(
-                                              color: Colors.white70,
-                                            ),
-                                            filled: true,
-                                            fillColor:
-                                                Colors.white.withValues(alpha: 0.15),
-                                            contentPadding:
-                                            EdgeInsets.symmetric(vertical: 16,horizontal: 29),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(14),
-                                              borderSide: BorderSide(
-                                                color: Colors.white24,
-                                                width: 1.3,
-                                              ),
-                                            ),
-                                            focusedBorder:
-                                                OutlineInputBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(14),
-                                                  borderSide:
-                                                      BorderSide(color: Color(0xFF8456FF), width: 2),
-                                                ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  SizedBox(height: 25),
                                   TextField(
                                     style: TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
