@@ -331,22 +331,28 @@ class _SignUpPageState extends State<SignUpPage> {
   String _passwordErrorText = '';
 
   void showPasswordRequirementsSnackBar(BuildContext context) {
-    final snackBar = SnackBar(
-      content: Text(
-        "Password must include:\n- At least 8 characters\n- Uppercase, lowercase, and a digit\n- Should not contain the username",
-        style: TextStyle(color: Colors.white),
-      ),
-      backgroundColor: Colors.black87,
-      duration: Duration(seconds: 5),
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      margin: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.42, left: 10, right: 10),
-    );
+    Future.delayed(Duration(milliseconds: 200), () {
+      final snackBar = SnackBar(
+        content: Text(
+          "Password must include:\n- At least 8 characters\n- Uppercase, lowercase, and a digit\n- Should not contain the username",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.black54,
+        duration: Duration(seconds: 4),
+        behavior: SnackBarBehavior.floating, // Allows positioning
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+        margin: EdgeInsets.only(
+          bottom: MediaQuery.of(context).size.height * 0.5, // Adjust position
+          left: 10,
+          right: 10,
+        ),
+      );
 
-    // Use ScaffoldMessenger to show the SnackBar
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      // Use ScaffoldMessenger to show the SnackBar
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    });
   }
 
   void passwordErrorController(String errorText) {
