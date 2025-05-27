@@ -326,6 +326,73 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
+  String _passwordErrorText = '';
+
+  void passwordErrorController(String errorText) {
+    if (errorText.isEmpty) {
+      _passwordErrorText = errorText;
+    } else {
+      _passwordErrorText += "\n$errorText";
+    }
+  }
+
+  bool isPasswordValid(String password, String username) {
+    // ! Password must be at least 8 characters long
+    if (password.length < 8) {
+      passwordErrorController("Password must be at least 8 characters long");
+      return false;
+    }
+    // ! Password should not contain the username
+    if (username.isNotEmpty && password.contains(username)) {
+      passwordErrorController("Password should not contain the username");
+      return false;
+    }
+    // ! Password must contain at least one uppercase letter
+    if (!RegExp(r'[A-Z]').hasMatch(password)) {
+      passwordErrorController("Password must contain at least one uppercase letter");
+      return false;
+    }
+    // ! Password must contain at least one lowercase letter
+    if (!RegExp(r'[a-z]').hasMatch(password)) {
+      passwordErrorController("Password must contain at least one lowercase letter");
+      return false;
+    }
+    // ! Password must contain at least one digit
+    if (!RegExp(r'[0-9]').hasMatch(password)) {
+      passwordErrorController("Password must contain at least one digit");
+      return false;
+    }
+    return true;
+  }
+
+  Color getBorderColor() {
+    if (_passwordController.text.isEmpty) {
+      return Colors.white24;
+    } else if (isPasswordValid(
+      _passwordController.text,
+      _usernameController.text,
+    )) {
+      return Colors.white24;
+    } else {
+      return Colors.red;
+    }
+  }
+
+  Color getFocusedBorderColor() {
+    if (_passwordController.text.isEmpty) {
+      return Color(0xFF8456FF);
+    } else if (isPasswordValid(
+      _passwordController.text,
+      _usernameController.text,
+    )) {
+      return Color(0xFF8456FF);
+    } else {
+      return Colors.red;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -337,7 +404,7 @@ class _SignUpPageState extends State<SignUpPage> {
           Center(
             child: SingleChildScrollView(
               child: SizedBox(
-                height: 673 ,
+                height: 673,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -481,6 +548,10 @@ class _SignUpPageState extends State<SignUpPage> {
                                   ),
                                   SizedBox(height: 25),
                                   TextField(
+                                    controller: _usernameController,
+                                    onChanged: (value) {
+                                      setState(() {});
+                                    },
                                     style: TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
                                       prefixIcon: Icon(
@@ -551,7 +622,13 @@ class _SignUpPageState extends State<SignUpPage> {
                                   ),
                                   SizedBox(height: 25),
                                   TextField(
+                                    controller: _passwordController,
                                     obscureText: true,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        //* print(isPasswordValid(_passwordController.text, _usernameController.text));
+                                      });
+                                    },
                                     style: TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
                                       prefixIcon: Icon(
@@ -572,14 +649,14 @@ class _SignUpPageState extends State<SignUpPage> {
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: Colors.white24,
+                                          color: getBorderColor(),
                                           width: 1.3,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: Color(0xFF8456FF),
+                                          color: getFocusedBorderColor(),
                                           width: 2,
                                         ),
                                       ),
@@ -634,7 +711,10 @@ class _SignUpPageState extends State<SignUpPage> {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) => MyHomePage(title: 'Hertz'),
+                                              builder:
+                                                  (context) => MyHomePage(
+                                                    title: 'Hertz',
+                                                  ),
                                             ),
                                           );
                                         },
@@ -645,7 +725,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                             fontWeight: FontWeight.w500,
                                             fontSize: 16,
                                             decoration:
-                                            TextDecoration.underline,
+                                                TextDecoration.underline,
                                           ),
                                         ),
                                       ),
