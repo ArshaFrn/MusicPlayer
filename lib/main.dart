@@ -330,6 +330,25 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _usernameController = TextEditingController();
   String _passwordErrorText = '';
 
+  void showPasswordRequirementsSnackBar(BuildContext context) {
+    final snackBar = SnackBar(
+      content: Text(
+        "Password must include:\n- At least 8 characters\n- Uppercase, lowercase, and a digit\n- Should not contain the username",
+        style: TextStyle(color: Colors.white),
+      ),
+      backgroundColor: Colors.black87,
+      duration: Duration(seconds: 5),
+      behavior: SnackBarBehavior.floating,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      margin: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.42, left: 10, right: 10),
+    );
+
+    // Use ScaffoldMessenger to show the SnackBar
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   void passwordErrorController(String errorText) {
     if (errorText.isEmpty) {
       _passwordErrorText = errorText;
@@ -351,12 +370,16 @@ class _SignUpPageState extends State<SignUpPage> {
     }
     // ! Password must contain at least one uppercase letter
     if (!RegExp(r'[A-Z]').hasMatch(password)) {
-      passwordErrorController("Password must contain at least one uppercase letter");
+      passwordErrorController(
+        "Password must contain at least one uppercase letter",
+      );
       return false;
     }
     // ! Password must contain at least one lowercase letter
     if (!RegExp(r'[a-z]').hasMatch(password)) {
-      passwordErrorController("Password must contain at least one lowercase letter");
+      passwordErrorController(
+        "Password must contain at least one lowercase letter",
+      );
       return false;
     }
     // ! Password must contain at least one digit
@@ -625,9 +648,10 @@ class _SignUpPageState extends State<SignUpPage> {
                                     controller: _passwordController,
                                     obscureText: true,
                                     onChanged: (value) {
-                                      setState(() {
-                                        //* print(isPasswordValid(_passwordController.text, _usernameController.text));
-                                      });
+                                      setState(() {});
+                                    },
+                                    onTap: () {
+                                      showPasswordRequirementsSnackBar(context);
                                     },
                                     style: TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
