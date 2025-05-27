@@ -337,7 +337,7 @@ class _SignUpPageState extends State<SignUpPage> {
           Center(
             child: SingleChildScrollView(
               child: SizedBox(
-                height: 665 ,
+                height: 673 ,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -380,7 +380,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
                     SizedBox(height: 3),
-                    // "Hertz" in neon style, centered
+                    // * "Hertz" in neon style, centered
                     ShaderMask(
                       shaderCallback: (Rect bounds) {
                         return const LinearGradient(
@@ -419,11 +419,11 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       ),
                     ),
-                    //Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
-                    SizedBox(height: 50),
+                    // ! Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
+                    SizedBox(height: 40),
                     Container(
                       width: 350,
-                      height: 460,
+                      height: 480,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
@@ -438,6 +438,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       child: Stack(
                         children: [
                           Positioned.fill(
+                            top: 18,
                             child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: 25.0),
                               child: Column(
@@ -584,7 +585,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                       ),
                                     ),
                                   ),
-                                  SizedBox(height: 30),
+                                  SizedBox(height: 20),
                                   ElevatedButton(
                                     onPressed: () {},
                                     style: ElevatedButton.styleFrom(
@@ -615,6 +616,40 @@ class _SignUpPageState extends State<SignUpPage> {
                                         ],
                                       ),
                                     ),
+                                  ),
+                                  SizedBox(height: 5),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        "Already have an account?",
+                                        style: TextStyle(
+                                          color: Colors.white70,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => MyHomePage(title: 'Hertz'),
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          "Log In",
+                                          style: TextStyle(
+                                            color: Color(0xFFD644FF),
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: 16,
+                                            decoration:
+                                            TextDecoration.underline,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
