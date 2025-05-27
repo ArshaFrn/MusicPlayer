@@ -40,7 +40,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -338,39 +337,77 @@ class _SignUpPageState extends State<SignUpPage> {
           Center(
             child: SingleChildScrollView(
               child: SizedBox(
-                height: 625,
+                height: 665 ,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    SizedBox(height: 0),
+                    // "Welcome to" in neon style
                     ShaderMask(
                       shaderCallback: (Rect bounds) {
                         return const LinearGradient(
-                          colors: [
-                            Color(0xFFFF5AF7),
-                            Color(0xFF8456FF),
-                          ],
+                          colors: [Color(0xFFFF5AF7), Color(0xFF8456FF)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ).createShader(bounds);
                       },
                       child: Text(
-                        'Hertz',
+                        'Welcome to',
+                        textAlign: TextAlign.center,
                         style: TextStyle(
-                          fontSize: 52,
-                          fontWeight: FontWeight.w300,
+                          fontSize: 40,
+                          fontWeight: FontWeight.w400,
                           fontFamily: 'Orbitron',
                           color: Colors.white,
-                          letterSpacing: 5,
+                          letterSpacing: 4,
                           shadows: [
                             Shadow(
                               blurRadius: 24,
-                              color: Color(0xFFFF5AF7), // Neon pink glow
+                              color: Color(0xFFFF5AF7),
                               offset: Offset(0, 0),
                             ),
                             Shadow(
                               blurRadius: 48,
-                              color: Color(0xFF8456FF), // Neon purple glow
+                              color: Color(0xFF8456FF),
+                              offset: Offset(0, 0),
+                            ),
+                            Shadow(
+                              blurRadius: 2,
+                              color: Colors.white,
+                              offset: Offset(0, 0),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 3),
+                    // "Hertz" in neon style, centered
+                    ShaderMask(
+                      shaderCallback: (Rect bounds) {
+                        return const LinearGradient(
+                          colors: [Color(0xFFFF5AF7), Color(0xFF8456FF)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ).createShader(bounds);
+                      },
+
+                      child: Text(
+                        'Hertz',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 43,
+                          fontWeight: FontWeight.w300,
+                          fontFamily: 'Orbitron',
+                          color: Colors.white,
+                          letterSpacing: 6,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 24,
+                              color: Color(0xFFFF5AF7),
+                              offset: Offset(0, 0),
+                            ),
+                            Shadow(
+                              blurRadius: 48,
+                              color: Color(0xFF8456FF),
                               offset: Offset(0, 0),
                             ),
                             Shadow(
@@ -383,10 +420,10 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
                     //Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
-                    SizedBox(height: 40),
+                    SizedBox(height: 50),
                     Container(
                       width: 350,
-                      height: 510,
+                      height: 460,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
@@ -400,61 +437,18 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                       child: Stack(
                         children: [
-                          Positioned(
-                            top: 25,
-                            left: 0,
-                            right: 0,
-                            child: Center(
-                              child: ShaderMask(
-                                shaderCallback: (Rect bounds) {
-                                  return const LinearGradient(
-                                    colors: [
-                                      Color(0xFF8456FF),
-                                      Color(0xFFB388FF),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ).createShader(bounds);
-                                },
-                                child: Text(
-                                  'SIGN UP',
-                                  style: TextStyle(
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                    letterSpacing: 3,
-                                    shadows: [
-                                      Shadow(
-                                        blurRadius: 15,
-                                        color: Color(0xFF8456FF),
-                                        // Neon purple glow
-                                        offset: Offset(1, 3),
-                                      ),
-                                      Shadow(
-                                        blurRadius: 15,
-                                        color: Color(0xFFB388FF),
-                                        // Lighter purple glow
-                                        offset: Offset(0, 0),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
                           Positioned.fill(
-                            top: 45,
                             child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: 25.0),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  SizedBox(height: 35),
+                                  SizedBox(height: 0),
                                   TextField(
                                     style: TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
                                       prefixIcon: Icon(
-                                        Icons.person,
+                                        Icons.drive_file_rename_outline_sharp,
                                         color: Colors.white70,
                                       ),
                                       hintText: 'Full Name',
