@@ -328,10 +328,32 @@ class SignUpPage extends StatefulWidget {
 class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+
   String _passwordErrorText = '';
+  final FocusNode _passwordFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _passwordFocusNode.addListener(() {
+      if (!_passwordFocusNode.hasFocus) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _passwordFocusNode.dispose();
+    _passwordController.dispose();
+    _usernameController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
 
   void showPasswordRequirementsSnackBar(BuildContext context) {
-    Future.delayed(Duration(milliseconds: 200), () {
+    Future.delayed(Duration(milliseconds: 500), () {
       final snackBar = SnackBar(
         content: Text(
           "Password must include:\n- At least 8 characters\n- Uppercase, lowercase, and a digit\n- Should not contain the username",
@@ -339,18 +361,16 @@ class _SignUpPageState extends State<SignUpPage> {
         ),
         backgroundColor: Colors.black54,
         duration: Duration(seconds: 4),
-        behavior: SnackBarBehavior.floating, // Allows positioning
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
+        behavior: SnackBarBehavior.floating,
+        // Allows positioning
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         margin: EdgeInsets.only(
-          bottom: MediaQuery.of(context).size.height * 0.5, // Adjust position
+          bottom: MediaQuery.of(context).size.height * 0.5,
           left: 10,
           right: 10,
         ),
       );
 
-      // Use ScaffoldMessenger to show the SnackBar
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     });
   }
@@ -396,29 +416,93 @@ class _SignUpPageState extends State<SignUpPage> {
     return true;
   }
 
-  Color getBorderColor() {
-    if (_passwordController.text.isEmpty) {
-      return Colors.white24;
-    } else if (isPasswordValid(
-      _passwordController.text,
-      _usernameController.text,
-    )) {
-      return Colors.white24;
+  bool isEmailValid(String email) {
+    // ! Regular expression for email validation
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegex.hasMatch(email);
+  }
+
+  bool isUsernameValid(String username) {
+    // ! Username must be at least 8 characters long
+    if (username.length < 8) {
+      return false;
+    }
+    // ! Username should not contain spaces
+    if (username.contains(' ')) {
+      return false;
+    }
+    // ! Username should only contain alphanumeric characters and underLine
+    final validUsernameRegex = RegExp(r'^[a-zA-Z0-9_]+$');
+    return validUsernameRegex.hasMatch(username);
+  }
+
+  Color getBorderColor(String textFieldName) {
+    if (textFieldName == 'Password') {
+      if (_passwordController.text.isEmpty) {
+        return Colors.white24;
+      } else if (isPasswordValid(
+        _passwordController.text,
+        _usernameController.text,
+      )) {
+        return Colors.white24;
+      } else {
+        return Colors.red;
+      }
+    }
+    if (textFieldName == 'Email') {
+      if (_emailController.text.isEmpty) {
+        return Colors.white24;
+      } else if (isEmailValid(_emailController.text)) {
+        return Colors.white24;
+      } else {
+        return Colors.red;
+      }
+    }
+    if (textFieldName == 'Username') {
+      if (_usernameController.text.isEmpty) {
+        return Colors.white24;
+      } else if (isUsernameValid(_usernameController.text)) {
+        return Colors.white24;
+      } else {
+        return Colors.red;
+      }
     } else {
-      return Colors.red;
+      return Colors.white24;
     }
   }
 
-  Color getFocusedBorderColor() {
-    if (_passwordController.text.isEmpty) {
-      return Color(0xFF8456FF);
-    } else if (isPasswordValid(
-      _passwordController.text,
-      _usernameController.text,
-    )) {
-      return Color(0xFF8456FF);
+  Color getFocusedBorderColor(String textFieldName) {
+    if (textFieldName == 'Password') {
+      if (_passwordController.text.isEmpty) {
+        return Color(0xFF8456FF);
+      } else if (isPasswordValid(
+        _passwordController.text,
+        _usernameController.text,
+      )) {
+        return Color(0xFF8456FF);
+      } else {
+        return Colors.red;
+      }
+    }
+    if (textFieldName == 'Email') {
+      if (_emailController.text.isEmpty) {
+        return Color(0xFF8456FF);
+      } else if (isEmailValid(_emailController.text)) {
+        return Color(0xFF8456FF);
+      } else {
+        return Colors.red;
+      }
+    }
+    if (textFieldName == 'Username') {
+      if (_usernameController.text.isEmpty) {
+        return Color(0xFF8456FF);
+      } else if (isUsernameValid(_usernameController.text)) {
+        return Color(0xFF8456FF);
+      } else {
+        return Colors.red;
+      }
     } else {
-      return Colors.red;
+      return Color(0xFF8456FF);
     }
   }
 
@@ -601,14 +685,14 @@ class _SignUpPageState extends State<SignUpPage> {
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: Colors.white24,
+                                          color: getBorderColor("Username"),
                                           width: 1.3,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: Color(0xFF8456FF),
+                                          color: getFocusedBorderColor("Username"),
                                           width: 2,
                                         ),
                                       ),
@@ -616,6 +700,10 @@ class _SignUpPageState extends State<SignUpPage> {
                                   ),
                                   SizedBox(height: 25),
                                   TextField(
+                                    controller: _emailController,
+                                    onChanged: (value) {
+                                      setState(() {});
+                                    },
                                     style: TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
                                       prefixIcon: Icon(
@@ -636,14 +724,14 @@ class _SignUpPageState extends State<SignUpPage> {
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: Colors.white24,
+                                          color: getBorderColor("Email"),
                                           width: 1.3,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: Color(0xFF8456FF),
+                                          color: getFocusedBorderColor("Email"),
                                           width: 2,
                                         ),
                                       ),
@@ -652,6 +740,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                   SizedBox(height: 25),
                                   TextField(
                                     controller: _passwordController,
+                                    focusNode: _passwordFocusNode,
+
                                     obscureText: true,
                                     onChanged: (value) {
                                       setState(() {});
@@ -679,14 +769,16 @@ class _SignUpPageState extends State<SignUpPage> {
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: getBorderColor(),
+                                          color: getBorderColor("Password"),
                                           width: 1.3,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: getFocusedBorderColor(),
+                                          color: getFocusedBorderColor(
+                                            "Password",
+                                          ),
                                           width: 2,
                                         ),
                                       ),
