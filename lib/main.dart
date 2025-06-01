@@ -51,7 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Center(
             child: SingleChildScrollView(
               child: SizedBox(
-                height: 625,
+                height: 635,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -96,10 +96,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                     //Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
-                    SizedBox(height: 65),
+                    SizedBox(height: 55),
                     Container(
                       width: 350,
-                      height: 435,
+                      height: 430,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
@@ -156,7 +156,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ),
                           Positioned.fill(
-                            top: 75,
+                            top: 65,
                             child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: 25.0),
                               child: Column(
@@ -233,7 +233,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       ),
                                     ),
                                   ),
-                                  SizedBox(height: 30),
+                                  SizedBox(height: 25),
                                   ElevatedButton(
                                     onPressed: () {},
                                     style: ElevatedButton.styleFrom(
@@ -265,7 +265,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       ),
                                     ),
                                   ),
-                                  SizedBox(height: 20),
+                                  SizedBox(height: 25),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -692,7 +692,9 @@ class _SignUpPageState extends State<SignUpPage> {
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: getFocusedBorderColor("Username"),
+                                          color: getFocusedBorderColor(
+                                            "Username",
+                                          ),
                                           width: 2,
                                         ),
                                       ),
