@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:second/User.dart';
+import 'package:second/TcpClient.dart';
 
 void main() {
   // ! Set status bar icons to light
@@ -506,27 +508,74 @@ class _SignUpPageState extends State<SignUpPage> {
         SnackBar(
           content: Text(
             errors.join("\n"),
-            style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 14),
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
           ),
-          backgroundColor: Colors.red.withValues(
-            alpha: 0.5,
-          ), // Transparent red background
+          backgroundColor: Colors.red.withValues(alpha: 0.5),
+          // Transparent red background
           duration: Duration(seconds: 3),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(23),
           ),
           margin: EdgeInsets.only(left: 10, right: 10, bottom: 2),
-          padding: EdgeInsets.symmetric(
-            horizontal: 30,
-            vertical: 7,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 7),
         ),
       );
       return false; // ! Validation failed
     }
 
     return true; // ! Validation passed
+  }
+
+  void signUpProcess() async {
+    // Create an instance of TcpClient
+    final tcpClient = TcpClient(serverAddress: '10.124.42.17', serverPort: 139);
+
+    // Get the username and email from the respective controllers
+    final username = _usernameController.text;
+    final email = _emailController.text;
+
+    // Send the data to the server and get the response
+    final response = await tcpClient.signUpCheck(username, email);
+
+    // Handle the server response
+    if (response['status'] == 'success') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Sign-up successful!",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            response['message'] ?? "Sign-up failed!",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red.withValues(alpha: 0.89),
+          duration: Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
+        ),
+      );
+    }
   }
 
   Color getBorderColor(String textFieldName) {
@@ -889,30 +938,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                   ElevatedButton(
                                     onPressed: () {
                                       if (isSignUpValid()) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                              "Sign-up successful!",
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                            backgroundColor: Colors.green,
-                                            duration: Duration(seconds: 4),
-                                            behavior: SnackBarBehavior.floating,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(15),
-                                            ),
-                                            margin: EdgeInsets.only(
-                                              left: 10,
-                                              right: 10,
-                                              bottom: 20,
-                                            ),
-                                          ),
-                                        );
+                                        signUpProcess();
                                       }
                                     },
                                     style: ElevatedButton.styleFrom(
