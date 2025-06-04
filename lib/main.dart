@@ -332,12 +332,20 @@ class _SignUpPageState extends State<SignUpPage> {
 
   String _passwordErrorText = '';
   final FocusNode _passwordFocusNode = FocusNode();
+  final FocusNode _usernameFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
+
     _passwordFocusNode.addListener(() {
       if (!_passwordFocusNode.hasFocus) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+    });
+
+    _usernameFocusNode.addListener(() {
+      if(!_usernameFocusNode.hasFocus){
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
     });
@@ -366,6 +374,28 @@ class _SignUpPageState extends State<SignUpPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         margin: EdgeInsets.only(
           bottom: MediaQuery.of(context).size.height * 0.5,
+          left: 10,
+          right: 10,
+        ),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    });
+  }
+  void showUsernameRequirementsSnackBar(BuildContext context){
+        Future.delayed(Duration(milliseconds: 500), () {
+      final snackBar = SnackBar(
+        content: Text(
+          "Username must include:\n- At least 8 characters\n- No spaces\n- Only alphanumeric characters and underscores",
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: Colors.black54,
+        duration: Duration(seconds: 4),
+        behavior: SnackBarBehavior.floating,
+        // Allows positioning
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        margin: EdgeInsets.only(
+          bottom: MediaQuery.of(context).size.height * 0.45,
           left: 10,
           right: 10,
         ),
@@ -662,8 +692,12 @@ class _SignUpPageState extends State<SignUpPage> {
                                   SizedBox(height: 25),
                                   TextField(
                                     controller: _usernameController,
+                                    focusNode: _usernameFocusNode,
                                     onChanged: (value) {
                                       setState(() {});
+                                    },
+                                    onTap: () {
+                                      showUsernameRequirementsSnackBar(context);
                                     },
                                     style: TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
