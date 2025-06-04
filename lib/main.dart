@@ -329,6 +329,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _fullnameController = TextEditingController();
 
   String _passwordErrorText = '';
   final FocusNode _passwordFocusNode = FocusNode();
@@ -345,7 +346,7 @@ class _SignUpPageState extends State<SignUpPage> {
     });
 
     _usernameFocusNode.addListener(() {
-      if(!_usernameFocusNode.hasFocus){
+      if (!_usernameFocusNode.hasFocus) {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
     });
@@ -382,8 +383,9 @@ class _SignUpPageState extends State<SignUpPage> {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     });
   }
-  void showUsernameRequirementsSnackBar(BuildContext context){
-        Future.delayed(Duration(milliseconds: 500), () {
+
+  void showUsernameRequirementsSnackBar(BuildContext context) {
+    Future.delayed(Duration(milliseconds: 500), () {
       final snackBar = SnackBar(
         content: Text(
           "Username must include:\n- At least 8 characters\n- No spaces\n- Only alphanumeric characters and underscores",
@@ -464,6 +466,67 @@ class _SignUpPageState extends State<SignUpPage> {
     // ! Username should only contain alphanumeric characters and underLine
     final validUsernameRegex = RegExp(r'^[a-zA-Z0-9_]+$');
     return validUsernameRegex.hasMatch(username);
+  }
+
+  bool isSignUpValid() {
+    List<String> errors = [];
+
+    // ! Validate Full Name
+    if (_fullnameController.text.isEmpty) {
+      errors.add("Full Name is required.");
+    }
+
+    // ! Validate Username
+    if (_usernameController.text.isEmpty) {
+      errors.add("Username is required.");
+    } else if (!isUsernameValid(_usernameController.text)) {
+      errors.add("Invalid username.");
+    }
+
+    // ! Validate Email
+    if (_emailController.text.isEmpty) {
+      errors.add("Email is required.");
+    } else if (!isEmailValid(_emailController.text)) {
+      errors.add("Invalid email address.");
+    }
+
+    // ! Validate Password
+    if (_passwordController.text.isEmpty) {
+      errors.add("Password is required.");
+    } else if (!isPasswordValid(
+      _passwordController.text,
+      _usernameController.text,
+    )) {
+      errors.add("Invalid password.");
+    }
+
+    // ! Show errors (if any)
+    if (errors.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            errors.join("\n"),
+            style: TextStyle(color: Colors.white,fontWeight: FontWeight.bold,fontSize: 14),
+          ),
+          backgroundColor: Colors.red.withValues(
+            alpha: 0.5,
+          ), // Transparent red background
+          duration: Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(23),
+          ),
+          margin: EdgeInsets.only(left: 10, right: 10, bottom: 2),
+          padding: EdgeInsets.symmetric(
+            horizontal: 30,
+            vertical: 7,
+          ),
+        ),
+      );
+      return false; // ! Validation failed
+    }
+
+    return true; // ! Validation passed
   }
 
   Color getBorderColor(String textFieldName) {
@@ -656,6 +719,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                 children: [
                                   SizedBox(height: 0),
                                   TextField(
+                                    controller: _fullnameController,
                                     style: TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
                                       prefixIcon: Icon(
@@ -673,6 +737,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 18,
                                       ),
+
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
@@ -822,7 +887,34 @@ class _SignUpPageState extends State<SignUpPage> {
                                   ),
                                   SizedBox(height: 20),
                                   ElevatedButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      if (isSignUpValid()) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              "Sign-up successful!",
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                            backgroundColor: Colors.green,
+                                            duration: Duration(seconds: 4),
+                                            behavior: SnackBarBehavior.floating,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
+                                            ),
+                                            margin: EdgeInsets.only(
+                                              left: 10,
+                                              right: 10,
+                                              bottom: 20,
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Color(0xFF671BAF),
                                       // Deep dark purple
