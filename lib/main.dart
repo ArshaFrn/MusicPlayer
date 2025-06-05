@@ -43,6 +43,162 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  bool isUsernameValid(String username) {
+    // ! Username must be at least 8 characters long
+    if (username.length < 8) {
+      return false;
+    }
+    // ! Username should not contain spaces
+    if (username.contains(' ')) {
+      return false;
+    }
+    // ! Username should only contain alphanumeric characters and underLine
+    final validUsernameRegex = RegExp(r'^[a-zA-Z0-9_]+$');
+    return validUsernameRegex.hasMatch(username);
+  }
+
+  bool isPasswordValid(String password, String username) {
+    // ! Password must be at least 8 characters long
+    if (password.length < 8) {
+      return false;
+    }
+    // ! Password should not contain the username
+    if (username.isNotEmpty && password.contains(username)) {
+      return false;
+    }
+    // ! Password must contain at least one uppercase letter
+    if (!RegExp(r'[A-Z]').hasMatch(password)) {
+      return false;
+    }
+    // ! Password must contain at least one lowercase letter
+    if (!RegExp(r'[a-z]').hasMatch(password)) {
+      return false;
+    }
+    // ! Password must contain at least one digit
+    if (!RegExp(r'[0-9]').hasMatch(password)) {
+      return false;
+    }
+    return true;
+  }
+
+  bool isLogInValid(BuildContext context) {
+    List<String> errors = [];
+
+    String username = _usernameController.text;
+    String password = _passwordController.text;
+
+    // ! Validate Username
+    if (username.isEmpty) {
+      errors.add("Username is required.");
+    } else if (!isUsernameValid(username)) {
+      errors.add("Invalid username.");
+    }
+
+    // ! Validate Password
+    if (password.isEmpty) {
+      errors.add("Password is required.");
+    } else if (!isPasswordValid(password, username)) {
+      errors.add("Invalid password.");
+    }
+
+    // ! Show errors in a snack-bar
+    if (errors.isNotEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            errors.join("\n"),
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+          backgroundColor: Colors.red.withValues(alpha: 0.65),
+          duration: Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(23),
+          ),
+          margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
+          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
+
+  void logInProcess(BuildContext context) async {
+    try {
+      print("Processing login...");
+
+      final tcpClient = TcpClient(
+        serverAddress: '10.0.2.2',
+        serverPort: 49723,
+      );
+
+      final username = _usernameController.text;
+      final password = _passwordController.text;
+
+      final response = await tcpClient.logInCheck(username, password);
+
+      if (response['status'] == 'success') {
+        print("Login successful!");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Login successful!",
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
+          ),
+        );
+      } else {
+        print("Login failed: ${response['message'] ?? 'Unknown error'}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              response['message'] ?? "Login failed!",
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
+          ),
+        );
+      }
+    } catch (e) {
+      print("An error occurred during login: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "An error occurred: $e",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 4),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +222,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           colors: [
                             Color(0xFFFF5AF7),
                             Color(0xFF8456FF),
-                          ], // Pink to Purple
+                          ], // ! Pink to Purple
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ).createShader(bounds);
@@ -82,12 +238,12 @@ class _MyHomePageState extends State<MyHomePage> {
                           shadows: [
                             Shadow(
                               blurRadius: 24,
-                              color: Color(0xFFFF5AF7), // Neon pink glow
+                              color: Color(0xFFFF5AF7), // ! Neon pink glow
                               offset: Offset(0, 0),
                             ),
                             Shadow(
                               blurRadius: 48,
-                              color: Color(0xFF8456FF), // Neon purple glow
+                              color: Color(0xFF8456FF), // ! Neon purple glow
                               offset: Offset(0, 0),
                             ),
                             Shadow(
@@ -99,7 +255,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                     ),
-                    //Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
+                    // ! Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
                     SizedBox(height: 55),
                     Container(
                       width: 350,
@@ -168,6 +324,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 children: [
                                   SizedBox(height: 35),
                                   TextField(
+                                    controller: _usernameController,
                                     style: TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
                                       prefixIcon: Icon(
@@ -203,6 +360,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   SizedBox(height: 25),
                                   TextField(
+                                    controller: _passwordController,
                                     obscureText: true,
                                     style: TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
@@ -239,7 +397,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                   SizedBox(height: 25),
                                   ElevatedButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      if (isLogInValid(context)) {
+                                        logInProcess(context);
+                                      }
+                                    },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Color(0xFF671BAF),
                                       // Deep dark purple
@@ -321,5 +483,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-
-

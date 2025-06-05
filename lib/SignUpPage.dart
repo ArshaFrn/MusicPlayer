@@ -186,7 +186,7 @@ class _SignUpPageState extends State<SignUpPage> {
       errors.add("Invalid password.");
     }
 
-    // ! Show error
+    // ! Show error in a snack-bar
     if (errors.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -208,17 +208,17 @@ class _SignUpPageState extends State<SignUpPage> {
           padding: EdgeInsets.symmetric(horizontal: 30, vertical: 7),
         ),
       );
-      return false; // ! Validation failed
+      return false;
     }
 
-    return true; // ! Validation passed
+    return true;
   }
 
   void signUpProcess() async {
     try {
       print("Processing sign-up...");
 
-      final tcpClient = TcpClient(serverAddress: '10.124.42.17', serverPort: 139);
+      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 135);
 
       final username = _usernameController.text;
       final email = _emailController.text;
