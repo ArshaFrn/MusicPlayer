@@ -222,11 +222,25 @@ class _SignUpPageState extends State<SignUpPage> {
 
       final username = _usernameController.text;
       final email = _emailController.text;
+      final password = _passwordController.text;
+      final fullname = _fullnameController.text;
 
-      final response = await tcpClient.signUpCheck(username, email);
+      final signUpResponse = await tcpClient.signUp(
+        fullname,
+        username,
+        email,
+        password,
+      );
 
-      if (response['status'] == 'success') {
-        print("Sign-up successful!");
+      if (signUpResponse['status'] == 'success') {
+        final user = User(
+          fullname: fullname,
+          username: username,
+          email: email,
+          password: password,
+          registrationDate: DateTime.now(),
+        );
+        print("User signed up successfully: ${user.username}");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -242,12 +256,13 @@ class _SignUpPageState extends State<SignUpPage> {
             margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
           ),
         );
+        // TODO : Navigate to the home page ...
       } else {
-        print("Sign-up failed: ${response['message'] ?? 'Unknown error'}");
+        print("Sign-up failed: ${signUpResponse['message'] ?? 'Unknown error'}");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              response['message'] ?? "Sign-up failed!",
+              signUpResponse['message'] ?? "Sign-up failed!",
               style: TextStyle(color: Colors.white),
             ),
             backgroundColor: Colors.red,
@@ -691,8 +706,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                             MaterialPageRoute(
                                               builder:
                                                   (context) => MyHomePage(
-                                                title: 'Hertz',
-                                              ),
+                                                    title: 'Hertz',
+                                                  ),
                                             ),
                                           );
                                         },
@@ -703,7 +718,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                             fontWeight: FontWeight.w500,
                                             fontSize: 16,
                                             decoration:
-                                            TextDecoration.underline,
+                                                TextDecoration.underline,
                                           ),
                                         ),
                                       ),

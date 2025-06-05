@@ -7,9 +7,11 @@ class TcpClient {
 
   TcpClient({required this.serverAddress, required this.serverPort});
 
-  Future<Map<String, dynamic>> signUpCheck(
+  Future<Map<String, dynamic>> signUp(
+    String fullname,
     String username,
     String email,
+    String password,
   ) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
@@ -18,8 +20,13 @@ class TcpClient {
       );
 
       final request = {
-        "Request": "signUpCheck",
-        "Payload": {"username": username, "email": email},
+        "Request": "signUp",
+        "Payload": {
+          "fullname": fullname,
+          "username": username,
+          "email": email,
+          "password": password,
+        },
       };
 
       socket.write(jsonEncode(request));
@@ -49,18 +56,15 @@ class TcpClient {
     }
   }
 
-  Future<Map<String, dynamic>> logInCheck(
-    String username,
-    String password,
-  ) async {
-    final socket = await Socket.connect(serverAddress, serverPort);
+  Future<Map<String, dynamic>> logIn(String username, String password) async {
     try {
+      final socket = await Socket.connect(serverAddress, serverPort);
       print(
         'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
       );
 
       final request = {
-        "Request": "logInCheck",
+        "Request": "logIn",
         "Payload": {"username": username, "password": password},
       };
 

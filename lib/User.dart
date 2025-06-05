@@ -2,7 +2,6 @@ import '../Playlist.dart';
 import '../Music.dart';
 
 class User {
-
   // Immutable properties
   final String _id;
   final String _username;
@@ -11,7 +10,7 @@ class User {
 
   // Mutable properties
   String _password;
-  String _fullName;
+  String _fullname;
   String? _profileImageUrl;
   final List<Music> _likedSongs;
   final List<Music> _recentlyPlayed;
@@ -20,18 +19,18 @@ class User {
   User({
     required String username,
     required String email,
-    required String fullName,
+    required String fullname,
     required String password,
     required DateTime registrationDate,
-  })  : _username = username,
-        _email = email,
-        _fullName = fullName,
-        _password = password,
-        _registrationDate = registrationDate,
-        _id = _generateId(username, email),
-        _likedSongs = [],
-        _recentlyPlayed = [],
-        _playlists = [];
+  }) : _username = username,
+       _email = email,
+       _fullname = fullname,
+       _password = password,
+       _registrationDate = registrationDate,
+       _id = _generateId(username, email),
+       _likedSongs = [],
+       _recentlyPlayed = [],
+       _playlists = [];
 
   void setProfileImageUrl(String url) {
     _profileImageUrl = url;
@@ -48,15 +47,15 @@ class User {
   String get email => _email;
   DateTime get registrationDate => _registrationDate;
   String get password => _password;
-  String get fullName => _fullName;
+  String get fullname => _fullname;
   String? get profileImageUrl => _profileImageUrl;
   List<Music> get likedSongs => List.unmodifiable(_likedSongs);
   List<Music> get recentlyPlayed => List.unmodifiable(_recentlyPlayed);
   List<Playlist> get playlists => List.unmodifiable(_playlists);
 
-  // Setters for mutable fields
+  // Setters
   set password(String value) => _password = value;
-  set fullName(String value) => _fullName = value;
+  set fullname(String value) => _fullname = value;
 
   @override
   bool operator ==(Object other) {

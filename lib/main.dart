@@ -143,11 +143,20 @@ class _MyHomePageState extends State<MyHomePage> {
       final username = _usernameController.text;
       final password = _passwordController.text;
 
-      final response = await tcpClient.logInCheck(username, password);
+      final response = await tcpClient.logIn(username, password);
 
       if (response['status'] == 'success') {
         print("Login successful!");
-        ScaffoldMessenger.of(context).showSnackBar(
+        User user = User(
+          username: response['username'],
+          email: response['email'],
+          fullname: response['fullname'],
+          password: password,
+          registrationDate: DateTime.parse(response['registrationDate']),
+        );
+        user.setProfileImageUrl(response['profileImageUrl'] ?? '');
+        print("User logged in: ${user.username}");
+                ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               "Login successful!",
@@ -162,6 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
             margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
           ),
         );
+        // TODO : Navigate to the main page of the app
       } else {
         print("Login failed: ${response['message'] ?? 'Unknown error'}");
         ScaffoldMessenger.of(context).showSnackBar(
