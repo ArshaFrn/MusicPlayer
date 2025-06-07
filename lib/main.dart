@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:second/Response.dart';
 import 'package:second/User.dart';
 import 'package:second/TcpClient.dart';
 import 'SignUpPage.dart';
+import 'HomePage.dart';
 
 void main() {
   // ! Set status bar icons to light
@@ -28,21 +30,21 @@ class MyApp extends StatelessWidget {
       ),
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
-      home: const MyHomePage(title: 'Hertz'),
+      home: const LogInPage(title: 'Hertz'),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class LogInPage extends StatefulWidget {
+  const LogInPage({super.key, required this.title});
 
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<LogInPage> createState() => _LogInPage();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _LogInPage extends State<LogInPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -112,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
             errors.join("\n"),
             style: TextStyle(
               color: Colors.white,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w500,
               fontSize: 16,
             ),
           ),
@@ -122,7 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(23),
           ),
-          margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
+          margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
           padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
         ),
       );
@@ -135,10 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       print("Processing login...");
 
-      final tcpClient = TcpClient(
-        serverAddress: '10.0.2.2',
-        serverPort: 49723,
-      );
+      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 49723);
 
       final username = _usernameController.text;
       final password = _passwordController.text;
@@ -156,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
         );
         user.setProfileImageUrl(response['profileImageUrl'] ?? '');
         print("User logged in: ${user.username}");
-                ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
               "Login successful!",
@@ -168,10 +167,47 @@ class _MyHomePageState extends State<MyHomePage> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
             ),
-            margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
+            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
           ),
         );
-        // TODO : Navigate to the main page of the app
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage(user: user)),
+        );
+      } else if (response['status'] == Response.incorrectPassword) {
+        print('Incorrect password!');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Incorrect password or username!",
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red.withValues(alpha: 0.65),
+            duration: Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
+          ),
+        );
+      } else if (response['status'] == Response.userNotFound) {
+        print('User not found!');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Incorrect password or username!",
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red.withValues(alpha: 0.65),
+            duration: Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
+          ),
+        );
       } else {
         print("Login failed: ${response['message'] ?? 'Unknown error'}");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -180,13 +216,13 @@ class _MyHomePageState extends State<MyHomePage> {
               response['message'] ?? "Login failed!",
               style: TextStyle(color: Colors.white),
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.red.withValues(alpha: 0.65),
             duration: Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
             ),
-            margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
+            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
           ),
         );
       }
@@ -198,13 +234,13 @@ class _MyHomePageState extends State<MyHomePage> {
             "An error occurred: $e",
             style: TextStyle(color: Colors.white),
           ),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.red.withValues(alpha: 0.65),
           duration: Duration(seconds: 4),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
+          margin: EdgeInsets.only(left: 20, right: 20, bottom: 35),
         ),
       );
     }
@@ -368,7 +404,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       ),
                                     ),
                                   ),
-                                  SizedBox(height: 25),
+                                  SizedBox(height: 30),
                                   TextField(
                                     controller: _passwordController,
                                     obscureText: true,

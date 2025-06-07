@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:second/Response.dart';
 import 'package:second/User.dart';
 import 'package:second/TcpClient.dart';
 import 'main.dart';
+import 'package:second/HomePage.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -80,7 +82,6 @@ class _SignUpPageState extends State<SignUpPage> {
         backgroundColor: Colors.black54,
         duration: Duration(seconds: 4),
         behavior: SnackBarBehavior.floating,
-        // Allows positioning
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         margin: EdgeInsets.only(
           bottom: MediaQuery.of(context).size.height * 0.45,
@@ -232,7 +233,7 @@ class _SignUpPageState extends State<SignUpPage> {
         password,
       );
 
-      if (signUpResponse['status'] == 'success') {
+      if (signUpResponse['status'] == Response.signUpSuccess) {
         final user = User(
           fullname: fullname,
           username: username,
@@ -256,16 +257,55 @@ class _SignUpPageState extends State<SignUpPage> {
             margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
           ),
         );
-        // TODO : Navigate to the home page ...
-      } else {
-        print("Sign-up failed: ${signUpResponse['message'] ?? 'Unknown error'}");
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage(user: user,)),
+        );
+      } else if (signUpResponse['status'] == Response.emailAlreadyExist) {
+        print("Email already exists!");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              signUpResponse['message'] ?? "Sign-up failed!",
+              "Email already exists!",
               style: TextStyle(color: Colors.white),
             ),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.deepOrange.withValues(alpha: 0.75),
+            duration: Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
+          ),
+        );
+      } else if (signUpResponse['status'] == Response.usernameAlreadyExist) {
+        print("Username already exists!");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Username already exists!",
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.deepOrange.withValues(alpha: 0.75),
+            duration: Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
+          ),
+        );
+      } else {
+        print(
+          "Sign-up failed: ${signUpResponse['status'] ?? 'Unknown error'}",
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "Sign-up failed!",
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red.withValues(alpha: 0.65),
             duration: Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -283,7 +323,7 @@ class _SignUpPageState extends State<SignUpPage> {
             "An error occurred: $e",
             style: TextStyle(color: Colors.white),
           ),
-          backgroundColor: Colors.red,
+          backgroundColor: Colors.red.withValues(alpha: 0.65),
           duration: Duration(seconds: 4),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -705,9 +745,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                             context,
                                             MaterialPageRoute(
                                               builder:
-                                                  (context) => MyHomePage(
-                                                    title: 'Hertz',
-                                                  ),
+                                                  (context) =>
+                                                      LogInPage(title: 'Hertz'),
                                             ),
                                           );
                                         },

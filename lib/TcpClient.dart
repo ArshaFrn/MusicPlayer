@@ -35,8 +35,6 @@ class TcpClient {
       final response =
           await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
 
-      print('Raw response received: $response');
-
       socket.close();
 
       if (response.isEmpty) {
