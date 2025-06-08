@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:second/Developer.dart';
 import 'package:second/Response.dart';
 import 'package:second/User.dart';
 import 'package:second/TcpClient.dart';
@@ -134,6 +135,14 @@ class _LogInPage extends State<LogInPage> {
   }
 
   void logInProcess(BuildContext context) async {
+
+    if (_usernameController.text == Developer.username &&
+        _passwordController.text == Developer.password) {
+      print("Developer mode activated!");
+      Developer.logIn(context);
+      return;
+    }
+
     try {
       print("Processing login...");
 
@@ -174,6 +183,7 @@ class _LogInPage extends State<LogInPage> {
           context,
           MaterialPageRoute(builder: (context) => HomePage(user: user)),
         );
+        
       } else if (response['status'] == Response.incorrectPassword) {
         print('Incorrect password!');
         ScaffoldMessenger.of(context).showSnackBar(
