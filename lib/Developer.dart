@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:second/User.dart';
 import 'package:second/HomePage.dart';
 
@@ -17,17 +18,39 @@ class Developer {
     registrationDate: registrationDate,
   );
 
-  static void logIn(BuildContext context) {
+  static Future<void> logIn(BuildContext context) async {
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', true);
+    await prefs.setString('username', username);
+    await prefs.setString('email', email);
+    await prefs.setString('fullname', fullname);
+    await prefs.setString('password', password);
+    await prefs.setString('registrationDate', registrationDate.toIso8601String());
+    await prefs.setString('profileImageUrl', '');
+
+    
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => HomePage(user: user)),
+      MaterialPageRoute(builder: (context) => HomePage()),
     );
   }
 
-  static void signUp(BuildContext context) {
+  static Future<void> signUp(BuildContext context) async {
+    
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', true);
+    await prefs.setString('username', username);
+    await prefs.setString('email', email);
+    await prefs.setString('fullname', fullname);
+    await prefs.setString('password', password);
+    await prefs.setString('registrationDate', registrationDate.toIso8601String());
+    await prefs.setString('profileImageUrl', '');
+
+    
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => HomePage(user: user)),
+      MaterialPageRoute(builder: (context) => HomePage()),
     );
   }
 }

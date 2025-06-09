@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:second/Response.dart';
 import 'package:second/User.dart';
 import 'package:second/TcpClient.dart';
 import 'main.dart';
 import 'package:second/HomePage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -241,6 +241,19 @@ class _SignUpPageState extends State<SignUpPage> {
           password: password,
           registrationDate: DateTime.now(),
         );
+        
+        // ! Save user data in shared preferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+        await prefs.setString('username', user.username);
+        await prefs.setString('email', user.email);
+        await prefs.setString('fullname', user.fullname);
+        await prefs.setString('password', user.password);
+        await prefs.setString(
+          'registrationDate',
+          user.registrationDate.toIso8601String(),
+        );
+
         print("User signed up successfully: ${user.username}");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -259,7 +272,7 @@ class _SignUpPageState extends State<SignUpPage> {
         );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomePage(user: user,)),
+          MaterialPageRoute(builder: (context) => HomePage()),
         );
       } else if (signUpResponse['status'] == Response.emailAlreadyExist) {
         print("Email already exists!");
@@ -296,9 +309,7 @@ class _SignUpPageState extends State<SignUpPage> {
           ),
         );
       } else {
-        print(
-          "Sign-up failed: ${signUpResponse['status'] ?? 'Unknown error'}",
-        );
+        print("Sign-up failed: ${signUpResponse['status'] ?? 'Unknown error'}");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(

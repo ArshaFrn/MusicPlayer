@@ -6,17 +6,25 @@ import 'package:second/User.dart';
 import 'package:second/TcpClient.dart';
 import 'SignUpPage.dart';
 import 'HomePage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   // ! Set status bar icons to light
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(statusBarIconBrightness: Brightness.light),
   );
-  runApp(const MyApp());
+  final prefs = await SharedPreferences.getInstance();
+  final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+  runApp(MyApp(isLoggedIn: isLoggedIn));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+
+  const MyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +39,7 @@ class MyApp extends StatelessWidget {
       ),
       themeMode: ThemeMode.dark,
       debugShowCheckedModeBanner: false,
-      home: const LogInPage(title: 'Hertz'),
+      home: isLoggedIn ? const HomePage() : const LogInPage(title: 'Hertz'),
     );
   }
 }
@@ -135,7 +143,6 @@ class _LogInPage extends State<LogInPage> {
   }
 
   void logInProcess(BuildContext context) async {
-
     if (_usernameController.text == Developer.username &&
         _passwordController.text == Developer.password) {
       print("Developer mode activated!");
@@ -163,6 +170,20 @@ class _LogInPage extends State<LogInPage> {
           registrationDate: DateTime.parse(response['registrationDate']),
         );
         user.setProfileImageUrl(response['profileImageUrl'] ?? '');
+
+        // ! Save user data in shared preferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+        await prefs.setString('username', user.username);
+        await prefs.setString('email', user.email);
+        await prefs.setString('fullname', user.fullname);
+        await prefs.setString('password', user.password);
+        await prefs.setString(
+          'registrationDate',
+          user.registrationDate.toIso8601String(),
+        );
+        await prefs.setString('profileImageUrl', user.profileImageUrl ?? '');
+
         print("User logged in: ${user.username}");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -181,9 +202,8 @@ class _LogInPage extends State<LogInPage> {
         );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomePage(user: user)),
+          MaterialPageRoute(builder: (context) => HomePage()),
         );
-        
       } else if (response['status'] == Response.incorrectPassword) {
         print('Incorrect password!');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -311,7 +331,6 @@ class _LogInPage extends State<LogInPage> {
                         ),
                       ),
                     ),
-                    // ! Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
                     SizedBox(height: 55),
                     Container(
                       width: 350,
