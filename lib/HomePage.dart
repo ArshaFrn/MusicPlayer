@@ -18,33 +18,40 @@ class _HomePage extends State<HomePage> {
   late User _currentUser;
   late List<Widget> _pages;
 
-
   @override
   void initState() {
     super.initState();
     _loadUserData();
 
-    // Initialize _pages here
     _pages = [
-      Center(child: Text("Home", style: TextStyle(fontSize: 24))),
-      Center(child: Text("Search", style: TextStyle(fontSize: 24))),
-      Center(child: Icon(Icons.add_circle, size: 60, color: Colors.deepPurple)),
+      Center(
+        child: Text("Library", style: TextStyle(fontSize: 24)),
+      ),
+      Center(
+        child: Text("Playlists", style: TextStyle(fontSize: 24)),
+      ),
+      Center(
+        child: Text("Search", style: TextStyle(fontSize: 24)),
+      ), 
+      Center(
+        child: Icon(Icons.add_circle, size: 60, color: Colors.deepPurple),
+      ), 
       Center(
         child: Builder(
-          builder: (context) => ElevatedButton(
-            onPressed: () async {
-              _logout();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
-            ),
-            child: Text("Logout"),
-          ),
+          builder:
+              (context) => ElevatedButton(
+                onPressed: () async {
+                  _logout();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepPurple,
+                ),
+                child: Text("Log out"),
+              ),
         ),
       ),
     ];
   }
-
 
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -90,27 +97,39 @@ class _HomePage extends State<HomePage> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.deepPurple,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.shifting,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle_outline),
-            label: "Add",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
-      ),
-    );
-  }
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: _pages[_selectedIndex],
+    bottomNavigationBar: BottomNavigationBar(
+      selectedItemColor: Colors.white,
+      unselectedItemColor: Colors.white60,
+      currentIndex: _selectedIndex,
+      onTap: _onItemTapped,
+      type: BottomNavigationBarType.shifting,
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.library_music),
+          label: "Library",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.playlist_play),
+          label: "Playlists",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.search),
+          label: "Search",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.add_circle),
+          label: "Add",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: "Profile",
+        ),
+      ],
+    ),
+  );
+}
 }
