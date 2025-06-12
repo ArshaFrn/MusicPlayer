@@ -153,14 +153,14 @@ class _LogInPage extends State<LogInPage> {
     try {
       print("Processing login...");
 
-      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 49723);
+      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
 
       final username = _usernameController.text;
       final password = _passwordController.text;
 
       final response = await tcpClient.logIn(username, password);
 
-      if (response['status'] == Response.logInSuccess) {
+      if (response['status'] == Response.logInSuccess.toString()) {
         print("Login successful!");
         User user = User(
           username: response['username'],
@@ -204,7 +204,7 @@ class _LogInPage extends State<LogInPage> {
           context,
           MaterialPageRoute(builder: (context) => HomePage()),
         );
-      } else if (response['status'] == Response.incorrectPassword) {
+      } else if (response['status'] == Response.incorrectPassword.toString()) {
         print('Incorrect password!');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -221,7 +221,7 @@ class _LogInPage extends State<LogInPage> {
             margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
           ),
         );
-      } else if (response['status'] == Response.userNotFound) {
+      } else if (response['status'] == Response.userNotFound.toString()) {
         print('User not found!');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

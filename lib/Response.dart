@@ -4,11 +4,12 @@ enum Response{
   usernameAlreadyExist,
   logInSuccess,
   userNotFound,
-  userAlreadyLoggedIn,
   incorrectPassword,
   logOutSuccess,
   profileUpdateSuccess,
   profileUpdateFailed,
   passwordUpdateSuccess,
   passwordUpdateFailed,
+  InvalidRequest,
+  USER_ALREADY_EXIST,
 }

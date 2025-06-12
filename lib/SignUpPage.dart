@@ -219,7 +219,7 @@ class _SignUpPageState extends State<SignUpPage> {
     try {
       print("Processing sign-up...");
 
-      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 135);
+      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
 
       final username = _usernameController.text;
       final email = _emailController.text;
@@ -232,8 +232,7 @@ class _SignUpPageState extends State<SignUpPage> {
         email,
         password,
       );
-
-      if (signUpResponse['status'] == Response.signUpSuccess) {
+      if (signUpResponse['status'] == "signUpSuccess") {
         final user = User(
           fullname: fullname,
           username: username,
@@ -274,7 +273,7 @@ class _SignUpPageState extends State<SignUpPage> {
           context,
           MaterialPageRoute(builder: (context) => HomePage()),
         );
-      } else if (signUpResponse['status'] == Response.emailAlreadyExist) {
+      } else if (signUpResponse['status'] == "emailAlreadyExist") {
         print("Email already exists!");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -291,7 +290,7 @@ class _SignUpPageState extends State<SignUpPage> {
             margin: EdgeInsets.only(left: 10, right: 10, bottom: 20),
           ),
         );
-      } else if (signUpResponse['status'] == Response.usernameAlreadyExist) {
+      } else if (signUpResponse['status'] == "usernameAlreadyExist") {
         print("Username already exists!");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

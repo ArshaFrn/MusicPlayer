@@ -29,8 +29,8 @@ class TcpClient {
         },
       };
 
-      socket.write(jsonEncode(request));
-      print('Request sent: $request');
+      socket.write('${jsonEncode(request)}\n');
+      print("Request sent: ${jsonEncode(request)}");
 
       final response =
           await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
@@ -66,8 +66,8 @@ class TcpClient {
         "Payload": {"username": username, "password": password},
       };
 
-      socket.write(jsonEncode(request));
-      print('Request sent: $request');
+      socket.write('${jsonEncode(request)}\n');
+      print("Request sent: ${jsonEncode(request)}");
 
       final response =
           await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
