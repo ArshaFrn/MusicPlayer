@@ -160,16 +160,23 @@ class _LogInPage extends State<LogInPage> {
 
       final response = await tcpClient.logIn(username, password);
 
-      if (response['status'] == Response.logInSuccess.toString()) {
+      if (response['status'] == "logInSuccess") {
         print("Login successful!");
+
+        final username = response['username'] ?? '';
+        final email = response['email'] ?? '';
+        final fullname = response['fullname'] ?? '';
+        final registrationDate = response['registrationDate'] ?? '';
+        final profileImageUrl = response['profileImageUrl'] ?? '';
+
         User user = User(
-          username: response['username'],
-          email: response['email'],
-          fullname: response['fullname'],
+          username: username,
+          email: email,
+          fullname: fullname,
           password: password,
-          registrationDate: DateTime.parse(response['registrationDate']),
+          registrationDate: DateTime.now(),
         );
-        user.setProfileImageUrl(response['profileImageUrl'] ?? '');
+        user.setProfileImageUrl(profileImageUrl);
 
         // ! Save user data in shared preferences
         final prefs = await SharedPreferences.getInstance();
@@ -204,7 +211,7 @@ class _LogInPage extends State<LogInPage> {
           context,
           MaterialPageRoute(builder: (context) => HomePage()),
         );
-      } else if (response['status'] == Response.incorrectPassword.toString()) {
+      } else if (response['status'] == "incorrectPassword") {
         print('Incorrect password!');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -212,7 +219,7 @@ class _LogInPage extends State<LogInPage> {
               "Incorrect password or username!",
               style: TextStyle(color: Colors.white),
             ),
-            backgroundColor: Colors.red.withValues(alpha: 0.65),
+            backgroundColor: Colors.red.withOpacity(0.65),
             duration: Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -221,7 +228,7 @@ class _LogInPage extends State<LogInPage> {
             margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
           ),
         );
-      } else if (response['status'] == Response.userNotFound.toString()) {
+      } else if (response['status'] == "userNotFound") {
         print('User not found!');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -229,7 +236,7 @@ class _LogInPage extends State<LogInPage> {
               "Incorrect password or username!",
               style: TextStyle(color: Colors.white),
             ),
-            backgroundColor: Colors.red.withValues(alpha: 0.65),
+            backgroundColor: Colors.red.withOpacity(0.65),
             duration: Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -246,7 +253,7 @@ class _LogInPage extends State<LogInPage> {
               response['message'] ?? "Login failed!",
               style: TextStyle(color: Colors.white),
             ),
-            backgroundColor: Colors.red.withValues(alpha: 0.65),
+            backgroundColor: Colors.red.withOpacity(0.65),
             duration: Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -264,7 +271,7 @@ class _LogInPage extends State<LogInPage> {
             "An error occurred: $e",
             style: TextStyle(color: Colors.white),
           ),
-          backgroundColor: Colors.red.withValues(alpha: 0.65),
+          backgroundColor: Colors.red.withOpacity(0.65),
           duration: Duration(seconds: 4),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(

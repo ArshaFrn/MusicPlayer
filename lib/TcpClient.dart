@@ -29,7 +29,7 @@ class TcpClient {
         },
       };
 
-      socket.write('${jsonEncode(request)}\n');
+      socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
 
       final response =
@@ -66,7 +66,7 @@ class TcpClient {
         "Payload": {"username": username, "password": password},
       };
 
-      socket.write('${jsonEncode(request)}\n');
+      socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
 
       final response =
