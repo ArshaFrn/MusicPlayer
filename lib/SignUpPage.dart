@@ -62,7 +62,7 @@ class _SignUpPageState extends State<SignUpPage> {
         // Allows positioning
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         margin: EdgeInsets.only(
-          bottom: MediaQuery.of(context).size.height * 0.5,
+          bottom: MediaQuery.of(context).size.height * 0.47,
           left: 10,
           right: 10,
         ),
@@ -84,7 +84,7 @@ class _SignUpPageState extends State<SignUpPage> {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         margin: EdgeInsets.only(
-          bottom: MediaQuery.of(context).size.height * 0.45,
+          bottom: MediaQuery.of(context).size.height * 0.455,
           left: 10,
           right: 10,
         ),

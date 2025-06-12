@@ -160,7 +160,7 @@ class _LogInPage extends State<LogInPage> {
 
       final response = await tcpClient.logIn(username, password);
 
-      if (response['status'] == 'success') {
+      if (response['status'] == Response.logInSuccess) {
         print("Login successful!");
         User user = User(
           username: response['username'],
