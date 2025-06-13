@@ -166,7 +166,7 @@ class _LogInPage extends State<LogInPage> {
         final username = response['username'] ?? '';
         final email = response['email'] ?? '';
         final fullname = response['fullname'] ?? '';
-        final registrationDate = response['registrationDate'] ?? '';
+        final registrationDate = response['registrationDate'] ?? DateTime.now();
         final profileImageUrl = response['profileImageUrl'] ?? '';
 
         User user = User(
