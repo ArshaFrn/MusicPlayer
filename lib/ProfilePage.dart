@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:second/main.dart';
+import 'User.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final User _user;
+  const ProfilePage({super.key, required User user}) : _user = user;
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<ProfilePage> createState() => _ProfilePage();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class _ProfilePage extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
@@ -34,9 +36,7 @@ class _ProfilePageState extends State<ProfilePage> {
         children: [
           ElevatedButton(
             onPressed: _logout,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple),
             child: const Text("Log out"),
           ),
         ],

@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
+import 'User.dart';
 
-class SearchPage extends StatelessWidget {
-  const SearchPage({super.key});
+class SearchPage extends StatefulWidget {
+  final User _user;
+
+  const SearchPage({super.key, required User user}) : _user = user;
 
   @override
+  State<SearchPage> createState() => _SearchPage();
+}
+
+class _SearchPage extends State<SearchPage> {
+  @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Text(
-        "Search",
-        style: TextStyle(fontSize: 24),
+        "Search for ${widget._user.username}",
+        style: const TextStyle(fontSize: 24),
       ),
     );
   }

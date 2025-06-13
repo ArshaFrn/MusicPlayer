@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
+import 'User.dart';
 
-class LibraryPage extends StatelessWidget {
-  const LibraryPage({super.key});
+class LibraryPage extends StatefulWidget {
+  final User user;
+
+  const LibraryPage({super.key, required this.user});
 
   @override
+  State<LibraryPage> createState() => _LibraryPageState();
+}
+
+class _LibraryPageState extends State<LibraryPage> {
+  @override
   Widget build(BuildContext context) {
-    return const Center(
+    return Center(
       child: Text(
-        "Library",
-        style: TextStyle(fontSize: 24),
+        "Welcome to the Library, ${widget.user.username}!",
+        style: const TextStyle(fontSize: 24),
       ),
     );
   }
