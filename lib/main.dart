@@ -166,7 +166,8 @@ class _LogInPage extends State<LogInPage> {
         final username = response['username'] ?? '';
         final email = response['email'] ?? '';
         final fullname = response['fullname'] ?? '';
-        final registrationDate = response['registrationDate'] ?? DateTime.now();
+        final registrationDate =
+            response['registrationDate'] ?? DateTime.now().toString();
         final profileImageUrl = response['profileImageUrl'] ?? '';
 
         User user = User(
@@ -174,9 +175,11 @@ class _LogInPage extends State<LogInPage> {
           email: email,
           fullname: fullname,
           password: password,
-          registrationDate: DateTime.now(),
+          registrationDate: DateTime.parse(registrationDate),
         );
         user.setProfileImageUrl(profileImageUrl);
+
+        print(user.toString());
 
         // ! Save user data in shared preferences
         final prefs = await SharedPreferences.getInstance();

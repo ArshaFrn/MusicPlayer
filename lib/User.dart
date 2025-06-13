@@ -43,18 +43,28 @@ class User {
 
   // Getters
   String get id => _id;
+
   String get username => _username;
+
   String get email => _email;
+
   DateTime get registrationDate => _registrationDate;
+
   String get password => _password;
+
   String get fullname => _fullname;
+
   String? get profileImageUrl => _profileImageUrl;
+
   List<Music> get likedSongs => List.unmodifiable(_likedSongs);
+
   List<Music> get recentlyPlayed => List.unmodifiable(_recentlyPlayed);
+
   List<Playlist> get playlists => List.unmodifiable(_playlists);
 
   // Setters
   set password(String value) => _password = value;
+
   set fullname(String value) => _fullname = value;
 
   @override
@@ -70,6 +80,6 @@ class User {
 
   @override
   String toString() {
-    return 'User: $_username';
+    return 'User(id: $_id, username: $_username, email: $_email, fullname: $_fullname, registrationDate: $_registrationDate, profileImageUrl: $_profileImageUrl)';
   }
 }
