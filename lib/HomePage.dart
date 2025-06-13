@@ -5,6 +5,12 @@ import 'package:second/TcpClient.dart';
 import 'SignUpPage.dart';
 import 'main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'LibraryPage.dart';
+import 'PlaylistsPage.dart';
+import 'SearchPage.dart';
+import 'AddPage.dart';
+import 'ProfilePage.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,7 +21,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePage extends State<HomePage> {
   int _selectedIndex = 0;
-  late User _currentUser;
+  late final User _currentUser;
   late List<Widget> _pages;
 
   @override
@@ -24,32 +30,11 @@ class _HomePage extends State<HomePage> {
     _loadUserData();
 
     _pages = [
-      Center(
-        child: Text("Library", style: TextStyle(fontSize: 24)),
-      ),
-      Center(
-        child: Text("Playlists", style: TextStyle(fontSize: 24)),
-      ),
-      Center(
-        child: Text("Search", style: TextStyle(fontSize: 24)),
-      ), 
-      Center(
-        child: Icon(Icons.add_circle, size: 60, color: Colors.deepPurple),
-      ), 
-      Center(
-        child: Builder(
-          builder:
-              (context) => ElevatedButton(
-                onPressed: () async {
-                  _logout();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                ),
-                child: Text("Log out"),
-              ),
-        ),
-      ),
+      const LibraryPage(),
+      const PlaylistsPage(),
+      const SearchPage(),
+      const AddPage(),
+      const ProfilePage(), 
     ];
   }
 
@@ -80,15 +65,6 @@ class _HomePage extends State<HomePage> {
     });
 
     print("User loaded: ${_currentUser.username}");
-  }
-
-  void _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => LogInPage(title: 'Hertz')),
-    );
   }
 
   void _onItemTapped(int index) {
