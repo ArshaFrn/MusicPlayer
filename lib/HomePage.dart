@@ -34,7 +34,7 @@ class _HomePage extends State<HomePage> {
   Future<void> _loadUserData() async {
     final prefs = await SharedPreferences.getInstance();
 
-    // ! Retrieve user data
+    // Retrieve user data
     final username = prefs.getString('username') ?? 'Unknown';
     final email = prefs.getString('email') ?? 'Unknown';
     final fullname = prefs.getString('fullname') ?? 'Unknown';
