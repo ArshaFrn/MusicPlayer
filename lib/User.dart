@@ -12,6 +12,7 @@ class User {
   String _password;
   String _fullname;
   String? _profileImageUrl;
+  final List<Music> _tracks;
   final List<Music> _likedSongs;
   final List<Music> _recentlyPlayed;
   final List<Playlist> _playlists;
@@ -28,6 +29,7 @@ class User {
        _password = password,
        _registrationDate = registrationDate,
        _id = _generateId(username, email),
+        _tracks = [],
        _likedSongs = [],
        _recentlyPlayed = [],
        _playlists = [];
@@ -56,11 +58,13 @@ class User {
 
   String? get profileImageUrl => _profileImageUrl;
 
-  List<Music> get likedSongs => List.unmodifiable(_likedSongs);
+  List<Music> get likedSongs => _likedSongs;
 
-  List<Music> get recentlyPlayed => List.unmodifiable(_recentlyPlayed);
+  List<Music> get recentlyPlayed => _recentlyPlayed;
 
-  List<Playlist> get playlists => List.unmodifiable(_playlists);
+  List<Playlist> get playlists => _playlists;
+
+  List<Music> get tracks => _tracks;
 
   // Setters
   set password(String value) => _password = value;
