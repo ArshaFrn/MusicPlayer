@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'User.dart';
+import 'Application.dart';
 
 class AddPage extends StatefulWidget {
   final User _user;
-
   const AddPage({super.key, required User user}) : _user = user;
 
   @override
@@ -11,18 +11,44 @@ class AddPage extends StatefulWidget {
 }
 
 class _AddPage extends State<AddPage> {
+  final Application application = Application.instance;
+
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.add_circle, size: 60, color: Colors.deepPurple),
-          Text(
-            "Add something for ${widget._user.username}",
-            style: const TextStyle(fontSize: 18),
-          ),
-        ],
+    //User can add music locally or online
+    return Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("Add Music"),
+            Text("User: ${widget._user.fullname}"),
+            SizedBox(height: 20),
+            ElevatedButton(
+              child: Text("Pick Music File"),
+              onPressed: () async {
+                final file = await application.pickMusicFile();
+                if (file != null) {
+                  final base64Data = await application.readAndEncodeFile(file);
+                  if (base64Data != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Picked file: ${file.path}")),
+                    );
+                    print("base64Data: $base64Data");
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Failed to encode file.")),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text("No file selected.")));
+                }
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

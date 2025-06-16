@@ -46,7 +46,7 @@ class Music {
   }
 
   // * Getters
-  String get id => _id;
+  int get id => _id;
   String get title => _title;
   Artist get artist => _artist;
   Genre get genre => _genre;
