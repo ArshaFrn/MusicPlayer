@@ -4,7 +4,7 @@ import 'Music.dart';
 class Playlist {
 
   // Immutable properties
-  final String _id;
+  final int _id;
   final User _owner;
   final DateTime _createdDate;
 
@@ -24,13 +24,12 @@ class Playlist {
         _id = _generateId(name, owner),
         _tracks = [];
 
-  static String _generateId(String name, User owner) {
-    // TODO: implement custom playlist ID logic (e.g., username + name + date)
-    return "";
+  static int _generateId(String name, User owner) {
+    return (name+owner.username).hashCode;
   }
 
   //Getter
-  String get id => _id;
+  int get id => _id;
   User get owner => _owner;
   DateTime get createdDate => _createdDate;
   String get name => _name;
