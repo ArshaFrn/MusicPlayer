@@ -2,7 +2,6 @@ import 'Artist.dart';
 import 'Music.dart';
 
 class Album {
-
   // Immutable properties
   final int _id;
   final String _title;
@@ -11,16 +10,14 @@ class Album {
   // Mutable properties
   final List<Music> _tracks;
 
-  Album({
-    required String title,
-    required Artist artist,
-  }) : _title = title,
-       _artist = artist,
-       _id = _generateId(title, artist),
-       _tracks = [];
+  Album({required String title, required Artist artist})
+    : _title = title,
+      _artist = artist,
+      _id = _generateId(title, artist),
+      _tracks = [];
 
   static int _generateId(String title, Artist artist) {
-    return (title+artist.name).hashCode;
+    return (title + artist.name).hashCode;
   }
 
   // Getters

@@ -46,20 +46,32 @@ class Music {
 
   // * Getters
   int get id => _id;
+
   String get title => _title;
+
   Artist get artist => _artist;
+
   String get genre => _genre;
+
   int get durationInSeconds => _durationInSeconds;
+
   DateTime get releaseDate => _releaseDate;
+
   DateTime get addedDate => _addedDate;
+
   Album get album => _album;
+
   int get likeCount => _likeCount;
+
   bool get isLiked => _isLiked;
+
   String get filePath => _filePath;
+
   String get base64Data => _base64Data;
 
   // * Setters
   set likeCount(int value) => _likeCount = value;
+
   set isLiked(bool value) => _isLiked = value;
 
   @override
