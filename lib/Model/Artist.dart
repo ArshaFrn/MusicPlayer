@@ -1,47 +1,29 @@
-import 'Genre.dart';
 import 'Music.dart';
 import 'Album.dart';
 
 class Artist {
   // Immutable properties
-  final String _id;
+  final int _id;
   final String _name;
-  final String _bio;
-  final String _profileImageUrl;
-  final List<Genre> _genres;
 
   // Mutable properties
   final List<Music> _songs;
   final List<Album> _albums;
 
-  Artist({
-    required String name,
-    required String bio,
-    required String profileImageUrl,
-    List<Genre>? genres,
-  }) : _name = name,
-       _bio = bio,
-       _profileImageUrl = profileImageUrl,
-       _genres = genres != null ? List<Genre>.from(genres) : [],
-       _id = _generateId(name),
-       _songs = [],
-       _albums = [];
+  Artist({required String name})
+    : _name = name,
+      _id = _generateId(name),
+      _songs = [],
+      _albums = [];
 
-  static String _generateId(String name) {
-    // TODO: implement a complex ID generation logic
-    return "";
+  static int _generateId(String name) {
+    return name.hashCode;
   }
 
   // Getters
-  String get id => _id;
+  int get id => _id;
 
   String get name => _name;
-
-  String get bio => _bio;
-
-  String get profileImageUrl => _profileImageUrl;
-
-  List<Genre> get genres => List.unmodifiable(_genres);
 
   List<Music> get songs => _songs;
 

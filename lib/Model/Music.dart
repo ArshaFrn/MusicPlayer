@@ -1,13 +1,12 @@
 import 'Artist.dart';
 import 'Album.dart';
-import 'Genre.dart';
 
 class Music {
   // Immutable properties
   final int _id;
   final String _title;
   final Artist _artist;
-  final Genre _genre;
+  final String _genre;
   final int _durationInSeconds;
   final DateTime _releaseDate;
   final DateTime _addedDate;
@@ -22,7 +21,7 @@ class Music {
   Music({
     required String title,
     required Artist artist,
-    required Genre genre,
+    required String genre,
     required int durationInSeconds,
     required DateTime releaseDate,
     required Album album,
@@ -49,7 +48,7 @@ class Music {
   int get id => _id;
   String get title => _title;
   Artist get artist => _artist;
-  Genre get genre => _genre;
+  String get genre => _genre;
   int get durationInSeconds => _durationInSeconds;
   DateTime get releaseDate => _releaseDate;
   DateTime get addedDate => _addedDate;
