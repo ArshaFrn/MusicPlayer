@@ -9,6 +9,8 @@ class Application {
 
   static Application get instance => _instance;
 
+
+
   bool likeMusic(User user, Music music) {
     if (user.likedSongs.contains(music)) {
       unlikeMusic(user, music);
