@@ -33,37 +33,48 @@ class _AddPage extends State<AddPage> {
     );
   }
 
-  Future<void> _handlePickMusicFile() async {
-    final file = await application.pickMusicFile();
-    if (file != null) {
-      final music = await application.buildMusicObject(file);
-      if (music != null) {
-        setState(() {
-          widget._user.tracks.add(music);
-        });
+Future<void> _handlePickMusicFile() async {
+  final file = await application.pickMusicFile();
+  if (file != null) {
+    final music = await application.buildMusicObject(file);
+    if (music != null) {
+      if (widget._user.tracks.any((track) => track.id == music.id)) {
         _showSnackBar(
           context,
-          "Added: ${music.title}",
-          Icons.check_circle,
-          Colors.green,
+          "Track '${music.title}' already exists in your library.",
+          Icons.warning,
+          Colors.orange,
         );
-      } else {
-        _showSnackBar(
-          context,
-          "Failed to create music object.",
-          Icons.error,
-          Colors.red,
-        );
+        return;
       }
+
+      // Add the track if it doesn't exist
+      setState(() {
+        widget._user.tracks.add(music);
+      });
+      _showSnackBar(
+        context,
+        "Added: ${music.title}",
+        Icons.check_circle,
+        Colors.green,
+      );
     } else {
       _showSnackBar(
         context,
-        "No file selected.",
-        Icons.warning,
-        Colors.orange,
+        "Failed to create music object.",
+        Icons.error,
+        Colors.red,
       );
     }
+  } else {
+    _showSnackBar(
+      context,
+      "No file selected.",
+      Icons.warning,
+      Colors.orange,
+    );
   }
+}
 
   void _showSnackBar(BuildContext context, String message, IconData icon, Color iconColor) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -86,7 +97,7 @@ class _AddPage extends State<AddPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
-        padding: EdgeInsets.all(13),
+        padding: EdgeInsets.all(14),
       ),
     );
   }
