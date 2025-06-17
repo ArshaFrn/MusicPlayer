@@ -85,41 +85,41 @@ class Application {
     }
   }
 
-  Future<Music?> buildMusicObject(Application application, File file) async {
-    final metadata = await application.extractMetadata(file);
-    if (metadata == null) {
-      print("Failed to extract metadata from the file.");
-      return null;
-    }
-
-    final title = metadata['title'] as String;
-    final artistName = metadata['artist'] as String;
-    final duration = metadata['duration'] as int;
-    final genre = metadata['genre'] as String;
-    final albumName = metadata['album'] as String;
-    final releaseDateStr = metadata['releaseDate'] as String;
-
-    final artist = Artist(name: artistName);
-    final album = Album(title: albumName,artist: artist);
-    final releaseDate = DateTime.tryParse(releaseDateStr) ?? DateTime.now();
-
-    final base64Data = await application.readAndEncodeFile(file);
-    if (base64Data == null) {
-      print("Failed to encode file data.");
-      return null;
-    }
-
-    return Music(
-      title: title,
-      artist: artist,
-      genre: genre,
-      durationInSeconds: duration,
-      releaseDate: releaseDate,
-      album: album,
-      filePath: file.path,
-      base64Data: base64Data,
-    );
+Future<Music?> buildMusicObject(File file) async {
+  final metadata = await extractMetadata(file);
+  if (metadata == null) {
+    print("Failed to extract metadata from the file.");
+    return null;
   }
+
+  final title = metadata['title'] as String;
+  final artistName = metadata['artist'] as String;
+  final duration = metadata['duration'] as int;
+  final genre = metadata['genre'] as String;
+  final albumName = metadata['album'] as String;
+  final releaseDateStr = metadata['releaseDate'] as String;
+
+  final artist = Artist(name: artistName);
+  final album = Album(title: albumName, artist: artist);
+  final releaseDate = DateTime.tryParse(releaseDateStr) ?? DateTime.now();
+
+  final base64Data = await readAndEncodeFile(file);
+  if (base64Data == null) {
+    print("Failed to encode file data.");
+    return null;
+  }
+
+  return Music(
+    title: title,
+    artist: artist,
+    genre: genre,
+    durationInSeconds: duration,
+    releaseDate: releaseDate,
+    album: album,
+    filePath: file.path,
+    base64Data: base64Data,
+  );
+}
 
   bool likeMusic(User user, Music music) {
     if (user.likedSongs.contains(music)) {

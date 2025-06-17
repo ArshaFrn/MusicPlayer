@@ -25,31 +25,68 @@ class _AddPage extends State<AddPage> {
             SizedBox(height: 20),
             ElevatedButton(
               child: Text("Pick Music File"),
-              onPressed: () async {
-                final file = await application.pickMusicFile();
-                if (file != null) {
-                  final music = await application.buildMusicObject(application, file);
-                  if (music != null) {
-                    setState(() {
-                      widget._user.tracks.add(music);
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Added: ${music.title}")),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Failed to create music object.")),
-                    );
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("No file selected.")),
-                  );
-                }
-              },
+              onPressed: _handlePickMusicFile,
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<void> _handlePickMusicFile() async {
+    final file = await application.pickMusicFile();
+    if (file != null) {
+      final music = await application.buildMusicObject(file);
+      if (music != null) {
+        setState(() {
+          widget._user.tracks.add(music);
+        });
+        _showSnackBar(
+          context,
+          "Added: ${music.title}",
+          Icons.check_circle,
+          Colors.green,
+        );
+      } else {
+        _showSnackBar(
+          context,
+          "Failed to create music object.",
+          Icons.error,
+          Colors.red,
+        );
+      }
+    } else {
+      _showSnackBar(
+        context,
+        "No file selected.",
+        Icons.warning,
+        Colors.orange,
+      );
+    }
+  }
+
+  void _showSnackBar(BuildContext context, String message, IconData icon, Color iconColor) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(icon, color: iconColor),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(fontSize: 16,color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      backgroundColor: Color.fromARGB(255, 60, 5, 122),
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 3),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        padding: EdgeInsets.all(13),
       ),
     );
   }
