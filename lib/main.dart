@@ -153,7 +153,7 @@ class _LogInPage extends State<LogInPage> {
     try {
       print("Processing login...");
 
-      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final tcpClient = TcpClient(serverAddress: '192.168.1.35', serverPort: 12345);
 
       final username = _usernameController.text;
       final password = _passwordController.text;

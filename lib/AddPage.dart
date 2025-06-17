@@ -29,12 +29,13 @@ class _AddPage extends State<AddPage> {
               onPressed: () async {
                 final file = await application.pickMusicFile();
                 if (file != null) {
+                  final metaData = await application.extractMetadata(file);
                   final base64Data = await application.readAndEncodeFile(file);
                   if (base64Data != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Picked file: ${file.path}")),
                     );
-                    print("base64Data: $base64Data");
+                    print("metaData : $metaData");
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Failed to encode file.")),
