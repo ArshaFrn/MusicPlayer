@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:second/User.dart';
+import 'Model/User.dart';
 import 'package:second/HomePage.dart';
 
 class Developer {

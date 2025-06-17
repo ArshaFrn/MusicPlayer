@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'User.dart';
+import 'Model/User.dart';
 import 'Application.dart';
 
 class AddPage extends StatefulWidget {
@@ -15,7 +15,6 @@ class _AddPage extends State<AddPage> {
 
   @override
   Widget build(BuildContext context) {
-    //User can add music locally or online
     return Scaffold(
       body: Center(
         child: Column(
@@ -29,22 +28,23 @@ class _AddPage extends State<AddPage> {
               onPressed: () async {
                 final file = await application.pickMusicFile();
                 if (file != null) {
-                  final metaData = await application.extractMetadata(file);
-                  final base64Data = await application.readAndEncodeFile(file);
-                  if (base64Data != null) {
+                  final music = await application.buildMusicObject(application, file);
+                  if (music != null) {
+                    setState(() {
+                      widget._user.tracks.add(music);
+                    });
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Picked file: ${file.path}")),
+                      SnackBar(content: Text("Added: ${music.title}")),
                     );
-                    print("metaData : $metaData");
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Failed to encode file.")),
+                      SnackBar(content: Text("Failed to create music object.")),
                     );
                   }
                 } else {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text("No file selected.")));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("No file selected.")),
+                  );
                 }
               },
             ),

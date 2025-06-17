@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:second/Response.dart';
-import 'package:second/User.dart';
+import 'Model/User.dart';
 import 'package:second/TcpClient.dart';
 import 'main.dart';
 import 'package:second/HomePage.dart';

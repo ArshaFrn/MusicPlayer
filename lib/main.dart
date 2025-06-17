@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:second/Developer.dart';
 import 'package:second/Response.dart';
-import 'package:second/User.dart';
+import 'Model/User.dart';
 import 'package:second/TcpClient.dart';
 import 'SignUpPage.dart';
 import 'HomePage.dart';

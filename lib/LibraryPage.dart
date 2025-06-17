@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:second/Music.dart';
-import 'User.dart';
+import 'Model/Music.dart';
+import 'Model/User.dart';
 
 class LibraryPage extends StatefulWidget {
   final User user;

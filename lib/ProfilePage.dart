@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:second/main.dart';
-import 'User.dart';
+import 'Model/User.dart';
 
 class ProfilePage extends StatefulWidget {
   final User _user;

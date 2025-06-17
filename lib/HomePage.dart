@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'User.dart';
+import 'Model/User.dart';
 import 'TcpClient.dart';
 import 'SignUpPage.dart';
 import 'main.dart';

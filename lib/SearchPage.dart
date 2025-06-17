@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'User.dart';
+import 'Model/User.dart';
 
 class SearchPage extends StatefulWidget {
   final User _user;
