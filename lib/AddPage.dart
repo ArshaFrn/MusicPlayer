@@ -125,9 +125,9 @@ class _AddPage extends State<AddPage> {
             ),
           ],
         ),
-        backgroundColor: Color.fromARGB(255, 60, 5, 122),
+        backgroundColor: Color.fromARGB(255, 52, 21, 57),
         behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 3),
+        duration: Duration(seconds: 2),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),

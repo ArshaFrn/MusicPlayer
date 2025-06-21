@@ -80,6 +80,7 @@ class _LibraryPageState extends State<LibraryPage> {
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0.1,
       ),
+
       body:
           tracks.isEmpty
               ? Center(
@@ -100,14 +101,18 @@ class _LibraryPageState extends State<LibraryPage> {
                   final music = tracks[index];
                   final isLiked = music.isLiked;
                   return ListTile(
-                    onTap: (){},
+                    onTap: () {},
+                    onLongPress: () => _onTrackLongPress(context, music),
                     leading: Icon(Icons.music_note),
                     title: Text(music.title),
                     subtitle: Text(music.artist.name),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(_formatDuration(music.durationInSeconds),style: TextStyle(fontSize: 11),),
+                        Text(
+                          _formatDuration(music.durationInSeconds),
+                          style: TextStyle(fontSize: 11),
+                        ),
                         SizedBox(width: 15),
                         AnimatedSwitcher(
                           duration: Duration(milliseconds: 400),
@@ -133,6 +138,71 @@ class _LibraryPageState extends State<LibraryPage> {
                 },
               ),
     );
+  }
+
+  void _showDeleteSnackBar(String title) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.delete_forever, color: Colors.red, size: 28),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Track "$title" deleted!',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis, //"text is too lon..."
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Color.fromARGB(255, 52, 21, 57),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        duration: Duration(seconds: 2),
+        elevation: 15,
+      ),
+    );
+  }
+
+  Future<void> _onTrackLongPress(BuildContext context, Music music) async {
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      builder:
+          (context) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: Icon(Icons.play_arrow, color: Colors.blue),
+                  title: Text('Play'),
+                  onTap: () => Navigator.pop(context, 'play'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.delete, color: Colors.red),
+                  title: Text('Delete'),
+                  onTap: () => Navigator.pop(context, 'delete'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.info_outline, color: Colors.grey),
+                  title: Text('Details'),
+                  onTap: () => Navigator.pop(context, 'details'),
+                ),
+              ],
+            ),
+          ),
+    );
+    if (result == 'delete') {
+      setState(() {
+        widget.user.tracks.remove(music);
+      });
+      _showDeleteSnackBar(music.title);
+    }
   }
 
   String _formatDuration(int seconds) {
