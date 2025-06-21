@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'Model/Music.dart';
 import 'Model/User.dart';
 import 'Application.dart';
+import 'SearchPage.dart';
 
 class LibraryPage extends StatefulWidget {
   final User user;
@@ -16,28 +17,6 @@ class LibraryPage extends StatefulWidget {
 
 class _LibraryPageState extends State<LibraryPage> {
   final Application application = Application.instance;
-  final List<Color> _colorList = [
-    Colors.red,
-    Colors.green,
-    Colors.blue,
-    Colors.orange,
-    Colors.purple,
-    Colors.teal,
-    Colors.pink,
-    Colors.yellow,
-    Colors.brown,
-    Colors.cyan,
-    Colors.indigo,
-    Colors.amber,
-    Colors.lime,
-    Colors.lightBlue,
-    Colors.lightGreen,
-    Colors.deepOrange,
-    Colors.deepPurple,
-    Colors.blueGrey,
-    Colors.tealAccent,
-    Colors.cyanAccent,
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -64,8 +43,15 @@ class _LibraryPageState extends State<LibraryPage> {
           IconButton(
             icon: const Icon(Icons.search, color: Colors.white70),
             tooltip: "Search",
-            onPressed: null,
-          ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => SearchPage(user: widget.user)
+                  ,
+                ),
+              );
+            },          ),
           IconButton(
             icon: const Icon(Icons.filter_list, color: Colors.white70),
             tooltip: "Filter",
@@ -85,7 +71,7 @@ class _LibraryPageState extends State<LibraryPage> {
           tracks.isEmpty
               ? Center(
                 child: Text(
-                  "No tracks available :(\nPlease add some music to your library.",
+                  "No tracks available :(\nPlease add some music to your library",
                   style: TextStyle(
                     fontSize: 19,
                     color: Colors.blueGrey,
@@ -126,14 +112,14 @@ class _LibraryPageState extends State<LibraryPage> {
                             onTap: () => _onLikeTap(music),
                             child: Icon(
                               isLiked ? Icons.favorite : Icons.favorite_border,
-                              color: _getUniqueColor(music.id),
+                              color: application.getUniqueColor(music.id),
                               size: 25,
                             ),
                           ),
                         ),
                       ],
                     ),
-                    iconColor: _getUniqueColor(music.id),
+                    iconColor: application.getUniqueColor(music.id),
                   );
                 },
               ),
@@ -190,7 +176,7 @@ class _LibraryPageState extends State<LibraryPage> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.info_outline, color: Colors.white, size: 30),
+                      Icon(Icons.info_outline, color: Colors.blueGrey, size: 30),
                       SizedBox(width: 10),
                       Text(
                         'Track Details',
@@ -256,7 +242,7 @@ class _LibraryPageState extends State<LibraryPage> {
               value,
               style: TextStyle(
                 fontWeight: FontWeight.w400,
-                fontSize: 16,
+                fontSize: 16.5,
                 color: Colors.white,
               ),
             ),
@@ -309,13 +295,10 @@ class _LibraryPageState extends State<LibraryPage> {
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
-  Color _getUniqueColor(int id) {
-    return _colorList[id.abs() % _colorList.length];
-  }
-
   void _onLikeTap(Music music) {
     setState(() {
       application.toggleLike(widget.user, music);
     });
   }
+
 }

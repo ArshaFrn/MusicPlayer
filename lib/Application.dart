@@ -6,6 +6,7 @@ import 'Model/Artist.dart';
 import 'Model/Album.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+import 'package:flutter/material.dart';
 
 // Applicaation Flow Controller
 class Application {
@@ -70,7 +71,6 @@ class Application {
               ? genreList.first
               : 'Unknown Genre';
       final releaseDate = metadata.year?.toString() ?? 'Unknown';
-
       return {
         'title': title,
         'artist': artist,
@@ -85,41 +85,42 @@ class Application {
     }
   }
 
-Future<Music?> buildMusicObject(File file) async {
-  final metadata = await extractMetadata(file);
-  if (metadata == null) {
-    print("Failed to extract metadata from the file.");
-    return null;
+  Future<Music?> buildMusicObject(File file) async {
+    final metadata = await extractMetadata(file);
+    if (metadata == null) {
+      print("Failed to extract metadata from the file.");
+      return null;
+    }
+
+    final title = metadata['title'] as String;
+    final artistName = metadata['artist'] as String;
+    final duration = metadata['duration'] as int;
+    final genre = metadata['genre'] as String;
+    final albumName = metadata['album'] as String;
+    final releaseDateStr = metadata['releaseDate'] as String;
+
+    final artist = Artist(name: artistName);
+    final album = Album(title: albumName, artist: artist);
+    final releaseDate = DateTime.tryParse(releaseDateStr) ?? DateTime.now();
+
+    final base64Data = await readAndEncodeFile(file);
+    if (base64Data == null) {
+      print("Failed to encode file data.");
+      return null;
+    }
+
+    return Music(
+      title: title,
+      artist: artist,
+      genre: genre,
+      durationInSeconds: duration,
+      releaseDate: releaseDate,
+      album: album,
+      filePath: file.path,
+      base64Data: base64Data,
+    );
   }
 
-  final title = metadata['title'] as String;
-  final artistName = metadata['artist'] as String;
-  final duration = metadata['duration'] as int;
-  final genre = metadata['genre'] as String;
-  final albumName = metadata['album'] as String;
-  final releaseDateStr = metadata['releaseDate'] as String;
-
-  final artist = Artist(name: artistName);
-  final album = Album(title: albumName, artist: artist);
-  final releaseDate = DateTime.tryParse(releaseDateStr) ?? DateTime.now();
-
-  final base64Data = await readAndEncodeFile(file);
-  if (base64Data == null) {
-    print("Failed to encode file data.");
-    return null;
-  }
-
-  return Music(
-    title: title,
-    artist: artist,
-    genre: genre,
-    durationInSeconds: duration,
-    releaseDate: releaseDate,
-    album: album,
-    filePath: file.path,
-    base64Data: base64Data,
-  );
-}
   bool toggleLike(User user, Music music) {
     if (user.likedSongs.contains(music)) {
       user.likedSongs.remove(music);
@@ -132,5 +133,41 @@ Future<Music?> buildMusicObject(File file) async {
       music.likeCount++;
       return true;
     }
+  }
+
+  List<Music> searchTracks(User user, String query) {
+    final lowerQuery = query.toLowerCase();
+    return user.tracks.where((music) {
+      return music.title.toLowerCase().contains(lowerQuery) ||
+          music.artist.name.toLowerCase().contains(lowerQuery) ||
+          music.album.title.toLowerCase().contains(lowerQuery);
+    }).toList();
+  }
+
+  final List<Color> _colorList = [
+    Colors.red,
+    Colors.green,
+    Colors.blue,
+    Colors.orange,
+    Colors.purple,
+    Colors.teal,
+    Colors.pink,
+    Colors.yellow,
+    Colors.brown,
+    Colors.cyan,
+    Colors.indigo,
+    Colors.amber,
+    Colors.lime,
+    Colors.lightBlue,
+    Colors.lightGreen,
+    Colors.deepOrange,
+    Colors.deepPurple,
+    Colors.blueGrey,
+    Colors.tealAccent,
+    Colors.cyanAccent,
+  ];
+
+  Color getUniqueColor(int id) {
+    return _colorList[id.abs() % _colorList.length];
   }
 }
