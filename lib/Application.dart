@@ -120,22 +120,17 @@ Future<Music?> buildMusicObject(File file) async {
     base64Data: base64Data,
   );
 }
-
-  bool likeMusic(User user, Music music) {
+  bool toggleLike(User user, Music music) {
     if (user.likedSongs.contains(music)) {
-      unlikeMusic(user, music);
+      user.likedSongs.remove(music);
+      music.isLiked = false;
+      music.likeCount--;
       return false;
+    } else {
+      user.likedSongs.add(music);
+      music.isLiked = true;
+      music.likeCount++;
+      return true;
     }
-    user.likedSongs.add(music);
-    return true;
-  }
-
-  bool unlikeMusic(User user, Music music) {
-    if (!user.likedSongs.contains(music)) {
-      likeMusic(user, music);
-      return false;
-    }
-    user.likedSongs.remove(music);
-    return true;
   }
 }

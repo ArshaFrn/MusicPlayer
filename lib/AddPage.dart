@@ -33,7 +33,7 @@ class _AddPage extends State<AddPage> {
         ),
       ),
       floatingActionButton: Container(
-        margin: EdgeInsets.only(bottom: 20),
+        margin: EdgeInsets.only(bottom: 20,right: 6),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: LinearGradient(
