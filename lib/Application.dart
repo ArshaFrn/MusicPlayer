@@ -170,4 +170,94 @@ class Application {
   Color getUniqueColor(int id) {
     return _colorList[id.abs() % _colorList.length];
   }
+  void showMusicDetailsDialog(BuildContext context, Music music) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.75),
+      builder: (context) => Dialog(
+        backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.85),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.blueGrey, size: 30),
+                  SizedBox(width: 10),
+                  Text(
+                    'Track Details',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      fontSize: 24,
+                      letterSpacing: 1.1,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              detailsRow('Title', music.title),
+              detailsRow('Artist', music.artist.name),
+              detailsRow('Album', music.album.title),
+              detailsRow('Genre', music.genre),
+              detailsRow('Duration', formatDuration(music.durationInSeconds)),
+              detailsRow('Release', music.releaseDate.toString().split(' ').first),
+              detailsRow('Added', music.addedDate.toString().split(' ').first),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'Close',
+                    style: TextStyle(color: Colors.purpleAccent),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget detailsRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$label: ',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              color: Colors.white,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 16.5,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String formatDuration(int seconds) {
+    final minutes = seconds ~/ 60;
+    final remainingSeconds = seconds % 60;
+    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
+  }
+
 }

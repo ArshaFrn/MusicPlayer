@@ -47,11 +47,11 @@ class _LibraryPageState extends State<LibraryPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => SearchPage(user: widget.user)
-                  ,
+                  builder: (context) => SearchPage(user: widget.user),
                 ),
               );
-            },          ),
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.filter_list, color: Colors.white70),
             tooltip: "Filter",
@@ -96,7 +96,7 @@ class _LibraryPageState extends State<LibraryPage> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          _formatDuration(music.durationInSeconds),
+                          application.formatDuration(music.durationInSeconds),
                           style: TextStyle(fontSize: 11),
                         ),
                         SizedBox(width: 15),
@@ -156,102 +156,6 @@ class _LibraryPageState extends State<LibraryPage> {
     );
   }
 
-  void _showMusicDetailsDialog(BuildContext context, Music music) {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withOpacity(0.75),
-      builder:
-          (context) => Dialog(
-            backgroundColor: Theme.of(
-              context,
-            ).colorScheme.surface.withOpacity(0.85),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.blueGrey, size: 30),
-                      SizedBox(width: 10),
-                      Text(
-                        'Track Details',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          fontSize: 24,
-                          letterSpacing: 1.1,
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 16),
-                  _detailsRow('Title', music.title),
-                  _detailsRow('Artist', music.artist.name),
-                  _detailsRow('Album', music.album.title),
-                  _detailsRow('Genre', music.genre),
-                  _detailsRow(
-                    'Duration',
-                    _formatDuration(music.durationInSeconds),
-                  ),
-                  _detailsRow(
-                    'Release',
-                    music.releaseDate.toString().split(' ').first,
-                  ),
-                  _detailsRow(
-                    'Added',
-                    music.addedDate.toString().split(' ').first,
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text(
-                        'Close',
-                        style: TextStyle(color: Colors.purpleAccent),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-    );
-  }
-
-  Widget _detailsRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$label: ',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 16,
-              color: Colors.white,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontWeight: FontWeight.w400,
-                fontSize: 16.5,
-                color: Colors.white,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Future<void> _onTrackLongPress(BuildContext context, Music music) async {
     final result = await showModalBottomSheet<String>(
       context: context,
@@ -285,20 +189,14 @@ class _LibraryPageState extends State<LibraryPage> {
       });
       _showDeleteSnackBar(music.title);
     } else if (result == 'details') {
-      _showMusicDetailsDialog(context, music);
+      application.showMusicDetailsDialog(context, music);
     }
   }
 
-  String _formatDuration(int seconds) {
-    final minutes = seconds ~/ 60;
-    final remainingSeconds = seconds % 60;
-    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
-  }
 
   void _onLikeTap(Music music) {
     setState(() {
       application.toggleLike(widget.user, music);
     });
   }
-
 }
