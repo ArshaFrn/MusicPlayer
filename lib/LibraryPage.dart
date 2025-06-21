@@ -99,21 +99,31 @@ class _LibraryPageState extends State<LibraryPage> {
                 itemBuilder: (context, index) {
                   final music = tracks[index];
                   final isLiked = music.isLiked;
-
                   return ListTile(
+                    onTap: (){},
                     leading: Icon(Icons.music_note),
                     title: Text(music.title),
                     subtitle: Text(music.artist.name),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(_formatDuration(music.durationInSeconds)),
+                        Text(_formatDuration(music.durationInSeconds),style: TextStyle(fontSize: 11),),
                         SizedBox(width: 15),
-                        GestureDetector(
-                          onTap: () => _onLikeTap(music),
-                          child: Icon(
-                            isLiked ? Icons.favorite : Icons.favorite_border,
-                            color: _getUniqueColor(music.id),
+                        AnimatedSwitcher(
+                          duration: Duration(milliseconds: 400),
+                          transitionBuilder:
+                              (child, animation) => ScaleTransition(
+                                scale: animation,
+                                child: child,
+                              ),
+                          child: GestureDetector(
+                            key: ValueKey<bool>(isLiked),
+                            onTap: () => _onLikeTap(music),
+                            child: Icon(
+                              isLiked ? Icons.favorite : Icons.favorite_border,
+                              color: _getUniqueColor(music.id),
+                              size: 25,
+                            ),
                           ),
                         ),
                       ],
