@@ -7,10 +7,53 @@ import 'Model/Album.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
+import 'dart:math';
 
 // Applicaation Flow Controller
 class Application {
   static final Application _instance = Application._privateConstructor();
+
+  final List<Color> _colorList = [
+    Colors.red,
+    Colors.green,
+    Colors.blue,
+    Colors.orange,
+    Colors.purple,
+    Colors.teal,
+    Colors.pink,
+    Colors.yellow,
+    Colors.brown,
+    Colors.cyan,
+    Colors.indigo,
+    Colors.amber,
+    Colors.lime,
+    Colors.lightBlue,
+    Colors.lightGreen,
+    Colors.deepOrange,
+    Colors.deepPurple,
+    Colors.blueGrey,
+    Colors.tealAccent,
+    Colors.cyanAccent,
+    Color(0xFF1A237E),
+    Color(0xFF00B8D4),
+    Color(0xFFB388FF),
+    Color(0xFFFF8A65),
+    Color(0xFF43A047),
+    Color(0xFF8D6E63),
+    Color(0xFF37474F),
+    Color(0xFF00C853),
+    Color(0xFFFFD600),
+    Color(0xFFAA00FF),
+    Color(0xFF6200EA),
+    Color(0xFF00E5FF),
+    Color(0xFFFF1744),
+    Color(0xFF304FFE),
+    Color(0xFF00BFAE),
+    Color(0xFFFFC400),
+    Color(0xFF0091EA),
+    Color(0xFF64DD17),
+    Color(0xFFDD2C00),
+  ];
 
   Application._privateConstructor();
 
@@ -144,84 +187,78 @@ class Application {
     }).toList();
   }
 
-  final List<Color> _colorList = [
-    Colors.red,
-    Colors.green,
-    Colors.blue,
-    Colors.orange,
-    Colors.purple,
-    Colors.teal,
-    Colors.pink,
-    Colors.yellow,
-    Colors.brown,
-    Colors.cyan,
-    Colors.indigo,
-    Colors.amber,
-    Colors.lime,
-    Colors.lightBlue,
-    Colors.lightGreen,
-    Colors.deepOrange,
-    Colors.deepPurple,
-    Colors.blueGrey,
-    Colors.tealAccent,
-    Colors.cyanAccent,
-  ];
-
   Color getUniqueColor(int id) {
     return _colorList[id.abs() % _colorList.length];
   }
+
   void showMusicDetailsDialog(BuildContext context, Music music) {
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.75),
-      builder: (context) => Dialog(
-        backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.85),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+      builder:
+          (context) => Dialog(
+            backgroundColor: Theme.of(
+              context,
+            ).colorScheme.surface.withOpacity(0.85),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.info_outline, color: Colors.blueGrey, size: 30),
-                  SizedBox(width: 10),
-                  Text(
-                    'Track Details',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 24,
-                      letterSpacing: 1.1,
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline,
+                        color: Colors.blueGrey,
+                        size: 30,
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        'Track Details',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 24,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  detailsRow('Title', music.title),
+                  detailsRow('Artist', music.artist.name),
+                  detailsRow('Album', music.album.title),
+                  detailsRow('Genre', music.genre),
+                  detailsRow(
+                    'Duration',
+                    formatDuration(music.durationInSeconds),
+                  ),
+                  detailsRow(
+                    'Release',
+                    music.releaseDate.toString().split(' ').first,
+                  ),
+                  detailsRow(
+                    'Added',
+                    music.addedDate.toString().split(' ').first,
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        'Close',
+                        style: TextStyle(color: Colors.purpleAccent),
+                      ),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 16),
-              detailsRow('Title', music.title),
-              detailsRow('Artist', music.artist.name),
-              detailsRow('Album', music.album.title),
-              detailsRow('Genre', music.genre),
-              detailsRow('Duration', formatDuration(music.durationInSeconds)),
-              detailsRow('Release', music.releaseDate.toString().split(' ').first),
-              detailsRow('Added', music.addedDate.toString().split(' ').first),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    'Close',
-                    style: TextStyle(color: Colors.purpleAccent),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
     );
   }
 
@@ -260,4 +297,5 @@ class Application {
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
+  
 }
