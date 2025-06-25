@@ -10,6 +10,9 @@ import 'package:flutter/material.dart';
 import 'dart:math';
 
 // Applicaation Flow Controller
+
+enum filterOption { dateModified, az, za, duration, favourite }
+
 class Application {
   static final Application _instance = Application._privateConstructor();
 
@@ -297,5 +300,34 @@ class Application {
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
-  
+  List<Music> sortTracks(List<Music> tracks, filterOption option) {
+    final sorted = List<Music>.from(tracks);
+    switch (option) {
+      case filterOption.az:
+        sorted.sort(
+          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+        );
+        break;
+      case filterOption.za:
+        sorted.sort(
+          (a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()),
+        );
+        break;
+      case filterOption.duration:
+        sorted.sort(
+          (a, b) => b.durationInSeconds.compareTo(a.durationInSeconds),
+        );
+        break;
+      case filterOption.favourite:
+        sorted.sort(
+            (a,b) => b.likeCount.compareTo(a.likeCount),
+        );
+        break;
+      case filterOption.dateModified:
+      default:
+        sorted.sort((a, b) => b.addedDate.compareTo(a.addedDate));
+        break;
+    }
+    return sorted;
+  }
 }

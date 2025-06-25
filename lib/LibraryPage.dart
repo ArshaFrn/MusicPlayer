@@ -17,10 +17,11 @@ class LibraryPage extends StatefulWidget {
 
 class _LibraryPageState extends State<LibraryPage> {
   final Application application = Application.instance;
+  filterOption _selectedSort = filterOption.dateModified;
 
   @override
   Widget build(BuildContext context) {
-    var tracks = widget.user.tracks;
+    var tracks = application.sortTracks(widget.user.tracks, _selectedSort);
     return Scaffold(
       appBar: AppBar(
         title: Row(
@@ -52,10 +53,116 @@ class _LibraryPageState extends State<LibraryPage> {
               );
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.filter_list, color: Colors.white70),
-            tooltip: "Filter",
-            onPressed: null,
+          Theme(
+            data: Theme.of(context).copyWith(
+              popupMenuTheme: PopupMenuThemeData(
+                color: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                elevation: 17,
+                textStyle: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 17,
+                ),
+              ),
+            ),
+            child: PopupMenuButton<filterOption>(
+              icon: Icon(Icons.filter_list, color: Colors.white70),
+              tooltip: "Filter",
+              onSelected: (option) {
+                setState(() {
+                  _selectedSort = option;
+                });
+              },
+              itemBuilder:
+                  (context) => [
+                    PopupMenuItem(
+                      value: filterOption.dateModified,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            color: Colors.purpleAccent,
+                            size: 20,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(child: Text('Date Modified')),
+                          if (_selectedSort == filterOption.dateModified)
+                            Icon(Icons.check, color: Colors.purple, size: 20),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: filterOption.az,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.sort_by_alpha,
+                            color: Colors.blueAccent,
+                            size: 20,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(child: Text('A-Z')),
+                          if (_selectedSort == filterOption.az)
+                            Icon(Icons.check, color: Colors.purple, size: 20),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: filterOption.za,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.sort_by_alpha,
+                            color: Colors.redAccent,
+                            size: 20,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(child: Text('Z-A')),
+                          if (_selectedSort == filterOption.za)
+                            Icon(Icons.check, color: Colors.purple, size: 20),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: filterOption.duration,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.timer,
+                            color: Colors.greenAccent,
+                            size: 20,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(child: Text('Duration')),
+                          if (_selectedSort == filterOption.duration)
+                            Icon(Icons.check, color: Colors.purple, size: 20),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: filterOption.favourite,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.favorite,
+                            color: Colors.redAccent,
+                            size: 20,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(child: Text('Like Count')),
+                          if (_selectedSort == filterOption.favourite)
+                            Icon(Icons.check, color: Colors.purple, size: 22),
+                        ],
+                      ),
+                    ),
+                  ],
+              offset: Offset(0, 46),
+              elevation: 17,
+              padding: EdgeInsets.symmetric(vertical: 6),
+            ),
           ),
           IconButton(
             icon: const Icon(Icons.shuffle, color: Colors.white70),
@@ -192,7 +299,6 @@ class _LibraryPageState extends State<LibraryPage> {
       application.showMusicDetailsDialog(context, music);
     }
   }
-
 
   void _onLikeTap(Music music) {
     setState(() {
