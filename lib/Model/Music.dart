@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'Artist.dart';
 import 'Album.dart';
 
@@ -11,10 +13,9 @@ class Music {
   final DateTime _releaseDate;
   final DateTime _addedDate;
   final Album _album;
-  final String _filePath;
-  final String _base64Data;
 
   // Mutable properties
+  String _filePath;
   int _likeCount = 0;
   bool _isLiked = false;
 
@@ -26,7 +27,6 @@ class Music {
     required DateTime releaseDate,
     required Album album,
     required filePath,
-    required base64Data,
   }) : _title = title,
        _artist = artist,
        _genre = genre,
@@ -36,13 +36,57 @@ class Music {
        _album = album,
        _id = _generateId(title, artist, releaseDate),
        _filePath = filePath,
-       _base64Data = base64Data,
        _likeCount = 0,
        _isLiked = false;
 
   static int _generateId(String title, Artist artist, DateTime releaseDate) {
     return (title + artist.name + releaseDate.toString()).hashCode;
   }
+
+  Map<String, dynamic> toMap({bool includeFilePath = true}) {
+    if (includeFilePath) {
+      return {
+        'id': _id,
+        'title': _title,
+        'artist': _artist.toMap(),
+        'genre': _genre,
+        'durationInSeconds': _durationInSeconds,
+        'releaseDate': _releaseDate.toIso8601String(),
+        'addedDate': _addedDate.toIso8601String(),
+        'album': _album.toMap(),
+        'likeCount': _likeCount,
+        'isLiked': _isLiked,
+        'filePath': _filePath,
+      };
+    } else {
+      return {
+        'id': _id,
+        'title': _title,
+        'artist': _artist.toMap(),
+        'genre': _genre,
+        'durationInSeconds': _durationInSeconds,
+        'releaseDate': _releaseDate.toIso8601String(),
+        'addedDate': _addedDate.toIso8601String(),
+        'album': _album.toMap(),
+        'likeCount': _likeCount,
+        'isLiked': _isLiked,
+        'filePath': '',
+      };
+    }
+  }
+
+  Music.fromMap(Map<String, dynamic> map)
+      : _id = map['id'],
+        _title = map['title'],
+        _artist = Artist.fromMap(map['artist']),
+        _genre = map['genre'],
+        _durationInSeconds = map['durationInSeconds'],
+        _releaseDate = DateTime.parse(map['releaseDate']),
+        _addedDate = DateTime.parse(map['addedDate']),
+        _album = Album.fromMap(map['album']),
+        _likeCount = map['likeCount'] ?? 0,
+        _isLiked = map['isLiked'] ?? false,
+        _filePath = map['filePath'] ?? '';
 
   // * Getters
   int get id => _id;
@@ -67,13 +111,13 @@ class Music {
 
   String get filePath => _filePath;
 
-  String get base64Data => _base64Data;
-
   // * Setters
   set likeCount(int value) => _likeCount = value;
 
   set isLiked(bool value) => _isLiked = value;
 
+  set filePath(String value) => _filePath = value;
+  
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

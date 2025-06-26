@@ -20,6 +20,25 @@ class Artist {
     return name.hashCode;
   }
 
+  Map<String, dynamic> toMap() {
+    return {
+      'id': _id,
+      'name': _name,
+      'songs': _songs.map((song) => song.toMap()).toList(),
+      'albums': _albums.map((album) => album.toMap()).toList(),
+    };
+  }
+
+  Artist.fromMap(Map<String, dynamic> map)
+      : _id = map['id'],
+        _name = map['name'],
+        _songs = (map['songs'] as List<dynamic>)
+            .map((song) => Music.fromMap(song))
+            .toList(),
+        _albums = (map['albums'] as List<dynamic>)
+            .map((album) => Album.fromMap(album))
+            .toList();
+
   // Getters
   int get id => _id;
 

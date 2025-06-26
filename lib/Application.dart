@@ -92,7 +92,7 @@ class Application {
     }
   }
 
-  Future<String?> readAndEncodeFile(File file) async {
+  Future<String?> encodeFile(File file) async {
     try {
       final bytes = await file.readAsBytes();
       return base64Encode(bytes);
@@ -101,6 +101,7 @@ class Application {
       return null;
     }
   }
+
 
   Future<Map<String, dynamic>?> extractMetadata(File file) async {
     try {
@@ -149,12 +150,6 @@ class Application {
     final album = Album(title: albumName, artist: artist);
     final releaseDate = DateTime.tryParse(releaseDateStr) ?? DateTime.now();
 
-    final base64Data = await readAndEncodeFile(file);
-    if (base64Data == null) {
-      print("Failed to encode file data.");
-      return null;
-    }
-
     return Music(
       title: title,
       artist: artist,
@@ -163,7 +158,6 @@ class Application {
       releaseDate: releaseDate,
       album: album,
       filePath: file.path,
-      base64Data: base64Data,
     );
   }
 
