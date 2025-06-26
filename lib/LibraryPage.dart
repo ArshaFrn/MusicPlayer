@@ -5,6 +5,7 @@ import 'Model/Music.dart';
 import 'Model/User.dart';
 import 'Application.dart';
 import 'SearchPage.dart';
+import 'TcpClient.dart';
 
 class LibraryPage extends StatefulWidget {
   final User user;
@@ -18,6 +19,27 @@ class LibraryPage extends StatefulWidget {
 class _LibraryPageState extends State<LibraryPage> {
   final Application application = Application.instance;
   filterOption _selectedSort = filterOption.dateModified;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserMusicList();
+  }
+
+  Future<void> _fetchUserMusicList() async {
+    setState(() {
+      _isLoading = true;
+    });
+    final tcpClient = TcpClient(serverAddress: "10.0.2.2", serverPort: 12345);
+    final tracks = await tcpClient.getUserMusicList(widget.user);
+    setState(() {
+      widget.user.tracks
+        ..clear()
+        ..addAll(tracks);
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -175,7 +197,9 @@ class _LibraryPageState extends State<LibraryPage> {
       ),
 
       body:
-          tracks.isEmpty
+          _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : tracks.isEmpty
               ? Center(
                 child: Text(
                   "No tracks available :(\nPlease add some music to your library",

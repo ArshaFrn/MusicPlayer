@@ -97,7 +97,7 @@ class TcpClient {
     }
   }
 
-  Future<Map<String, dynamic>> uploadMusic(Music music) async {
+  Future<Map<String, dynamic>> uploadMusic(User user, Music music) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
       print(
@@ -106,7 +106,10 @@ class TcpClient {
 
       final request = {
         "Request": "uploadMusic",
-        "Payload": music.toMap(includeFilePath: false),
+        "Payload": {
+          "userId": user.id,
+          "musicMap": music.toMap(includeFilePath: false),
+        },
       };
 
       socket.write('${jsonEncode(request)}\n\n');
@@ -114,6 +117,9 @@ class TcpClient {
 
       final response =
           await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      // Example response format:
+      // {'status': 'success', 'message': 'Music uploaded successfully'}
+      // {'status': 'error', 'message': 'Error message'}
 
       print('Raw response received: $response');
 
@@ -178,9 +184,55 @@ class TcpClient {
     }
   }
 
-  Future<String?> getMusicBase64({
-    required Music music,
+  //Delete Music
+  Future<Map<String, dynamic>> deleteMusic({
     required User user,
+    required Music music,
+  }) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
+
+      final request = {
+        "Request": "deleteMusic",
+        "Payload": {"musicId": music.id, "userId": user.id},
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+
+      print('Raw response received: $response');
+      // Example response format:
+      // {'status': 'success', 'message': 'Music deleted successfully'}
+      // {'status': 'error', 'message': 'Error message'}
+
+      socket.close();
+
+      if (response.isEmpty) {
+        print('Error: Empty response from server');
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      try {
+        return jsonDecode(response);
+      } catch (e) {
+        print('Error decoding response: $e');
+        return {"status": "error", "message": "Invalid response format"};
+      }
+    } catch (e) {
+      print('Error deleting music: $e');
+      return {"status": "error", "message": "Failed to connect to server"};
+    }
+  }
+
+  Future<String?> getMusicBase64({
+    required User user,
+    required Music music,
   }) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
@@ -190,7 +242,7 @@ class TcpClient {
 
       final request = {
         "Request": "downloadMusic",
-        "Payload": {"musicId": music.id, "username": user.id},
+        "Payload": {"musicId": music.id, "userId": user.id},
       };
 
       socket.write('${jsonEncode(request)}\n\n');

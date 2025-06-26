@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'Model/User.dart';
 import 'Application.dart';
+import 'Model/Music.dart';
+import 'TcpClient.dart';
 
 class AddPage extends StatefulWidget {
   final User _user;
+
   const AddPage({super.key, required User user}) : _user = user;
 
   @override
@@ -33,7 +36,7 @@ class _AddPage extends State<AddPage> {
         ),
       ),
       floatingActionButton: Container(
-        margin: EdgeInsets.only(bottom: 20,right: 6),
+        margin: EdgeInsets.only(bottom: 20, right: 6),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: LinearGradient(
@@ -72,26 +75,27 @@ class _AddPage extends State<AddPage> {
     if (file != null) {
       final music = await application.buildMusicObject(file);
       if (music != null) {
-        if (widget._user.tracks.any((track) => track.id == music.id)) {
+        final tcpClient = TcpClient(
+          serverAddress: "10.0.2.2",
+          serverPort: 12345,
+        );
+        final response = await tcpClient.uploadMusic(widget._user, music);
+
+        if (response['status'] == 'success') {
           _showSnackBar(
             context,
-            "Track '${music.title}' already exists in your library.",
-            Icons.warning,
-            Colors.orange,
+            "Added: ${music.title}",
+            Icons.check_circle,
+            Colors.green,
           );
-          return;
+        } else {
+          _showSnackBar(
+            context,
+            "Failed to add music: ${response['message'] ?? 'Unknown error'}",
+            Icons.error,
+            Colors.red,
+          );
         }
-
-        // Add the track if it doesn't exist
-        setState(() {
-          widget._user.tracks.add(music);
-        });
-        _showSnackBar(
-          context,
-          "Added: ${music.title}",
-          Icons.check_circle,
-          Colors.green,
-        );
       } else {
         _showSnackBar(
           context,
@@ -101,16 +105,16 @@ class _AddPage extends State<AddPage> {
         );
       }
     } else {
-      _showSnackBar(
-        context,
-        "No file selected.",
-        Icons.warning,
-        Colors.orange,
-      );
+      _showSnackBar(context, "No file selected.", Icons.warning, Colors.orange);
     }
   }
 
-  void _showSnackBar(BuildContext context, String message, IconData icon, Color iconColor) {
+  void _showSnackBar(
+    BuildContext context,
+    String message,
+    IconData icon,
+    Color iconColor,
+  ) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -128,11 +132,9 @@ class _AddPage extends State<AddPage> {
         backgroundColor: Color.fromARGB(255, 52, 21, 57),
         behavior: SnackBarBehavior.floating,
         duration: Duration(seconds: 2),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         padding: EdgeInsets.all(14),
       ),
     );
   }
-} 
+}

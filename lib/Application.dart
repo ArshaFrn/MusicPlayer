@@ -8,6 +8,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:path_provider/path_provider.dart';
+import 'TcpClient.dart';
 
 // Applicaation Flow Controller
 
@@ -66,7 +68,7 @@ class Application {
     try {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['mp3', 'wav', 'aac', 'flac', 'ogg'],
+        allowedExtensions: ['mp3', 'wav', 'aac', 'flac'],
         allowMultiple: false,
         dialogTitle: 'Select a Music File',
       );
@@ -92,6 +94,12 @@ class Application {
     }
   }
 
+  String? getFileExtension(String path) {
+    final lastDot = path.lastIndexOf('.');
+    if (lastDot == -1) return null;
+    return path.substring(lastDot);
+  }
+
   Future<String?> encodeFile(File file) async {
     try {
       final bytes = await file.readAsBytes();
@@ -102,6 +110,53 @@ class Application {
     }
   }
 
+  Future<bool> decodeFile({
+    required String base64String,
+    required User user,
+    required Music music,
+    required String extension,
+  }) async {
+    try {
+      final bytes = base64Decode(base64String);
+
+      final Directory appDocDir = await getApplicationDocumentsDirectory();
+      final String userDirPath = '${appDocDir.path}\\${user.username}\\musics';
+      final Directory userDir = Directory(userDirPath);
+      if (!await userDir.exists()) {
+        await userDir.create(recursive: true);
+      }
+
+      final String ext = extension;
+      final String fileName = '${music.title}.$ext';
+      final String filePath = '$userDirPath\\$fileName';
+      final File file = File(filePath);
+      await file.writeAsBytes(bytes);
+
+      music.filePath = filePath;
+      return true;
+    } catch (e) {
+      print('Error decoding and saving music file: $e');
+      return false;
+    }
+  }
+
+  Future<bool> downloadAndSaveMusic({
+    required TcpClient tcpClient,
+    required User user,
+    required Music music,
+  }) async {
+    final base64 = await tcpClient.getMusicBase64(user: user, music: music);
+    if (base64 == null) {
+      print('Failed to get base64 music from server.');
+      return false;
+    }
+    return await decodeFile(
+      base64String: base64,
+      user: user,
+      music: music,
+      extension: music.extension,
+    );
+  }
 
   Future<Map<String, dynamic>?> extractMetadata(File file) async {
     try {
@@ -149,6 +204,7 @@ class Application {
     final artist = Artist(name: artistName);
     final album = Album(title: albumName, artist: artist);
     final releaseDate = DateTime.tryParse(releaseDateStr) ?? DateTime.now();
+    final extension = getFileExtension(file.path) ?? 'mp3';
 
     return Music(
       title: title,
@@ -157,7 +213,8 @@ class Application {
       durationInSeconds: duration,
       releaseDate: releaseDate,
       album: album,
-      filePath: file.path,
+      filePath: '', // File path will be set later
+      extension: extension,
     );
   }
 
@@ -313,9 +370,7 @@ class Application {
         );
         break;
       case filterOption.favourite:
-        sorted.sort(
-            (a,b) => b.likeCount.compareTo(a.likeCount),
-        );
+        sorted.sort((a, b) => b.likeCount.compareTo(a.likeCount));
         break;
       case filterOption.dateModified:
       default:

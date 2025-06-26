@@ -13,6 +13,7 @@ class Music {
   final DateTime _releaseDate;
   final DateTime _addedDate;
   final Album _album;
+  final String _extension;
 
   // Mutable properties
   String _filePath;
@@ -26,18 +27,21 @@ class Music {
     required int durationInSeconds,
     required DateTime releaseDate,
     required Album album,
-    required filePath,
+    required String filePath,
+    required String extension,
   }) : _title = title,
        _artist = artist,
        _genre = genre,
        _durationInSeconds = durationInSeconds,
        _releaseDate = releaseDate,
+        _extension = extension,
        _addedDate = DateTime.now(),
        _album = album,
        _id = _generateId(title, artist, releaseDate),
        _filePath = filePath,
        _likeCount = 0,
        _isLiked = false;
+    
 
   static int _generateId(String title, Artist artist, DateTime releaseDate) {
     return (title + artist.name + releaseDate.toString()).hashCode;
@@ -86,6 +90,7 @@ class Music {
         _album = Album.fromMap(map['album']),
         _likeCount = map['likeCount'] ?? 0,
         _isLiked = map['isLiked'] ?? false,
+        _extension = map['extension'] ?? 'mp3',
         _filePath = map['filePath'] ?? '';
 
   // * Getters
@@ -110,6 +115,8 @@ class Music {
   bool get isLiked => _isLiked;
 
   String get filePath => _filePath;
+
+  String get extension => _extension;
 
   // * Setters
   set likeCount(int value) => _likeCount = value;
