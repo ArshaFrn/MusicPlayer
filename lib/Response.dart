@@ -10,6 +10,8 @@ enum Response{
   profileUpdateFailed,
   passwordUpdateSuccess,
   passwordUpdateFailed,
+  uploadMusicSuccess,
+  error,
   InvalidRequest,
   USER_ALREADY_EXIST,
 }

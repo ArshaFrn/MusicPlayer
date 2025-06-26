@@ -75,19 +75,32 @@ class _AddPage extends State<AddPage> {
     if (file != null) {
       final music = await application.buildMusicObject(file);
       if (music != null) {
+        final alreadyExists = widget._user.tracks.any((m) => m.id == music.id);
+        if (alreadyExists) {
+          _showSnackBar(
+            context,
+            "This music is already in your library.",
+            Icons.error,
+            Colors.orange,
+          );
+          return;
+        }
         final tcpClient = TcpClient(
           serverAddress: "10.0.2.2",
           serverPort: 12345,
         );
         final response = await tcpClient.uploadMusic(widget._user, music);
 
-        if (response['status'] == 'success') {
+        if (response['status'] == 'uploadMusicSuccess') {
           _showSnackBar(
             context,
             "Added: ${music.title}",
             Icons.check_circle,
             Colors.green,
           );
+          setState(() {
+            widget._user.tracks.add(music);
+          });
         } else {
           _showSnackBar(
             context,

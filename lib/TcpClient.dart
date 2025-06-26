@@ -118,7 +118,7 @@ class TcpClient {
       final response =
           await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       // Example response format:
-      // {'status': 'success', 'message': 'Music uploaded successfully'}
+      // {'status': 'uploadMusicSuccess', 'message': 'Music uploaded successfully'}
       // {'status': 'error', 'message': 'Error message'}
 
       print('Raw response received: $response');
@@ -184,7 +184,6 @@ class TcpClient {
     }
   }
 
-  //Delete Music
   Future<Map<String, dynamic>> deleteMusic({
     required User user,
     required Music music,
