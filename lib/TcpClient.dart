@@ -97,7 +97,11 @@ class TcpClient {
     }
   }
 
-  Future<Map<String, dynamic>> uploadMusic(User user, Music music) async {
+  Future<Map<String, dynamic>> uploadMusic(
+    User user,
+    Music music,
+    String base64Data,
+  ) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
       print(
@@ -109,6 +113,7 @@ class TcpClient {
         "Payload": {
           "userId": user.id,
           "musicMap": music.toMap(includeFilePath: false),
+          "base64Data": base64Data,
         },
       };
 

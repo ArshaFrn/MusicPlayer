@@ -89,8 +89,18 @@ class _AddPage extends State<AddPage> {
           serverAddress: "10.0.2.2",
           serverPort: 12345,
         );
-        final response = await tcpClient.uploadMusic(widget._user, music);
-
+        String? base64Data = await application.encodeFile(file);
+        if (base64Data == null) {
+          _showSnackBar(
+            context,
+            "Failed to encode file to Base64.",
+            Icons.error,
+            Colors.red,
+          );
+          return;
+        }
+        final response = await tcpClient.uploadMusic(widget._user, music, base64Data);
+        base64Data = null; // Clear the variable to free memory
         if (response['status'] == 'uploadMusicSuccess') {
           _showSnackBar(
             context,
