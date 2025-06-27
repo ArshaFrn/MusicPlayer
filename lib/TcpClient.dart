@@ -4,6 +4,8 @@ import 'package:second/Response.dart';
 
 import 'Model/Music.dart';
 import 'Model/User.dart';
+import 'LibraryPage.dart';
+import 'Application.dart';
 
 class TcpClient {
   final String serverAddress;
@@ -233,7 +235,6 @@ class TcpClient {
       return {"status": "error", "message": "Failed to connect to server"};
     }
   }
-
   Future<String?> getMusicBase64({
     required User user,
     required Music music,
@@ -273,4 +274,6 @@ class TcpClient {
       return null;
     }
   }
+
+
 }

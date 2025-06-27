@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'Model/User.dart';
 import 'Model/Music.dart';
 import 'Application.dart';
+import 'TcpClient.dart';
 
 class SearchPage extends StatefulWidget {
   final User _user;
@@ -123,36 +124,6 @@ class _SearchPage extends State<SearchPage> {
     );
   }
 
-  void _showDeleteSnackBar(String title) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.delete_forever, color: Colors.red, size: 28),
-            SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Track "$title" deleted!',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                ),
-                overflow: TextOverflow.ellipsis, //"text is too lon..."
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Color.fromARGB(255, 52, 21, 57),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        duration: Duration(seconds: 2),
-        elevation: 15,
-      ),
-    );
-  }
-
   Future<void> _onTrackLongPress(BuildContext context, Music music) async {
     final result = await showModalBottomSheet<String>(
       context: context,
@@ -181,11 +152,13 @@ class _SearchPage extends State<SearchPage> {
           ),
     );
     if (result == 'delete') {
-      setState(() {
-        widget._user.tracks.remove(music);
-        _searchResults.remove(music);
-      });
-      _showDeleteSnackBar(music.title);
+      await application.deleteMusic(
+        context: context,
+        user: widget._user,
+        music: music,
+      );
+      setState(() {}); //Refresh UI
+
     } else if (result == 'details') {
       application.showMusicDetailsDialog(context, music);
     }
