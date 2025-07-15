@@ -166,6 +166,10 @@ class TcpClient {
 
       final response =
           await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      // Example response format: (status and payload (list of music maps))
+      // {'status': 'getUserMusicListSuccess', 'Payload': [musicMap1, musicMap2, ...]}
+      // {'status': 'getUserMusicListSuccess', 'Payload': []}
+      // {'status': 'error', 'message': 'Error message'}
 
       print('Raw response received: $response');
 
@@ -214,7 +218,7 @@ class TcpClient {
 
       print('Raw response received: $response');
       // Example response format:
-      // {'status': 'success', 'message': 'Music deleted successfully'}
+      // {'status': 'deleteMusicSuccess', 'message': 'Music deleted successfully'}
       // {'status': 'error', 'message': 'Error message'}
 
       socket.close();
@@ -255,6 +259,10 @@ class TcpClient {
 
       final response =
           await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+
+      // Example response format:
+      // {'status': 'downloadMusicSuccess', 'Payload': 'base64EncodedString'}
+      // {'status': 'error', 'message': 'Error message'}
       socket.close();
 
       if (response.isEmpty) {
@@ -275,5 +283,95 @@ class TcpClient {
     }
   }
 
+  Future<Map<String, dynamic>> likeSong({
+    required User user,
+    required Music music,
+  }) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
+
+      final request = {
+        "Request": "likeSong",
+        "Payload": {"musicId": music.id, "userId": user.id},
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+
+      // Example response format:
+      // {'status': 'likeSuccess', 'message': 'Song liked successfully'}
+      // {'status': 'alreadyLiked', 'message': 'Error message'}
+      // {'status': 'error', 'message': 'Error message'}
+
+      print('Raw response received: $response');
+
+      socket.close();
+
+      if (response.isEmpty) {
+        print('Error: Empty response from server');
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      try {
+        return jsonDecode(response);
+      } catch (e) {
+        print('Error decoding response: $e');
+        return {"status": "error", "message": "Invalid response format"};
+      }
+    } catch (e) {
+      print('Error liking song: $e');
+      return {"status": "error", "message": "Failed to connect to server"};
+    }
+  }
+
+  Future<Map<String, dynamic>> dislikeSong({
+    required User user,
+    required Music music,
+  }) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
+
+      final request = {
+        "Request": "dislikeSong",
+        "Payload": {"musicId": music.id, "userId": user.id},
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+
+      // Example response format:
+      // {'status': 'dislikeSuccess', 'message': 'Song disliked successfully'}
+      // {'status': 'error', 'message': 'Error message'}
+
+      socket.close();
+
+      if (response.isEmpty) {
+        print('Error: Empty response from server');
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      try {
+        return jsonDecode(response);
+      } catch (e) {
+        print('Error decoding response: $e');
+        return {"status": "error", "message": "Invalid response format"};
+      }
+      } catch (e) {
+      print('Error disliking song: $e');
+      return {"status": "error", "message": "Failed to connect to server"};
+      }
+  }
 
 }

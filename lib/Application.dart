@@ -219,17 +219,41 @@ class Application {
     );
   }
 
-  bool toggleLike(User user, Music music) {
-    if (user.likedSongs.contains(music)) {
-      user.likedSongs.remove(music);
-      music.isLiked = false;
-      music.likeCount--;
-      return false;
-    } else {
-      user.likedSongs.add(music);
+  Future<bool> likeSong(User user, Music music) async {
+    final tcpClient = TcpClient(serverAddress: "10.0.2.2", serverPort: 12345);
+    final response = await tcpClient.likeSong(user: user, music: music);
+    if (response['status'] == 'likeSuccess') {
       music.isLiked = true;
-      music.likeCount++;
+      music.likeCount += 1;
+      if (!user.likedSongs.contains(music)) {
+        user.likedSongs.add(music);
+      }
       return true;
+    } else {
+      print('Failed to like: ${response['message']}');
+      return false;
+    }
+  }
+
+  Future<bool> dislikeSong(User user, Music music) async {
+    final tcpClient = TcpClient(serverAddress: "10.0.2.2", serverPort: 12345);
+    final response = await tcpClient.dislikeSong(user: user, music: music);
+    if (response['status'] == 'dislikeSuccess') {
+      music.isLiked = false;
+      music.likeCount = (music.likeCount > 0) ? music.likeCount - 1 : 0;
+      user.likedSongs.remove(music);
+      return true;
+    } else {
+      print('Failed to dislike: ${response['message']}');
+      return false;
+    }
+  }
+
+  Future<bool> toggleLike(User user, Music music) async {
+    if (!music.isLiked) {
+      return await likeSong(user, music);
+    } else {
+      return await dislikeSong(user, music);
     }
   }
 
@@ -388,9 +412,9 @@ class Application {
   }) async {
     final tcpClient = TcpClient(serverAddress: "10.0.2.2", serverPort: 12345);
     final response = await tcpClient.deleteMusic(user: user, music: music);
-    if (response['status'] == 'success') {
+    if (response['status'] == 'deleteMusicSuccess') {
       user.tracks.remove(music);
-      _showDeleteSnackBar(context,music.title);
+      _showDeleteSnackBar(context, music.title);
       return true;
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -402,7 +426,8 @@ class Application {
       return false;
     }
   }
-    void _showDeleteSnackBar(BuildContext context,String title) {
+
+  void _showDeleteSnackBar(BuildContext context, String title) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -431,5 +456,4 @@ class Application {
       ),
     );
   }
-
 }

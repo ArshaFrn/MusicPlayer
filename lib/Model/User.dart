@@ -3,7 +3,7 @@ import 'Music.dart';
 
 class User {
   // Immutable properties
-  final String _id;
+  final int _id;
   final String _username;
   final String _email;
   final DateTime _registrationDate;
@@ -29,7 +29,7 @@ class User {
        _password = password,
        _registrationDate = registrationDate,
        _id = _generateId(username, email),
-        _tracks = [],
+       _tracks = [],
        _likedSongs = [],
        _recentlyPlayed = [],
        _playlists = [];
@@ -38,13 +38,12 @@ class User {
     _profileImageUrl = url;
   }
 
-  static String _generateId(String username, String email) {
-    // TODO: implement a ID logic
-    return '';
+  static int _generateId(String username, String email) {
+    return (username + email).hashCode;
   }
 
   // Getters
-  String get id => _id;
+  int get id => _id;
 
   String get username => _username;
 
