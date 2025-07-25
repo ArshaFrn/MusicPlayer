@@ -4,6 +4,7 @@ import 'package:second/Response.dart';
 
 import 'Model/Music.dart';
 import 'Model/User.dart';
+import 'Model/Playlist.dart';
 import 'LibraryPage.dart';
 import 'Application.dart';
 
@@ -239,6 +240,7 @@ class TcpClient {
       return {"status": "error", "message": "Failed to connect to server"};
     }
   }
+
   Future<String?> getMusicBase64({
     required User user,
     required Music music,
@@ -368,10 +370,54 @@ class TcpClient {
         print('Error decoding response: $e');
         return {"status": "error", "message": "Invalid response format"};
       }
-      } catch (e) {
+    } catch (e) {
       print('Error disliking song: $e');
       return {"status": "error", "message": "Failed to connect to server"};
-      }
+    }
   }
 
+  Future<List<Playlist>> getUserPlaylists(User user) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
+
+      final request = {
+        "Request": "getUserPlaylists",
+        "Payload": {"userId": user.id},
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+
+      // Example response format:
+      // {'status': 'getUserPlaylistsSuccess', 'Payload': [playlistMap1, playlistMap2, ...]}
+      // {'status': 'getUserPlaylistsSuccess', 'Payload': []}
+      // {'status': 'error', 'message': 'Error message'}
+
+      socket.close();
+
+      if (response.isEmpty) {
+        print('Error: Empty response from server');
+        return [];
+      }
+
+      try {
+        final List<dynamic> playlistListJson = jsonDecode(response);
+        return playlistListJson
+            .map((playlistJson) => Playlist.fromMap(playlistJson))
+            .toList();
+      } catch (e) {
+        print('Error decoding response: $e');
+        return [];
+      }
+    } catch (e) {
+      print('Error fetching playlists: $e');
+      return [];
+    }
+  }
 }

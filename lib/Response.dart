@@ -17,7 +17,7 @@ enum Response{
   getUserMusicListSuccess,
   likeSuccess,
   dislikedSuccess,
+  getUserPlaylistsSuccess,
   error,
-  InvalidRequest,
-  USER_ALREADY_EXIST,
+  invalidRequest,
 }

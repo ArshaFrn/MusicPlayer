@@ -28,6 +28,22 @@ class Playlist {
     return (name+owner.username).hashCode;
   }
 
+  factory Playlist.fromMap(Map<String, dynamic> map) {
+    return Playlist(
+      name: map['name'],
+      owner: map['owner'],
+      description: map['description'],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'name': _name,
+      'owner': _owner,
+      'description': _description,
+    };
+  }
+
   //Getter
   int get id => _id;
   User get owner => _owner;

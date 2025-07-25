@@ -11,13 +11,11 @@ class PlaylistsPage extends StatefulWidget {
 }
 
 class _PlaylistsPage extends State<PlaylistsPage> {
+  
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        "Playlists for ${widget._user.username}",
-        style: const TextStyle(fontSize: 24),
-      ),
+    //listview
+    return Scaffold(
     );
   }
 }
