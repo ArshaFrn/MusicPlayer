@@ -100,6 +100,7 @@ class TcpClient {
     }
   }
 
+  //------------------------------------------------------------------------------
   Future<Map<String, dynamic>> uploadMusic(
     User user,
     Music music,
@@ -294,12 +295,11 @@ class TcpClient {
       print(
         'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
       );
-
+      // Do not Forget to update the likeCount
       final request = {
         "Request": "likeSong",
         "Payload": {"musicId": music.id, "userId": user.id},
       };
-
       socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
 
@@ -341,7 +341,7 @@ class TcpClient {
       print(
         'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
       );
-
+      // Do not Forget to update the likeCount
       final request = {
         "Request": "dislikeSong",
         "Payload": {"musicId": music.id, "userId": user.id},
