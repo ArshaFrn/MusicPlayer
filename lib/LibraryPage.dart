@@ -205,64 +205,73 @@ class _LibraryPageState extends State<LibraryPage> {
         elevation: 0.1,
       ),
 
-      body:
-          _isLoading
-              ? Center(child: CircularProgressIndicator())
-              : tracks.isEmpty
-              ? Center(
-                child: Text(
-                  "No tracks available :(\nPlease add some music to your library",
-                  style: TextStyle(
-                    fontSize: 19,
-                    color: Colors.blueGrey,
-                    fontWeight: FontWeight.bold,
-                    height: 1.9,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              )
-              : ListView.builder(
-                itemCount: tracks.length,
-                itemBuilder: (context, index) {
-                  final music = tracks[index];
-                  final isLiked = music.isLiked;
-                  return ListTile(
-                    onTap: () {},
-                    onLongPress: () => _onTrackLongPress(context, music),
-                    leading: Icon(Icons.music_note),
-                    title: Text(music.title),
-                    subtitle: Text(music.artist.name),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _fetchTracksFromServer,
+              child: tracks.isEmpty
+                  ? ListView(
                       children: [
-                        Text(
-                          application.formatDuration(music.durationInSeconds),
-                          style: TextStyle(fontSize: 11),
-                        ),
-                        SizedBox(width: 15),
-                        AnimatedSwitcher(
-                          duration: Duration(milliseconds: 400),
-                          transitionBuilder:
-                              (child, animation) => ScaleTransition(
-                                scale: animation,
-                                child: child,
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.7,
+                          child: Center(
+                            child: Text(
+                              "No tracks available :(\nPlease add some music to your library",
+                              style: TextStyle(
+                                fontSize: 19,
+                                color: Colors.blueGrey,
+                                fontWeight: FontWeight.bold,
+                                height: 1.9,
                               ),
-                          child: GestureDetector(
-                            key: ValueKey<bool>(isLiked),
-                            onTap: () => _onLikeTap(music),
-                            child: Icon(
-                              isLiked ? Icons.favorite : Icons.favorite_border,
-                              color: application.getUniqueColor(music.id),
-                              size: 25,
+                              textAlign: TextAlign.center,
                             ),
                           ),
                         ),
                       ],
+                    )
+                  : ListView.builder(
+                      itemCount: tracks.length,
+                      itemBuilder: (context, index) {
+                        final music = tracks[index];
+                        final isLiked = music.isLiked;
+                        return ListTile(
+                          onTap: () {},
+                          onLongPress: () => _onTrackLongPress(context, music),
+                          leading: Icon(Icons.music_note),
+                          title: Text(music.title),
+                          subtitle: Text(music.artist.name),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                application.formatDuration(music.durationInSeconds),
+                                style: TextStyle(fontSize: 11),
+                              ),
+                              SizedBox(width: 15),
+                              AnimatedSwitcher(
+                                duration: Duration(milliseconds: 400),
+                                transitionBuilder:
+                                    (child, animation) => ScaleTransition(
+                                      scale: animation,
+                                      child: child,
+                                    ),
+                                child: GestureDetector(
+                                  key: ValueKey<bool>(isLiked),
+                                  onTap: () => _onLikeTap(music),
+                                  child: Icon(
+                                    isLiked ? Icons.favorite : Icons.favorite_border,
+                                    color: application.getUniqueColor(music.id),
+                                    size: 25,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          iconColor: application.getUniqueColor(music.id),
+                        );
+                      },
                     ),
-                    iconColor: application.getUniqueColor(music.id),
-                  );
-                },
-              ),
+            ),
     );
   }
 
