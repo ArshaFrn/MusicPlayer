@@ -228,6 +228,7 @@ class Application {
       if (!user.likedSongs.contains(music)) {
         user.likedSongs.add(music);
       }
+      print('Liked: ${music.title}');
       return true;
     } else {
       print('Failed to like: ${response['message']}');
@@ -242,6 +243,7 @@ class Application {
       music.isLiked = false;
       music.likeCount = (music.likeCount > 0) ? music.likeCount - 1 : 0;
       user.likedSongs.remove(music);
+      print('Disliked: ${music.title}');
       return true;
     } else {
       print('Failed to dislike: ${response['message']}');

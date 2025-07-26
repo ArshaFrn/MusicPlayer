@@ -61,6 +61,7 @@ class Music {
         'likeCount': _likeCount,
         'isLiked': _isLiked,
         'filePath': _filePath,
+        'extension': _extension,
       };
     } else {
       return {
@@ -75,6 +76,7 @@ class Music {
         'likeCount': _likeCount,
         'isLiked': _isLiked,
         'filePath': '',
+        'extension': _extension,
       };
     }
   }
