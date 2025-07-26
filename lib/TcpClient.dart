@@ -115,7 +115,7 @@ class TcpClient {
       final request = {
         "Request": "uploadMusic",
         "Payload": {
-          "userId": user.id,
+          "username": user.username,
           "musicMap": music.toMap(includeFilePath: false),
           "base64Data": base64Data,
         },
@@ -160,7 +160,7 @@ class TcpClient {
 
       final request = {
         "Request": "getUserMusicList",
-        "Payload": {"userId": user.id},
+        "Payload": {"username": user.username},
       };
 
       socket.write('${jsonEncode(request)}\n\n');
@@ -209,7 +209,7 @@ class TcpClient {
 
       final request = {
         "Request": "deleteMusic",
-        "Payload": {"musicId": music.id, "userId": user.id},
+        "Payload": {"musicMap": music.toMap(includeFilePath: false), "username": user.username},
       };
 
       socket.write('${jsonEncode(request)}\n\n');
@@ -254,7 +254,7 @@ class TcpClient {
 
       final request = {
         "Request": "downloadMusic",
-        "Payload": {"musicId": music.id, "userId": user.id},
+        "Payload": {"musicMap": music.toMap(includeFilePath: false), "username": user.username},
       };
 
       socket.write('${jsonEncode(request)}\n\n');
@@ -298,7 +298,7 @@ class TcpClient {
       // Do not Forget to update the likeCount
       final request = {
         "Request": "likeSong",
-        "Payload": {"musicId": music.id, "userId": user.id},
+        "Payload": {"musicMap": music.toMap(includeFilePath: false), "username": user.username},
       };
       socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
@@ -344,7 +344,7 @@ class TcpClient {
       // Do not Forget to update the likeCount
       final request = {
         "Request": "dislikeSong",
-        "Payload": {"musicId": music.id, "userId": user.id},
+        "Payload": {"musicMap": music.toMap(includeFilePath: false), "username": user.username},
       };
 
       socket.write('${jsonEncode(request)}\n\n');
@@ -385,7 +385,7 @@ class TcpClient {
 
       final request = {
         "Request": "getUserPlaylists",
-        "Payload": {"userId": user.id},
+        "Payload": {"username": user.username},
       };
 
       socket.write('${jsonEncode(request)}\n\n');
