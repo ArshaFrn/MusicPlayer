@@ -56,7 +56,6 @@ class Music {
         'genre': _genre,
         'durationInSeconds': _durationInSeconds,
         'releaseDate': _releaseDate.toIso8601String(),
-        'addedDate': _addedDate.toIso8601String(),
         'album': _album.toMap(),
         'likeCount': _likeCount,
         'isLiked': _isLiked,
