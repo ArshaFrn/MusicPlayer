@@ -209,7 +209,7 @@ class TcpClient {
 
       final request = {
         "Request": "deleteMusic",
-        "Payload": {"musicMap": music.toMap(includeFilePath: false), "username": user.username},
+        "Payload": {"musicId": music.id, "username": user.username},
       };
 
       socket.write('${jsonEncode(request)}\n\n');
@@ -254,7 +254,7 @@ class TcpClient {
 
       final request = {
         "Request": "downloadMusic",
-        "Payload": {"musicMap": music.toMap(includeFilePath: false), "username": user.username},
+        "Payload": {"musicId":music.id, "username": user.username},
       };
 
       socket.write('${jsonEncode(request)}\n\n');
@@ -298,7 +298,7 @@ class TcpClient {
       // Do not Forget to update the likeCount
       final request = {
         "Request": "likeSong",
-        "Payload": {"musicMap": music.toMap(includeFilePath: false), "username": user.username},
+        "Payload": {"musicId": music.id, "username": user.username},
       };
       socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
@@ -344,7 +344,7 @@ class TcpClient {
       // Do not Forget to update the likeCount
       final request = {
         "Request": "dislikeSong",
-        "Payload": {"musicMap": music.toMap(includeFilePath: false), "username": user.username},
+        "Payload": {"musicId": music.id, "username": user.username},
       };
 
       socket.write('${jsonEncode(request)}\n\n');
