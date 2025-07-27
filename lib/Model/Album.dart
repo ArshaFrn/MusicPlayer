@@ -7,35 +7,23 @@ class Album {
   final String _title;
   final Artist _artist;
 
-  // Mutable properties
-  final List<Music> _tracks;
-
   Album({required String title, required Artist artist})
     : _title = title,
       _artist = artist,
-      _id = _generateId(title, artist),
-      _tracks = [];
+      _id = _generateId(title, artist);
 
   static int _generateId(String title, Artist artist) {
     return (title + artist.name).hashCode;
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'id': _id,
-      'title': _title,
-      'artist': _artist.toMap(),
-      'tracks': _tracks.map((track) => track.toMap()).toList(),
-    };
+    return {'id': _id, 'title': _title, 'artist': _artist.toMap()};
   }
 
   Album.fromMap(Map<String, dynamic> map)
-      : _id = map['id'],
-        _title = map['title'],
-        _artist = Artist.fromMap(map['artist']),
-        _tracks = (map['tracks'] as List<dynamic>)
-            .map((track) => Music.fromMap(track))
-            .toList();
+    : _id = map['id'],
+      _title = map['title'],
+      _artist = Artist.fromMap(map['artist']);
 
   // Getters
   int get id => _id;
@@ -43,8 +31,6 @@ class Album {
   String get title => _title;
 
   Artist get artist => _artist;
-
-  List<Music> get tracks => _tracks;
 
   @override
   bool operator ==(Object other) {

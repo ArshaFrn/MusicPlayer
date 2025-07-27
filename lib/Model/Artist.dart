@@ -6,15 +6,9 @@ class Artist {
   final int _id;
   final String _name;
 
-  // Mutable properties
-  final List<Music> _songs;
-  final List<Album> _albums;
-
   Artist({required String name})
     : _name = name,
-      _id = _generateId(name),
-      _songs = [],
-      _albums = [];
+      _id = _generateId(name);
 
   static int _generateId(String name) {
     return name.hashCode;
@@ -24,29 +18,17 @@ class Artist {
     return {
       'id': _id,
       'name': _name,
-      'songs': _songs.map((song) => song.toMap()).toList(),
-      'albums': _albums.map((album) => album.toMap()).toList(),
     };
   }
 
   Artist.fromMap(Map<String, dynamic> map)
       : _id = map['id'],
-        _name = map['name'],
-        _songs = (map['songs'] as List<dynamic>)
-            .map((song) => Music.fromMap(song))
-            .toList(),
-        _albums = (map['albums'] as List<dynamic>)
-            .map((album) => Album.fromMap(album))
-            .toList();
+        _name = map['name'];
 
   // Getters
   int get id => _id;
 
   String get name => _name;
-
-  List<Music> get songs => _songs;
-
-  List<Album> get albums => _albums;
 
   @override
   bool operator ==(Object other) {
