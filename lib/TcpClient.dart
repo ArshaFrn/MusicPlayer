@@ -254,7 +254,7 @@ class TcpClient {
 
       final request = {
         "Request": "downloadMusic",
-        "Payload": {"musicId":music.id, "username": user.username},
+        "Payload": {"musicId": music.id, "username": user.username},
       };
 
       socket.write('${jsonEncode(request)}\n\n');
@@ -273,8 +273,9 @@ class TcpClient {
       }
 
       final decoded = jsonDecode(response);
-      if (decoded['status'] == 'success' && decoded['file'] != null) {
-        return decoded['file'];
+      if (decoded['status'] == 'downloadMusicSuccess' &&
+          decoded['Payload'] != null) {
+        return decoded['Payload'];
       } else {
         print('Download failed: ${decoded['message']}');
         return null;
