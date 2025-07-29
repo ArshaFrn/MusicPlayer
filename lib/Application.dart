@@ -11,6 +11,7 @@ import 'dart:math';
 import 'package:path_provider/path_provider.dart';
 import 'TcpClient.dart';
 import 'LibraryPage.dart';
+import 'package:just_audio/just_audio.dart';
 
 // Applicaation Flow Controller
 
@@ -141,11 +142,12 @@ class Application {
     }
   }
 
+  /// Downloads and saves the music file from the server
   Future<bool> downloadAndSaveMusic({
-    required TcpClient tcpClient,
     required User user,
     required Music music,
   }) async {
+    final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
     final base64 = await tcpClient.getMusicBase64(user: user, music: music);
     if (base64 == null) {
       print('Failed to get base64 music from server.');
@@ -457,5 +459,197 @@ class Application {
         elevation: 15,
       ),
     );
+  }
+
+  /// Checks if the music file exists at the specified path
+  Future<bool> isMusicFileAvailable(Music music) async {
+    if (music.filePath.isEmpty || music.filePath == '') {
+      return false;
+    }
+
+    try {
+      final file = File(music.filePath);
+      return await file.exists();
+    } catch (e) {
+      print('Error checking file existence: $e');
+      return false;
+    }
+  }
+
+  /// Handles music playback - downloads if needed and plays
+  Future<bool> handleMusicPlayback({
+    required BuildContext context,
+    required User user,
+    required Music music,
+  }) async {
+    try {
+      // Check if music file is already available locally
+      final isAvailable = await isMusicFileAvailable(music);
+
+      if (isAvailable) {
+        // File exists, play it directly
+        print('Playing existing file: ${music.filePath}');
+        return await playMusic(music);
+      } else {
+        // File doesn't exist, download it first
+        print('Downloading music: ${music.title}');
+
+        // Show loading indicator
+        _showDownloadingSnackBar(context, 'Downloading ${music.title}...');
+
+        // Use existing downloadAndSaveMusic method
+        final downloadSuccess = await downloadAndSaveMusic(
+          user: user,
+          music: music,
+        );
+
+        if (downloadSuccess) {
+          // Hide loading indicator and show success
+          _hideSnackBar(context);
+          _showPlaybackSuccessSnackBar(context, 'Now playing: ${music.title}');
+
+          // Play the downloaded music
+          return await playMusic(music);
+        } else {
+          _hideSnackBar(context);
+          _showPlaybackErrorSnackBar(context, 'Failed to download music');
+          return false;
+        }
+      }
+    } catch (e) {
+      print('Error handling music playback: $e');
+      _hideSnackBar(context);
+      _showPlaybackErrorSnackBar(context, 'Failed to play music');
+      return false;
+    }
+  }
+
+  /// Plays the music file
+  Future<bool> playMusic(Music music) async {
+    try {
+      if (music.filePath.isEmpty) {
+        print('No file path available for music: ${music.title}');
+        return false;
+      }
+
+      final file = File(music.filePath);
+      if (!await file.exists()) {
+        print('Music file not found: ${music.filePath}');
+        return false;
+      }
+      // play the music
+      final player = AudioPlayer();
+      await player.setAudioSource(AudioSource.file(file.path));
+      await player.play();
+      return true;
+      
+    } catch (e) {
+      print('Error playing music: $e');
+      return false;
+    }
+  }
+
+  /// Shows a snackbar indicating download is in progress
+  void _showDownloadingSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+              ),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.blue,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        duration: Duration(seconds: 30), // Long duration for download
+        elevation: 15,
+      ),
+    );
+  }
+
+  /// Shows a snackbar for successful playback
+  void _showPlaybackSuccessSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.play_arrow, color: Colors.white, size: 28),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        duration: Duration(seconds: 3),
+        elevation: 15,
+      ),
+    );
+  }
+
+  /// Shows a snackbar for playback errors
+  void _showPlaybackErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(Icons.error_outline, color: Colors.white, size: 28),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        duration: Duration(seconds: 3),
+        elevation: 15,
+      ),
+    );
+  }
+
+  /// Hides the current snackbar
+  void _hideSnackBar(BuildContext context) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
   }
 }

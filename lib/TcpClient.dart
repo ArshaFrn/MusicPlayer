@@ -262,7 +262,6 @@ class TcpClient {
 
       final response =
           await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
-
       // Example response format:
       // {'status': 'downloadMusicSuccess', 'Payload': 'base64EncodedString'}
       // {'status': 'error', 'message': 'Error message'}

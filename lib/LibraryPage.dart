@@ -205,73 +205,82 @@ class _LibraryPageState extends State<LibraryPage> {
         elevation: 0.1,
       ),
 
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _fetchTracksFromServer,
-              child: tracks.isEmpty
-                  ? ListView(
-                      children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.7,
-                          child: Center(
-                            child: Text(
-                              "No tracks available :(\nPlease add some music to your library",
-                              style: TextStyle(
-                                fontSize: 19,
-                                color: Colors.blueGrey,
-                                fontWeight: FontWeight.bold,
-                                height: 1.9,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : ListView.builder(
-                      itemCount: tracks.length,
-                      itemBuilder: (context, index) {
-                        final music = tracks[index];
-                        final isLiked = music.isLiked;
-                        return ListTile(
-                          onTap: () {},
-                          onLongPress: () => _onTrackLongPress(context, music),
-                          leading: Icon(Icons.music_note),
-                          title: Text(music.title),
-                          subtitle: Text(music.artist.name),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                application.formatDuration(music.durationInSeconds),
-                                style: TextStyle(fontSize: 11),
-                              ),
-                              SizedBox(width: 15),
-                              AnimatedSwitcher(
-                                duration: Duration(milliseconds: 400),
-                                transitionBuilder:
-                                    (child, animation) => ScaleTransition(
-                                      scale: animation,
-                                      child: child,
-                                    ),
-                                child: GestureDetector(
-                                  key: ValueKey<bool>(isLiked),
-                                  onTap: () => _onLikeTap(music),
-                                  child: Icon(
-                                    isLiked ? Icons.favorite : Icons.favorite_border,
-                                    color: application.getUniqueColor(music.id),
-                                    size: 25,
+      body:
+          _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                onRefresh: _fetchTracksFromServer,
+                child:
+                    tracks.isEmpty
+                        ? ListView(
+                          children: [
+                            SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.7,
+                              child: Center(
+                                child: Text(
+                                  "No tracks available :(\nPlease add some music to your library",
+                                  style: TextStyle(
+                                    fontSize: 19,
+                                    color: Colors.blueGrey,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.9,
                                   ),
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
-                            ],
-                          ),
-                          iconColor: application.getUniqueColor(music.id),
-                        );
-                      },
-                    ),
-            ),
+                            ),
+                          ],
+                        )
+                        : ListView.builder(
+                          itemCount: tracks.length,
+                          itemBuilder: (context, index) {
+                            final music = tracks[index];
+                            final isLiked = music.isLiked;
+                            return ListTile(
+                              onTap: () => _onTrackTap(context, music),
+                              onLongPress:
+                                  () => _onTrackLongPress(context, music),
+                              leading: Icon(Icons.music_note),
+                              title: Text(music.title),
+                              subtitle: Text(music.artist.name),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    application.formatDuration(
+                                      music.durationInSeconds,
+                                    ),
+                                    style: TextStyle(fontSize: 11),
+                                  ),
+                                  SizedBox(width: 15),
+                                  AnimatedSwitcher(
+                                    duration: Duration(milliseconds: 400),
+                                    transitionBuilder:
+                                        (child, animation) => ScaleTransition(
+                                          scale: animation,
+                                          child: child,
+                                        ),
+                                    child: GestureDetector(
+                                      key: ValueKey<bool>(isLiked),
+                                      onTap: () => _onLikeTap(music),
+                                      child: Icon(
+                                        isLiked
+                                            ? Icons.favorite
+                                            : Icons.favorite_border,
+                                        color: application.getUniqueColor(
+                                          music.id,
+                                        ),
+                                        size: 25,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              iconColor: application.getUniqueColor(music.id),
+                            );
+                          },
+                        ),
+              ),
     );
   }
 
@@ -302,14 +311,31 @@ class _LibraryPageState extends State<LibraryPage> {
             ),
           ),
     );
-    if (result == 'delete') {
+    if (result == 'play') {
+      // Handle music playback logic
+      final success = await application.handleMusicPlayback(
+        context: context,
+        user: widget.user,
+        music: music,
+      );
+
+      if (!success) {
+        // If playback failed, show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to play ${music.title}'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } else if (result == 'delete') {
       await application.deleteMusic(
         context: context,
         user: widget.user,
         music: music,
       );
       setState(() {}); //Refresh UI
-      
     } else if (result == 'details') {
       application.showMusicDetailsDialog(context, music);
     }
@@ -321,4 +347,35 @@ class _LibraryPageState extends State<LibraryPage> {
     });
   }
 
+  /// Handles tap events on music tracks
+  Future<void> _onTrackTap(BuildContext context, Music music) async {
+    try {
+      // Handle music playback logic
+      final success = await application.handleMusicPlayback(
+        context: context,
+        user: widget.user,
+        music: music,
+      );
+
+      if (!success) {
+        // If playback failed, show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to play ${music.title}'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error handling track tap: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error playing music'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
 }
