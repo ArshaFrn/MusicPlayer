@@ -34,14 +34,13 @@ class Music {
        _genre = genre,
        _durationInSeconds = durationInSeconds,
        _releaseDate = releaseDate,
-        _extension = extension,
+       _extension = extension,
        _addedDate = DateTime.now(),
        _album = album,
        _id = _generateId(title, artist, releaseDate),
        _filePath = filePath,
        _likeCount = 0,
        _isLiked = false;
-    
 
   static int _generateId(String title, Artist artist, DateTime releaseDate) {
     return (title + artist.name + releaseDate.toString()).hashCode;
@@ -80,18 +79,22 @@ class Music {
   }
 
   Music.fromMap(Map<String, dynamic> map)
-      : _id = map['id'],
-        _title = map['title'],
-        _artist = Artist.fromMap(map['artist']),
-        _genre = map['genre'],
-        _durationInSeconds = map['durationInSeconds'],
-        _releaseDate = DateTime.parse(map['releaseDate']),
-        _addedDate = DateTime.parse(map['addedDate']),
-        _album = Album.fromMap(map['album']),
-        _likeCount = map['likeCount'] ?? 0,
-        _isLiked = map['isLiked'] ?? false,
-        _extension = map['extension'] ?? 'mp3',
-        _filePath = map['filePath'] ?? '';
+    : _id = map['id'],
+      _title = map['title'],
+      _artist = Artist(name: map['artist']), // Handle artist as string
+      _genre = map['genre'],
+      _durationInSeconds = map['durationInSeconds'],
+      _releaseDate = DateTime.parse(map['releaseDate']),
+      _addedDate =
+          DateTime.now(), // Use current time since server doesn't provide this
+      _album = Album(
+        title: map['title'],
+        artist: Artist(name: map['artist']),
+      ), // Create default album
+      _likeCount = map['likeCount'] ?? 0,
+      _isLiked = map['isLiked'] ?? false,
+      _extension = map['extension'] ?? 'mp3',
+      _filePath = map['filePath'] ?? '';
 
   // * Getters
   int get id => _id;
@@ -124,7 +127,7 @@ class Music {
   set isLiked(bool value) => _isLiked = value;
 
   set filePath(String value) => _filePath = value;
-  
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;

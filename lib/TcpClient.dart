@@ -183,10 +183,17 @@ class TcpClient {
       }
 
       try {
-        final List<dynamic> musicListJson = jsonDecode(response);
-        return musicListJson
-            .map((musicJson) => Music.fromMap(musicJson))
-            .toList();
+        final Map<String, dynamic> responseMap = jsonDecode(response);
+
+        if (responseMap['status'] == 'getUserMusicListSuccess') {
+          final List<dynamic> musicListJson = responseMap['Payload'] ?? [];
+          return musicListJson
+              .map((musicJson) => Music.fromMap(musicJson))
+              .toList();
+        } else {
+          print('Error: Server returned status: ${responseMap['status']}');
+          return [];
+        }
       } catch (e) {
         print('Error decoding response: $e');
         return [];

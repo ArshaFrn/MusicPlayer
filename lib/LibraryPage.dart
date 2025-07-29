@@ -45,6 +45,8 @@ class _LibraryPageState extends State<LibraryPage> {
       widget.user.tracks
         ..clear()
         ..addAll(tracks);
+      // Sync like state after fetching tracks
+      application.syncLikeState(widget.user, widget.user.tracks);
       _isLoading = false;
     });
   }
@@ -341,10 +343,11 @@ class _LibraryPageState extends State<LibraryPage> {
     }
   }
 
-  void _onLikeTap(Music music) {
-    setState(() {
-      application.toggleLike(widget.user, music);
-    });
+  Future<void> _onLikeTap(Music music) async {
+    final success = await application.toggleLike(widget.user, music);
+    if (success) {
+      setState(() {}); // Only update UI if server operation was successful
+    }
   }
 
   /// Handles tap events on music tracks

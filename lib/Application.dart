@@ -230,10 +230,15 @@ class Application {
       if (!user.likedSongs.contains(music)) {
         user.likedSongs.add(music);
       }
-      print('Liked: ${music.title}');
       return true;
+    } else if (response['status'] == 'alreadyLiked') {
+      // Song is already liked, ensure local state is correct
+      music.isLiked = true;
+      if (!user.likedSongs.contains(music)) {
+        user.likedSongs.add(music);
+      }
+      return true; // Consider this a success since the desired state is achieved
     } else {
-      print('Failed to like: ${response['message']}');
       return false;
     }
   }
@@ -245,10 +250,13 @@ class Application {
       music.isLiked = false;
       music.likeCount = (music.likeCount > 0) ? music.likeCount - 1 : 0;
       user.likedSongs.remove(music);
-      print('Disliked: ${music.title}');
       return true;
+    } else if (response['status'] == 'NotLiked') {
+      // Song is not liked, ensure local state is correct
+      music.isLiked = false;
+      user.likedSongs.remove(music);
+      return true; // Consider this a success since the desired state is achieved
     } else {
-      print('Failed to dislike: ${response['message']}');
       return false;
     }
   }
@@ -258,6 +266,15 @@ class Application {
       return await likeSong(user, music);
     } else {
       return await dislikeSong(user, music);
+    }
+  }
+
+  /// Synchronizes the like state of music tracks with the user's liked songs
+  void syncLikeState(User user, List<Music> tracks) {
+    for (Music track in tracks) {
+      // Check if the track is in the user's liked songs
+      bool isLiked = user.likedSongs.contains(track);
+      track.isLiked = isLiked;
     }
   }
 
@@ -542,7 +559,6 @@ class Application {
       await player.setAudioSource(AudioSource.file(file.path));
       await player.play();
       return true;
-      
     } catch (e) {
       print('Error playing music: $e');
       return false;
