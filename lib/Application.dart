@@ -147,7 +147,7 @@ class Application {
     required User user,
     required Music music,
   }) async {
-    final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+    final tcpClient = TcpClient(serverAddress: '192.168.1.34', serverPort: 12345);
     final base64 = await tcpClient.getMusicBase64(user: user, music: music);
     if (base64 == null) {
       print('Failed to get base64 music from server.');

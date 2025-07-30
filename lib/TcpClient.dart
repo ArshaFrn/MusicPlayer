@@ -255,7 +255,7 @@ class TcpClient {
     required User user,
     required Music music,
   }) async {
-    const int maxRetries = 3;
+    const int maxRetries = 2;
 
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -274,7 +274,7 @@ class TcpClient {
         socket.write('${jsonEncode(request)}\n\n');
         print("Request sent: ${jsonEncode(request)}");
 
-        // Read response in chunks until we find the end marker
+        // Accumulate incoming TCP packets until server closes connection
         final StringBuffer responseBuffer = StringBuffer();
         final Completer<String> responseCompleter = Completer<String>();
 
@@ -282,24 +282,15 @@ class TcpClient {
           (List<int> data) {
             final String chunk = String.fromCharCodes(data);
             responseBuffer.write(chunk);
-            print(
-              'Received chunk: ${data.length} bytes, total: ${responseBuffer.length}',
-            );
-
-            // Log progress for large downloads
-            if (responseBuffer.length % 100000 == 0) {
-              print(
-                'Download progress: ${responseBuffer.length} characters received',
-              );
-            }
           },
           onError: (error) {
             print('Socket error: $error');
             responseCompleter.completeError(error);
           },
           onDone: () {
-            print('Socket connection closed - download complete');
-            print('Total received: ${responseBuffer.length} characters');
+            print(
+              'Download completed. Total received: ${responseBuffer.length} characters',
+            );
             if (!responseCompleter.isCompleted) {
               String fullResponse = responseBuffer.toString();
               responseCompleter.complete(fullResponse);
@@ -307,7 +298,6 @@ class TcpClient {
           },
         );
 
-        // Add timeout of 120 seconds for large downloads
         final String fullResponse = await responseCompleter.future.timeout(
           Duration(seconds: 120),
           onTimeout: () {
@@ -335,7 +325,6 @@ class TcpClient {
             'Download completed successfully. Base64 data length: ${base64Data.length}',
           );
 
-          // Validate that we have a complete JSON response
           if (fullResponse.length < 1000) {
             print(
               'Error: Response seems too short: ${fullResponse.length} characters',
@@ -347,7 +336,6 @@ class TcpClient {
             return null;
           }
 
-          // Validate Base64 data
           if (base64Data.isEmpty) {
             print('Error: Empty Base64 data received');
             if (attempt < maxRetries) {
@@ -357,30 +345,41 @@ class TcpClient {
             return null;
           }
 
-          // Check if Base64 string length is valid (should be divisible by 4)
           if (base64Data.length % 4 != 0) {
             print(
               'Warning: Base64 string length ${base64Data.length} is not divisible by 4',
             );
-            print('This might be due to missing padding. Attempting to fix...');
 
-            // Try to add padding if needed
-            String paddedData = base64Data;
-            while (paddedData.length % 4 != 0) {
-              paddedData += '=';
-            }
+            String lastChars = base64Data.substring(
+              max(0, base64Data.length - 10),
+            );
+            bool looksValid = lastChars.contains(RegExp(r'^[A-Za-z0-9+/]*$'));
 
-            // Validate the padded data
-            try {
-              base64Decode(
-                paddedData.substring(0, min(100, paddedData.length)),
-              );
-              print(
-                'Padding added successfully. New length: ${paddedData.length}',
-              );
-              base64Data = paddedData;
-            } catch (e) {
-              print('Error: Invalid Base64 format even with padding: $e');
+            if (looksValid) {
+              print('Data appears valid, adding standard Base64 padding...');
+              String paddedData = base64Data;
+              while (paddedData.length % 4 != 0) {
+                paddedData += '=';
+              }
+
+              try {
+                base64Decode(
+                  paddedData.substring(0, min(100, paddedData.length)),
+                );
+                print(
+                  'Padding added successfully. New length: ${paddedData.length}',
+                );
+                base64Data = paddedData;
+              } catch (e) {
+                print('Error: Invalid Base64 format even with padding: $e');
+                if (attempt < maxRetries) {
+                  print('Retrying...');
+                  continue;
+                }
+                return null;
+              }
+            } else {
+              print('Data appears truncated, retrying download...');
               if (attempt < maxRetries) {
                 print('Retrying...');
                 continue;
@@ -388,20 +387,6 @@ class TcpClient {
               return null;
             }
           }
-
-          // Try to decode a small portion to validate Base64 format
-          try {
-            base64Decode(base64Data.substring(0, min(100, base64Data.length)));
-          } catch (e) {
-            print('Error: Invalid Base64 format: $e');
-            if (attempt < maxRetries) {
-              print('Retrying...');
-              continue;
-            }
-            return null;
-          }
-
-          // Check the last few characters to ensure they're valid Base64
           final String lastChars = base64Data.substring(
             max(0, base64Data.length - 10),
           );
@@ -426,7 +411,6 @@ class TcpClient {
         return null;
       }
     }
-
     print('All download attempts failed');
     return null;
   }
