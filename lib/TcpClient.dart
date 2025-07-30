@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:async';
+import 'dart:math';
 import 'package:second/Response.dart';
 
 import 'Model/Music.dart';
@@ -253,44 +255,180 @@ class TcpClient {
     required User user,
     required Music music,
   }) async {
-    try {
-      final socket = await Socket.connect(serverAddress, serverPort);
-      print(
-        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
-      );
+    const int maxRetries = 3;
 
-      final request = {
-        "Request": "downloadMusic",
-        "Payload": {"musicId": music.id, "username": user.username},
-      };
+    for (int attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        print('Download attempt $attempt of $maxRetries');
 
-      socket.write('${jsonEncode(request)}\n\n');
-      print("Request sent: ${jsonEncode(request)}");
+        final socket = await Socket.connect(serverAddress, serverPort);
+        print(
+          'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+        );
 
-      final response =
-          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
-      // Example response format:
-      // {'status': 'downloadMusicSuccess', 'Payload': 'base64EncodedString'}
-      // {'status': 'error', 'message': 'Error message'}
-      socket.close();
+        final request = {
+          "Request": "downloadMusic",
+          "Payload": {"musicId": music.id, "username": user.username},
+        };
 
-      if (response.isEmpty) {
-        print('Error: Empty response from server');
+        socket.write('${jsonEncode(request)}\n\n');
+        print("Request sent: ${jsonEncode(request)}");
+
+        // Read response in chunks until we find the end marker
+        final StringBuffer responseBuffer = StringBuffer();
+        final Completer<String> responseCompleter = Completer<String>();
+
+        socket.listen(
+          (List<int> data) {
+            final String chunk = String.fromCharCodes(data);
+            responseBuffer.write(chunk);
+            print(
+              'Received chunk: ${data.length} bytes, total: ${responseBuffer.length}',
+            );
+
+            // Log progress for large downloads
+            if (responseBuffer.length % 100000 == 0) {
+              print(
+                'Download progress: ${responseBuffer.length} characters received',
+              );
+            }
+          },
+          onError: (error) {
+            print('Socket error: $error');
+            responseCompleter.completeError(error);
+          },
+          onDone: () {
+            print('Socket connection closed - download complete');
+            print('Total received: ${responseBuffer.length} characters');
+            if (!responseCompleter.isCompleted) {
+              String fullResponse = responseBuffer.toString();
+              responseCompleter.complete(fullResponse);
+            }
+          },
+        );
+
+        // Add timeout of 120 seconds for large downloads
+        final String fullResponse = await responseCompleter.future.timeout(
+          Duration(seconds: 120),
+          onTimeout: () {
+            socket.close();
+            throw TimeoutException('Download timeout after 120 seconds');
+          },
+        );
+
+        socket.close();
+
+        if (fullResponse.isEmpty) {
+          print('Error: Empty response from server');
+          if (attempt < maxRetries) {
+            print('Retrying...');
+            continue;
+          }
+          return null;
+        }
+
+        final decoded = jsonDecode(fullResponse);
+        if (decoded['status'] == 'downloadMusicSuccess' &&
+            decoded['Payload'] != null) {
+          var base64Data = decoded['Payload'];
+          print(
+            'Download completed successfully. Base64 data length: ${base64Data.length}',
+          );
+
+          // Validate that we have a complete JSON response
+          if (fullResponse.length < 1000) {
+            print(
+              'Error: Response seems too short: ${fullResponse.length} characters',
+            );
+            if (attempt < maxRetries) {
+              print('Retrying...');
+              continue;
+            }
+            return null;
+          }
+
+          // Validate Base64 data
+          if (base64Data.isEmpty) {
+            print('Error: Empty Base64 data received');
+            if (attempt < maxRetries) {
+              print('Retrying...');
+              continue;
+            }
+            return null;
+          }
+
+          // Check if Base64 string length is valid (should be divisible by 4)
+          if (base64Data.length % 4 != 0) {
+            print(
+              'Warning: Base64 string length ${base64Data.length} is not divisible by 4',
+            );
+            print('This might be due to missing padding. Attempting to fix...');
+
+            // Try to add padding if needed
+            String paddedData = base64Data;
+            while (paddedData.length % 4 != 0) {
+              paddedData += '=';
+            }
+
+            // Validate the padded data
+            try {
+              base64Decode(
+                paddedData.substring(0, min(100, paddedData.length)),
+              );
+              print(
+                'Padding added successfully. New length: ${paddedData.length}',
+              );
+              base64Data = paddedData;
+            } catch (e) {
+              print('Error: Invalid Base64 format even with padding: $e');
+              if (attempt < maxRetries) {
+                print('Retrying...');
+                continue;
+              }
+              return null;
+            }
+          }
+
+          // Try to decode a small portion to validate Base64 format
+          try {
+            base64Decode(base64Data.substring(0, min(100, base64Data.length)));
+          } catch (e) {
+            print('Error: Invalid Base64 format: $e');
+            if (attempt < maxRetries) {
+              print('Retrying...');
+              continue;
+            }
+            return null;
+          }
+
+          // Check the last few characters to ensure they're valid Base64
+          final String lastChars = base64Data.substring(
+            max(0, base64Data.length - 10),
+          );
+          print('Last 10 characters of Base64: $lastChars');
+          print('Base64 data length: ${base64Data.length}');
+
+          return base64Data;
+        } else {
+          print('Download failed: ${decoded['message'] ?? 'Unknown error'}');
+          if (attempt < maxRetries) {
+            print('Retrying...');
+            continue;
+          }
+          return null;
+        }
+      } catch (e) {
+        print('Error downloading music (attempt $attempt): $e');
+        if (attempt < maxRetries) {
+          print('Retrying...');
+          continue;
+        }
         return null;
       }
-
-      final decoded = jsonDecode(response);
-      if (decoded['status'] == 'downloadMusicSuccess' &&
-          decoded['Payload'] != null) {
-        return decoded['Payload'];
-      } else {
-        print('Download failed: ${decoded['message']}');
-        return null;
-      }
-    } catch (e) {
-      print('Error downloading music: $e');
-      return null;
     }
+
+    print('All download attempts failed');
+    return null;
   }
 
   Future<Map<String, dynamic>> likeSong({
