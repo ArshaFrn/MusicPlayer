@@ -1,4 +1,4 @@
-enum Response{
+enum Response {
   signUpSuccess,
   emailAlreadyExist,
   usernameAlreadyExist,
@@ -18,6 +18,8 @@ enum Response{
   likeSuccess,
   dislikedSuccess,
   getUserPlaylistsSuccess,
+  getUserLikedSongsSuccess,
+  getUserLikedSongsFailed,
   error,
   invalidRequest,
 }

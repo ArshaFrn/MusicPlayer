@@ -41,12 +41,23 @@ class _LibraryPageState extends State<LibraryPage> {
     });
     final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
     final tracks = await tcpClient.getUserMusicList(widget.user);
+    final likedSongIds = await tcpClient.getUserLikedSongs(widget.user);
+
     setState(() {
       widget.user.tracks
         ..clear()
         ..addAll(tracks);
-      // Sync like state after fetching tracks
-      application.syncLikeState(widget.user, widget.user.tracks);
+
+      // Update likedSongs list based on fetched liked song IDs
+      widget.user.likedSongs
+        ..clear()
+        ..addAll(tracks.where((track) => likedSongIds.contains(track.id)));
+
+      // Update isLiked field for each track
+      for (final track in widget.user.tracks) {
+        track.isLiked = likedSongIds.contains(track.id);
+      }
+
       _isLoading = false;
     });
   }

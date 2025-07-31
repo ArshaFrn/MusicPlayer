@@ -549,4 +549,51 @@ class TcpClient {
       return [];
     }
   }
+
+  Future<List<int>> getUserLikedSongs(User user) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
+
+      final request = {
+        "Request": "getUserLikedSongs",
+        "Payload": {"username": user.username},
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+
+      print('Raw response received: $response');
+
+      socket.close();
+
+      if (response.isEmpty) {
+        print('Error: Empty response from server');
+        return [];
+      }
+
+      try {
+        final Map<String, dynamic> responseMap = jsonDecode(response);
+
+        if (responseMap['status'] == 'getUserLikedSongsSuccess') {
+          final List<dynamic> likedSongIdsJson = responseMap['Payload'] ?? [];
+          return likedSongIdsJson.cast<int>();
+        } else {
+          print('Error: Server returned status: ${responseMap['status']}');
+          return [];
+        }
+      } catch (e) {
+        print('Error decoding response: $e');
+        return [];
+      }
+    } catch (e) {
+      print('Error fetching liked songs: $e');
+      return [];
+    }
+  }
 }

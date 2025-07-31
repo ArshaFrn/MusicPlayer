@@ -232,12 +232,11 @@ class Application {
       }
       return true;
     } else if (response['status'] == 'alreadyLiked') {
-      // Song is already liked, ensure local state is correct
       music.isLiked = true;
       if (!user.likedSongs.contains(music)) {
         user.likedSongs.add(music);
       }
-      return true; // Consider this a success since the desired state is achieved
+      return true;
     } else {
       return false;
     }
