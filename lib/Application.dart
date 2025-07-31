@@ -122,7 +122,7 @@ class Application {
       final bytes = base64Decode(base64String);
 
       final Directory appDocDir = await getApplicationDocumentsDirectory();
-      final String userDirPath = '${appDocDir.path}\\${user.username}\\musics';
+      final String userDirPath = '${appDocDir.path}/${user.username}/musics';
       final Directory userDir = Directory(userDirPath);
       if (!await userDir.exists()) {
         await userDir.create(recursive: true);
@@ -130,7 +130,7 @@ class Application {
 
       final String ext = extension;
       final String fileName = '${music.title}.$ext';
-      final String filePath = '$userDirPath\\$fileName';
+      final String filePath = '$userDirPath/$fileName';
       final File file = File(filePath);
       await file.writeAsBytes(bytes);
 
@@ -147,7 +147,7 @@ class Application {
     required User user,
     required Music music,
   }) async {
-    final tcpClient = TcpClient(serverAddress: '192.168.1.34', serverPort: 12345);
+    final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
     final base64 = await tcpClient.getMusicBase64(user: user, music: music);
     if (base64 == null) {
       print('Failed to get base64 music from server.');
@@ -216,7 +216,7 @@ class Application {
       durationInSeconds: duration,
       releaseDate: releaseDate,
       album: album,
-      filePath: '', // File path will be set later
+      filePath: '', // File path will be set later by decodeFile
       extension: extension,
     );
   }
