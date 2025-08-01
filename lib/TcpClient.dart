@@ -255,7 +255,7 @@ class TcpClient {
     required User user,
     required Music music,
   }) async {
-    const int maxRetries = 2;
+    const int maxRetries = 3;
 
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -274,7 +274,6 @@ class TcpClient {
         socket.write('${jsonEncode(request)}\n\n');
         print("Request sent: ${jsonEncode(request)}");
 
-        // Accumulate incoming TCP packets until server closes connection
         final StringBuffer responseBuffer = StringBuffer();
         final Completer<String> responseCompleter = Completer<String>();
 

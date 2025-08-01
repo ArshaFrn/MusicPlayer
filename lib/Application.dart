@@ -22,6 +22,9 @@ enum filterOption { dateModified, az, za, duration, favourite }
 class Application {
   static final Application _instance = Application._privateConstructor();
 
+  // Global audio player instance
+  static AudioPlayer? _audioPlayer;
+
   final List<Color> _colorList = [
     Colors.red,
     Colors.green,
@@ -121,25 +124,18 @@ class Application {
     required String extension,
   }) async {
     try {
-      // Use the new cache system instead of the old musics directory
       final CacheManager cacheManager = CacheManager.instance;
-
-      // Clear existing cache before saving new file
       await cacheManager.clearCache(user);
-
-      // Save to cache using the cache manager
       final bool success = await cacheManager.saveToCache(
         user,
         music,
         base64String,
       );
-
       if (success) {
         // Update music file path to point to cache
         music.filePath = await cacheManager.getCacheFilePath(user, music);
         print('File saved to cache: ${music.filePath}');
       }
-
       return success;
     } catch (e) {
       print('Error decoding and saving music file: $e');
@@ -515,7 +511,6 @@ class Application {
     } catch (e) {
       print('Error handling music playback: $e');
       _hideSnackBar(context);
-      _showPlaybackErrorSnackBar(context, 'Failed to play music');
       return false;
     }
   }
@@ -538,10 +533,22 @@ class Application {
       }
 
       print('✅ File exists, starting playback...');
-      // play the music
-      final player = AudioPlayer();
-      await player.setAudioSource(AudioSource.file(file.path));
-      await player.play();
+
+      // Dispose previous player if exists
+      if (_audioPlayer != null) {
+        await _audioPlayer!.stop();
+        await _audioPlayer!.dispose();
+      }
+
+      // Create new player instance
+      _audioPlayer = AudioPlayer();
+
+      // Set audio source with proper path
+      await _audioPlayer!.setAudioSource(AudioSource.file(file.absolute.path));
+
+      // Start playback
+      await _audioPlayer!.play();
+
       print('🎶 Playback started successfully');
       return true;
     } catch (e) {
@@ -549,6 +556,23 @@ class Application {
       return false;
     }
   }
+
+  /// Stops current playback and disposes player
+  Future<void> stopMusic() async {
+    try {
+      if (_audioPlayer != null) {
+        await _audioPlayer!.stop();
+        await _audioPlayer!.dispose();
+        _audioPlayer = null;
+        print('🛑 Playback stopped and player disposed');
+      }
+    } catch (e) {
+      print('❌ Error stopping music: $e');
+    }
+  }
+
+  /// Gets the current audio player instance
+  AudioPlayer? get audioPlayer => _audioPlayer;
 
   /// Shows a snackbar indicating download is in progress
   void _showDownloadingSnackBar(BuildContext context, String message) {

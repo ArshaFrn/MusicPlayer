@@ -39,7 +39,10 @@ class _LibraryPageState extends State<LibraryPage> {
     setState(() {
       _isLoading = true;
     });
-    final tcpClient = TcpClient(serverAddress: '192.168.1.34', serverPort: 12345);
+    final tcpClient = TcpClient(
+      serverAddress: '192.168.1.34',
+      serverPort: 12345,
+    );
     final tracks = await tcpClient.getUserMusicList(widget.user);
     final likedSongIds = await tcpClient.getUserLikedSongs(widget.user);
 
