@@ -9,9 +9,11 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import 'TcpClient.dart';
 import 'LibraryPage.dart';
 import 'package:just_audio/just_audio.dart';
+import 'utils/CacheManager.dart';
 
 // Applicaation Flow Controller
 
@@ -97,9 +99,9 @@ class Application {
   }
 
   String? getFileExtension(String path) {
-    final lastDot = path.lastIndexOf('.');
-    if (lastDot == -1) return null;
-    return path.substring(lastDot);
+    // Use path package to properly extract file extension
+    final String extension = p.extension(path);
+    return extension.isEmpty ? null : extension;
   }
 
   Future<String?> encodeFile(File file) async {
@@ -119,46 +121,30 @@ class Application {
     required String extension,
   }) async {
     try {
-      final bytes = base64Decode(base64String);
+      // Use the new cache system instead of the old musics directory
+      final CacheManager cacheManager = CacheManager.instance;
 
-      final Directory appDocDir = await getApplicationDocumentsDirectory();
-      final String userDirPath = '${appDocDir.path}/${user.username}/musics';
-      final Directory userDir = Directory(userDirPath);
-      if (!await userDir.exists()) {
-        await userDir.create(recursive: true);
+      // Clear existing cache before saving new file
+      await cacheManager.clearCache(user);
+
+      // Save to cache using the cache manager
+      final bool success = await cacheManager.saveToCache(
+        user,
+        music,
+        base64String,
+      );
+
+      if (success) {
+        // Update music file path to point to cache
+        music.filePath = await cacheManager.getCacheFilePath(user, music);
+        print('File saved to cache: ${music.filePath}');
       }
 
-      final String ext = extension;
-      final String fileName = '${music.title}.$ext';
-      final String filePath = '$userDirPath/$fileName';
-      final File file = File(filePath);
-      await file.writeAsBytes(bytes);
-
-      music.filePath = filePath;
-      return true;
+      return success;
     } catch (e) {
       print('Error decoding and saving music file: $e');
       return false;
     }
-  }
-
-  /// Downloads and saves the music file from the server
-  Future<bool> downloadAndSaveMusic({
-    required User user,
-    required Music music,
-  }) async {
-    final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
-    final base64 = await tcpClient.getMusicBase64(user: user, music: music);
-    if (base64 == null) {
-      print('Failed to get base64 music from server.');
-      return false;
-    }
-    return await decodeFile(
-      base64String: base64,
-      user: user,
-      music: music,
-      extension: music.extension,
-    );
   }
 
   Future<Map<String, dynamic>?> extractMetadata(File file) async {
@@ -166,7 +152,7 @@ class Application {
       final metadata = await readMetadata(file, getImage: false);
 
       final title =
-          metadata.title?.trim() ?? file.uri.pathSegments.last.split('.').first;
+          metadata.title?.trim() ?? p.basenameWithoutExtension(file.path);
       final artist = metadata.artist?.trim() ?? 'Unknown Artist';
       final duration = metadata.duration?.inSeconds ?? 0;
       final album = metadata.album?.trim() ?? 'Unknown Album';
@@ -477,60 +463,54 @@ class Application {
     );
   }
 
-  /// Checks if the music file exists at the specified path
-  Future<bool> isMusicFileAvailable(Music music) async {
-    if (music.filePath.isEmpty || music.filePath == '') {
-      return false;
-    }
-
-    try {
-      final file = File(music.filePath);
-      return await file.exists();
-    } catch (e) {
-      print('Error checking file existence: $e');
-      return false;
-    }
-  }
-
-  /// Handles music playback - downloads if needed and plays
+  /// Handles music playback using cache system
   Future<bool> handleMusicPlayback({
     required BuildContext context,
     required User user,
     required Music music,
   }) async {
     try {
-      // Check if music file is already available locally
-      final isAvailable = await isMusicFileAvailable(music);
+      final CacheManager cacheManager = CacheManager.instance;
 
-      if (isAvailable) {
-        // File exists, play it directly
-        print('Playing existing file: ${music.filePath}');
+      // Check if music is already cached
+      final bool isCached = await cacheManager.isMusicCached(user, music);
+
+      if (isCached) {
+        // Music is cached, play it directly
+        print('Playing cached music: ${music.title}');
+        final String? cachedPath = await cacheManager.getCachedMusicPath(
+          user,
+          music,
+        );
+        if (cachedPath != null) {
+          music.filePath = cachedPath;
+          return await playMusic(music);
+        }
+      }
+
+      // Music is not cached, download and cache it
+      print('Downloading and caching music: ${music.title}');
+
+      // Show loading indicator
+      _showDownloadingSnackBar(context, 'Downloading ${music.title}...');
+
+      // Download and cache the music
+      final bool downloadSuccess = await cacheManager.downloadAndCacheMusic(
+        user: user,
+        music: music,
+      );
+
+      if (downloadSuccess) {
+        // Hide loading indicator and show success
+        _hideSnackBar(context);
+        _showPlaybackSuccessSnackBar(context, 'Now playing: ${music.title}');
+
+        // Play the cached music
         return await playMusic(music);
       } else {
-        // File doesn't exist, download it first
-        print('Downloading music: ${music.title}');
-
-        // Show loading indicator
-        _showDownloadingSnackBar(context, 'Downloading ${music.title}...');
-
-        // Use existing downloadAndSaveMusic method
-        final downloadSuccess = await downloadAndSaveMusic(
-          user: user,
-          music: music,
-        );
-
-        if (downloadSuccess) {
-          // Hide loading indicator and show success
-          _hideSnackBar(context);
-          _showPlaybackSuccessSnackBar(context, 'Now playing: ${music.title}');
-
-          // Play the downloaded music
-          return await playMusic(music);
-        } else {
-          _hideSnackBar(context);
-          _showPlaybackErrorSnackBar(context, 'Failed to download music');
-          return false;
-        }
+        _hideSnackBar(context);
+        _showPlaybackErrorSnackBar(context, 'Failed to download music');
+        return false;
       }
     } catch (e) {
       print('Error handling music playback: $e');
@@ -544,22 +524,28 @@ class Application {
   Future<bool> playMusic(Music music) async {
     try {
       if (music.filePath.isEmpty) {
-        print('No file path available for music: ${music.title}');
+        print('❌ No file path available for music: ${music.title}');
         return false;
       }
 
+      print('🎵 Attempting to play music: ${music.title}');
+      print('📂 File path: ${music.filePath}');
+
       final file = File(music.filePath);
       if (!await file.exists()) {
-        print('Music file not found: ${music.filePath}');
+        print('❌ Music file not found: ${music.filePath}');
         return false;
       }
+
+      print('✅ File exists, starting playback...');
       // play the music
       final player = AudioPlayer();
       await player.setAudioSource(AudioSource.file(file.path));
       await player.play();
+      print('🎶 Playback started successfully');
       return true;
     } catch (e) {
-      print('Error playing music: $e');
+      print('❌ Error playing music: $e');
       return false;
     }
   }
@@ -666,5 +652,125 @@ class Application {
   /// Hides the current snackbar
   void _hideSnackBar(BuildContext context) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  }
+
+  /// Clear cache for a user
+  Future<void> clearUserCache(User user) async {
+    try {
+      final CacheManager cacheManager = CacheManager.instance;
+      await cacheManager.clearCache(user);
+      print('Cache cleared for user: ${user.username}');
+    } catch (e) {
+      print('Error clearing cache: $e');
+    }
+  }
+
+  /// Get cache information for a user
+  Future<Map<String, dynamic>> getCacheInfo(User user) async {
+    try {
+      final CacheManager cacheManager = CacheManager.instance;
+      return await cacheManager.getCacheInfo(user);
+    } catch (e) {
+      print('Error getting cache info: $e');
+      return {
+        'size': 0,
+        'formattedSize': '0 B',
+        'fileCount': 0,
+        'cachePath': '',
+      };
+    }
+  }
+
+  /// Show cache management dialog
+  void showCacheManagementDialog(BuildContext context, User user) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.75),
+      builder:
+          (context) => FutureBuilder<Map<String, dynamic>>(
+            future: getCacheInfo(user),
+            builder: (context, snapshot) {
+              final cacheInfo =
+                  snapshot.data ??
+                  {
+                    'size': 0,
+                    'formattedSize': '0 B',
+                    'fileCount': 0,
+                    'cachePath': '',
+                  };
+
+              return Dialog(
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.surface.withOpacity(0.85),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.storage, color: Colors.blueGrey, size: 30),
+                          SizedBox(width: 10),
+                          Text(
+                            'Cache Management',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontSize: 18,
+                              letterSpacing: 1.1,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 16),
+                      detailsRow('Cache Size', cacheInfo['formattedSize']),
+                      detailsRow('Files Cached', '${cacheInfo['fileCount']}'),
+                      detailsRow('Cache Path', cacheInfo['cachePath']),
+                      SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              await clearUserCache(user);
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Cache cleared successfully'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            },
+                            icon: Icon(
+                              Icons.delete_forever,
+                              color: Colors.white,
+                            ),
+                            label: Text('Clear Cache'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                              'Close',
+                              style: TextStyle(color: Colors.purpleAccent),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+    );
   }
 }

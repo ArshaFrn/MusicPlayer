@@ -46,6 +46,37 @@ class Music {
     return (title + artist.name + releaseDate.toString()).hashCode;
   }
 
+  /// Clean the title to remove path separators and other problematic characters
+  static String _cleanTitle(String title) {
+    // Remove path separators and other problematic characters
+    String cleanTitle = title.replaceAll(RegExp(r'[\\/:*?"<>|]'), '');
+    // Remove multiple spaces and trim
+    cleanTitle = cleanTitle.replaceAll(RegExp(r'\s+'), ' ').trim();
+    // If the title is empty after cleaning, use a default
+    if (cleanTitle.isEmpty) {
+      cleanTitle = 'Unknown Title';
+    }
+    return cleanTitle;
+  }
+
+  /// Clean the extension to ensure it's a valid file extension
+  static String _cleanExtension(String extension) {
+    // Remove any path separators and get only the extension part
+    String cleanExtension = extension.replaceAll(RegExp(r'[\\/:*?"<>|]'), '');
+
+    // If the extension doesn't start with a dot, add one
+    if (!cleanExtension.startsWith('.') && cleanExtension.isNotEmpty) {
+      cleanExtension = '.$cleanExtension';
+    }
+
+    // If the extension is empty or invalid, default to .mp3
+    if (cleanExtension.isEmpty || cleanExtension == '.') {
+      cleanExtension = '.mp3';
+    }
+
+    return cleanExtension;
+  }
+
   Map<String, dynamic> toMap({bool includeFilePath = true}) {
     if (includeFilePath) {
       return {
@@ -80,7 +111,7 @@ class Music {
 
   Music.fromMap(Map<String, dynamic> map)
     : _id = map['id'],
-      _title = map['title'],
+      _title = _cleanTitle(map['title']),
       _artist = Artist(name: map['artist']), // Handle artist as string
       _genre = map['genre'],
       _durationInSeconds = map['durationInSeconds'],
@@ -88,12 +119,12 @@ class Music {
       _addedDate =
           DateTime.now(), // Use current time since server doesn't provide this
       _album = Album(
-        title: map['title'],
+        title: _cleanTitle(map['title']),
         artist: Artist(name: map['artist']),
       ), // Create default album
       _likeCount = map['likeCount'] ?? 0,
       _isLiked = map['isLiked'] ?? false,
-      _extension = map['extension'] ?? 'mp3',
+      _extension = _cleanExtension(map['extension'] ?? 'mp3'),
       _filePath = map['filePath'] ?? '';
 
   // * Getters

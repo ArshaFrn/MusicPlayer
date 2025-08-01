@@ -39,7 +39,7 @@ class _LibraryPageState extends State<LibraryPage> {
     setState(() {
       _isLoading = true;
     });
-    final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+    final tcpClient = TcpClient(serverAddress: '192.168.1.34', serverPort: 12345);
     final tracks = await tcpClient.getUserMusicList(widget.user);
     final likedSongIds = await tcpClient.getUserLikedSongs(widget.user);
 
@@ -207,6 +207,13 @@ class _LibraryPageState extends State<LibraryPage> {
               elevation: 17,
               padding: EdgeInsets.symmetric(vertical: 6),
             ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.storage, color: Colors.white70),
+            tooltip: "Cache Management",
+            onPressed: () {
+              application.showCacheManagementDialog(context, widget.user);
+            },
           ),
           IconButton(
             icon: const Icon(Icons.shuffle, color: Colors.white70),
