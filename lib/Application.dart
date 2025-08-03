@@ -631,6 +631,23 @@ class Application {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
   }
 
+  // Public methods for snackbar management
+  void showDownloadingSnackBar(BuildContext context, String message) {
+    _showDownloadingSnackBar(context, message);
+  }
+
+  void hideSnackBar(BuildContext context) {
+    _hideSnackBar(context);
+  }
+
+  void showPlaybackSuccessSnackBar(BuildContext context, String message) {
+    _showPlaybackSuccessSnackBar(context, message);
+  }
+
+  void showPlaybackErrorSnackBar(BuildContext context, String message) {
+    _showPlaybackErrorSnackBar(context, message);
+  }
+
   /// Clear cache for a user
   Future<void> clearUserCache(User user) async {
     try {

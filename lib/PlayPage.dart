@@ -86,6 +86,14 @@ class _PlayPageState extends State<PlayPage> {
         }
       });
 
+      // Listen for song completion and auto-play next song
+      _audioPlayer!.playerStateStream.listen((state) {
+        if (mounted && state.processingState == ProcessingState.completed) {
+          // Song finished, play next song
+          _autoAdvanceToNext();
+        }
+      });
+
       // Load and play the current track
       await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
     } catch (e) {
@@ -120,12 +128,69 @@ class _PlayPageState extends State<PlayPage> {
 
         await _audioPlayer!.setFilePath(cachedPath);
         await _audioPlayer!.play();
+
+        setState(() {
+          _isLoading = false;
+        });
       } else {
-        throw Exception('Track not found in cache');
+        // Track not cached, download it
+        application.showDownloadingSnackBar(
+          context,
+          'Downloading ${track.title}...',
+        );
+
+        final bool downloadSuccess = await cacheManager.downloadAndCacheMusic(
+          user: widget.user,
+          music: track,
+        );
+
+        if (downloadSuccess) {
+          application.hideSnackBar(context);
+          application.showPlaybackSuccessSnackBar(
+            context,
+            'Now playing: ${track.title}',
+          );
+
+          // Get the newly cached path
+          final String? newCachedPath = await cacheManager.getCachedMusicPath(
+            widget.user,
+            track,
+          );
+
+          if (newCachedPath != null && File(newCachedPath).existsSync()) {
+            await _extractAlbumArt();
+            await _audioPlayer!.setFilePath(newCachedPath);
+            await _audioPlayer!.play();
+          }
+        } else {
+          application.hideSnackBar(context);
+          application.showPlaybackErrorSnackBar(
+            context,
+            'Failed to download ${track.title}',
+          );
+
+          // Set play/pause button to pause state
+          setState(() {
+            _isPlaying = false;
+            _isLoading = false;
+          });
+          return;
+        }
+
+        setState(() {
+          _isLoading = false;
+        });
       }
     } catch (e) {
       print('Error loading track: $e');
-      rethrow;
+      application.hideSnackBar(context);
+      application.showPlaybackErrorSnackBar(context, 'Error loading track: $e');
+
+      // Set play/pause button to pause state
+      setState(() {
+        _isPlaying = false;
+        _isLoading = false;
+      });
     }
   }
 
@@ -196,12 +261,36 @@ class _PlayPageState extends State<PlayPage> {
     _audioPlayer?.seek(position);
   }
 
-  void _nextTrack() {
-    // TODO: Implement proper next track logic
+  void _nextTrack() async {
+    if (_playlist.isEmpty || _playlist.length <= 1) return;
+
+    // Pause current song first
+    await _audioPlayer?.pause();
+
+    // Navigate to previous track (loop to last if at beginning)
+    _currentTrackIndex =
+        (_currentTrackIndex - 1 + _playlist.length) % _playlist.length;
+    await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
   }
 
-  void _previousTrack() {
-    // TODO: Implement proper previous track logic
+  void _autoAdvanceToNext() async {
+    if (_playlist.isEmpty || _playlist.length <= 1) return;
+
+    // Navigate to next track (loop to first if at end)
+    _currentTrackIndex =
+        (_currentTrackIndex - 1 + _playlist.length) % _playlist.length;
+    await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
+  }
+
+  void _previousTrack() async {
+    if (_playlist.isEmpty || _playlist.length <= 1) return;
+
+    // Pause current song first
+    await _audioPlayer?.pause();
+
+    // Navigate to next track (loop to first if at end)
+    _currentTrackIndex = (_currentTrackIndex + 1) % _playlist.length;
+    await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
   }
 
   String _formatDuration(Duration duration) {
@@ -405,9 +494,9 @@ class _PlayPageState extends State<PlayPage> {
           // Progress Bar
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: Color(0xFF8B008B),
+              activeTrackColor: Color(0xFFC300C3),
               inactiveTrackColor: Colors.white24,
-              thumbColor: Color(0xFF4B0082),
+              thumbColor: Color(0xFF6E00B8),
               thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8),
               overlayShape: RoundSliderOverlayShape(overlayRadius: 16),
               trackHeight: 4,
@@ -415,7 +504,10 @@ class _PlayPageState extends State<PlayPage> {
             child: Slider(
               value:
                   _duration.inMilliseconds > 0
-                      ? _position.inMilliseconds.toDouble()
+                      ? (_position.inMilliseconds.toDouble()).clamp(
+                        0.0,
+                        _duration.inMilliseconds.toDouble(),
+                      )
                       : 0.0,
               max: _duration.inMilliseconds.toDouble(),
               onChanged: (value) {
@@ -458,12 +550,8 @@ class _PlayPageState extends State<PlayPage> {
               shape: BoxShape.circle,
               gradient: LinearGradient(
                 colors: [
-                  Color(
-                    0xFF4B0082,
-                  ).withOpacity(_playlist.length > 1 ? 0.4 : 0.15),
-                  Color(
-                    0xFF8B008B,
-                  ).withOpacity(_playlist.length > 1 ? 0.4 : 0.15),
+                  Color(0xFF4B0082).withOpacity(0.75),
+                  Color(0xFF8B008B).withOpacity(0.95),
                 ],
               ),
             ),
@@ -520,12 +608,8 @@ class _PlayPageState extends State<PlayPage> {
               shape: BoxShape.circle,
               gradient: LinearGradient(
                 colors: [
-                  Color(
-                    0xFF4B0082,
-                  ).withOpacity(_playlist.length > 1 ? 0.4 : 0.15),
-                  Color(
-                    0xFF8B008B,
-                  ).withOpacity(_playlist.length > 1 ? 0.4 : 0.15),
+                  Color(0xFF4B0082).withOpacity(0.75),
+                  Color(0xFF8B008B).withOpacity(0.95),
                 ],
               ),
             ),
