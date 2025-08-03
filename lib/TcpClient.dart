@@ -255,7 +255,7 @@ class TcpClient {
     required User user,
     required Music music,
   }) async {
-    const int maxRetries = 3;
+    const int maxRetries = 4;
 
     for (int attempt = 1; attempt <= maxRetries; attempt++) {
       try {

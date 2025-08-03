@@ -119,9 +119,14 @@ class Music {
       _addedDate =
           DateTime.now(), // Use current time since server doesn't provide this
       _album = Album(
-        title: _cleanTitle(map['title']),
-        artist: Artist(name: map['artist']),
-      ), // Create default album
+        title: _cleanTitle(map['album']?['title'] ?? 'Unknown Album'),
+        artist: Artist(
+          name:
+              map['album']?['artist']?['name'] ??
+              map['artist'] ??
+              'Unknown Artist',
+        ),
+      ), // Create album with proper title and artist
       _likeCount = map['likeCount'] ?? 0,
       _isLiked = map['isLiked'] ?? false,
       _extension = _cleanExtension(map['extension'] ?? 'mp3'),

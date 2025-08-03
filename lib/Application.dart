@@ -14,7 +14,7 @@ import 'TcpClient.dart';
 import 'LibraryPage.dart';
 import 'package:just_audio/just_audio.dart';
 import 'utils/CacheManager.dart';
-
+import 'PlayPage.dart';
 // Applicaation Flow Controller
 
 enum filterOption { dateModified, az, za, duration, favourite }
@@ -70,6 +70,8 @@ class Application {
   Application._privateConstructor();
 
   static Application get instance => _instance;
+
+  CacheManager get cacheManager => CacheManager.instance;
 
   Future<File?> pickMusicFile() async {
     try {
@@ -253,7 +255,6 @@ class Application {
   /// Synchronizes the like state of music tracks with the user's liked songs
   void syncLikeState(User user, List<Music> tracks) {
     for (Music track in tracks) {
-      // Check if the track is in the user's liked songs
       bool isLiked = user.likedSongs.contains(track);
       track.isLiked = isLiked;
     }
@@ -472,18 +473,24 @@ class Application {
       final bool isCached = await cacheManager.isMusicCached(user, music);
 
       if (isCached) {
-        // Music is cached, play it directly
         print('Playing cached music: ${music.title}');
         final String? cachedPath = await cacheManager.getCachedMusicPath(
           user,
           music,
         );
         if (cachedPath != null) {
-          music.filePath = cachedPath;
-          return await playMusic(music);
+          //Navigate to play page
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      PlayPage(music: music, user: user, playlist: user.tracks),
+            ),
+          );
+          return true;
         }
       }
-
       // Music is not cached, download and cache it
       print('Downloading and caching music: ${music.title}');
 
@@ -497,12 +504,17 @@ class Application {
       );
 
       if (downloadSuccess) {
-        // Hide loading indicator and show success
         _hideSnackBar(context);
-        _showPlaybackSuccessSnackBar(context, 'Now playing: ${music.title}');
-
-        // Play the cached music
-        return await playMusic(music);
+        //Navigate to play page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) =>
+                    PlayPage(music: music, user: user, playlist: user.tracks),
+          ),
+        );
+        return true;
       } else {
         _hideSnackBar(context);
         _showPlaybackErrorSnackBar(context, 'Failed to download music');
@@ -514,65 +526,6 @@ class Application {
       return false;
     }
   }
-
-  /// Plays the music file
-  Future<bool> playMusic(Music music) async {
-    try {
-      if (music.filePath.isEmpty) {
-        print('❌ No file path available for music: ${music.title}');
-        return false;
-      }
-
-      print('🎵 Attempting to play music: ${music.title}');
-      print('📂 File path: ${music.filePath}');
-
-      final file = File(music.filePath);
-      if (!await file.exists()) {
-        print('❌ Music file not found: ${music.filePath}');
-        return false;
-      }
-
-      print('✅ File exists, starting playback...');
-
-      // Dispose previous player if exists
-      if (_audioPlayer != null) {
-        await _audioPlayer!.stop();
-        await _audioPlayer!.dispose();
-      }
-
-      // Create new player instance
-      _audioPlayer = AudioPlayer();
-
-      // Set audio source with proper path
-      await _audioPlayer!.setAudioSource(AudioSource.file(file.absolute.path));
-
-      // Start playback
-      await _audioPlayer!.play();
-
-      print('🎶 Playback started successfully');
-      return true;
-    } catch (e) {
-      print('❌ Error playing music: $e');
-      return false;
-    }
-  }
-
-  /// Stops current playback and disposes player
-  Future<void> stopMusic() async {
-    try {
-      if (_audioPlayer != null) {
-        await _audioPlayer!.stop();
-        await _audioPlayer!.dispose();
-        _audioPlayer = null;
-        print('🛑 Playback stopped and player disposed');
-      }
-    } catch (e) {
-      print('❌ Error stopping music: $e');
-    }
-  }
-
-  /// Gets the current audio player instance
-  AudioPlayer? get audioPlayer => _audioPlayer;
 
   /// Shows a snackbar indicating download is in progress
   void _showDownloadingSnackBar(BuildContext context, String message) {
@@ -601,7 +554,7 @@ class Application {
             ),
           ],
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.blue.shade800,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -632,7 +585,7 @@ class Application {
             ),
           ],
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.green.shade800,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -663,7 +616,7 @@ class Application {
             ),
           ],
         ),
-        backgroundColor: Colors.red,
+        backgroundColor: Colors.red.shade800,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -776,7 +729,7 @@ class Application {
                             ),
                             label: Text('Clear Cache'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
+                              backgroundColor: Colors.red.shade700,
                               foregroundColor: Colors.white,
                             ),
                           ),

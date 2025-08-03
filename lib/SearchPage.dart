@@ -166,7 +166,7 @@ class _SearchPage extends State<SearchPage> {
   Future<void> _onLikeTap(Music music) async {
     final success = await application.toggleLike(widget._user, music);
     if (success) {
-      setState(() {}); // Only update UI if server operation was successful
+      setState(() {});
     }
   }
 }

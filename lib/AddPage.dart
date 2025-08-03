@@ -86,7 +86,7 @@ class _AddPage extends State<AddPage> {
           return;
         }
         final tcpClient = TcpClient(
-          serverAddress: "192.168.1.34",
+          serverAddress: "10.0.2.2",
           serverPort: 12345,
         );
         String? base64Data = await application.encodeFile(file);

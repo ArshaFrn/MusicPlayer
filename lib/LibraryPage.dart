@@ -40,7 +40,7 @@ class _LibraryPageState extends State<LibraryPage> {
       _isLoading = true;
     });
     final tcpClient = TcpClient(
-      serverAddress: '192.168.1.34',
+      serverAddress: '10.0.2.2',
       serverPort: 12345,
     );
     final tracks = await tcpClient.getUserMusicList(widget.user);
@@ -51,16 +51,13 @@ class _LibraryPageState extends State<LibraryPage> {
         ..clear()
         ..addAll(tracks);
 
-      // Update likedSongs list based on fetched liked song IDs
       widget.user.likedSongs
         ..clear()
         ..addAll(tracks.where((track) => likedSongIds.contains(track.id)));
 
-      // Update isLiked field for each track
       for (final track in widget.user.tracks) {
         track.isLiked = likedSongIds.contains(track.id);
       }
-
       _isLoading = false;
     });
   }
@@ -335,22 +332,13 @@ class _LibraryPageState extends State<LibraryPage> {
           ),
     );
     if (result == 'play') {
-      // Handle music playback logic
       final success = await application.handleMusicPlayback(
         context: context,
         user: widget.user,
         music: music,
       );
-
       if (!success) {
-        // If playback failed, show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to play ${music.title}'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 2),
-          ),
-        );
+        print("Error Playing The Song");
       }
     } else if (result == 'delete') {
       await application.deleteMusic(
@@ -358,7 +346,7 @@ class _LibraryPageState extends State<LibraryPage> {
         user: widget.user,
         music: music,
       );
-      setState(() {}); //Refresh UI
+      setState(() {});
     } else if (result == 'details') {
       application.showMusicDetailsDialog(context, music);
     }
@@ -367,7 +355,7 @@ class _LibraryPageState extends State<LibraryPage> {
   Future<void> _onLikeTap(Music music) async {
     final success = await application.toggleLike(widget.user, music);
     if (success) {
-      setState(() {}); // Only update UI if server operation was successful
+      setState(() {});
     }
   }
 
@@ -382,14 +370,7 @@ class _LibraryPageState extends State<LibraryPage> {
       );
 
       if (!success) {
-        // If playback failed, show error message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to play ${music.title}'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 2),
-          ),
-        );
+        print("Error Playing The Song");
       }
     } catch (e) {
       print('Error handling track tap: $e');
