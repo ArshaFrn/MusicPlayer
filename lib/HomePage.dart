@@ -10,7 +10,7 @@ import 'PlaylistsPage.dart';
 import 'SearchPage.dart';
 import 'AddPage.dart';
 import 'ProfilePage.dart';
-
+import 'widgets/MiniPlayer.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -41,9 +41,10 @@ class _HomePage extends State<HomePage> {
     final password = prefs.getString('password') ?? '';
     final registrationDateString = prefs.getString('registrationDate') ?? '';
     final profileImageUrl = prefs.getString('profileImageUrl') ?? '';
-    final registrationDate = registrationDateString.isNotEmpty
-        ? DateTime.parse(registrationDateString)
-        : DateTime.now();
+    final registrationDate =
+        registrationDateString.isNotEmpty
+            ? DateTime.parse(registrationDateString)
+            : DateTime.now();
 
     setState(() {
       _user = User(
@@ -77,39 +78,44 @@ class _HomePage extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     if (!_isUserLoaded) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     return Scaffold(
       body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white60,
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        type: BottomNavigationBarType.shifting,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.library_music),
-            label: "Library",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.playlist_play),
-            label: "Playlists",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: "Search",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle),
-            label: "Add",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Profile",
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          MiniPlayer(),
+
+          BottomNavigationBar(
+            selectedItemColor: Colors.white,
+            unselectedItemColor: Colors.white60,
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+            type: BottomNavigationBarType.shifting,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.library_music),
+                label: "Library",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.playlist_play),
+                label: "Playlists",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.search),
+                label: "Search",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.add_circle),
+                label: "Add",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.person),
+                label: "Profile",
+              ),
+            ],
           ),
         ],
       ),

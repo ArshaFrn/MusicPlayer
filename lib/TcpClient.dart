@@ -595,4 +595,43 @@ class TcpClient {
       return [];
     }
   }
+  Future<Map<String, dynamic>> updateRecentlyPlayed(
+      User user,
+      Music music,
+      ) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
+      final request = {
+        "Request": "updateRecentlyPlayed",
+        "Payload": {"username": user.username, "musicId": music.id},
+      };
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+      final response =
+      await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      // Example response format:
+      // {'status': 'updateRecentlyPlayedSuccess', 'message': 'Recently played songs updated successfully'}
+      // {'status': 'error', 'message': 'Error message'}
+
+      print('Raw response received: $response');
+
+      socket.close();
+      if (response.isEmpty) {
+        print('Error: Empty response from server');
+        return {"status": "error", "message": "Empty response from server"};
+      }
+      try {
+        return jsonDecode(response);
+      } catch (e) {
+        print('Error decoding response: $e');
+        return {"status": "error", "message": "Invalid response format"};
+      }
+    } catch (e) {
+      print('Error updating recently played songs: $e');
+      return {"status": "error", "message": "Failed to connect to server"};
+    }
+  }
 }

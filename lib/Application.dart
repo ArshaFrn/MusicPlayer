@@ -14,6 +14,7 @@ import 'TcpClient.dart';
 import 'LibraryPage.dart';
 import 'package:just_audio/just_audio.dart';
 import 'utils/CacheManager.dart';
+import 'utils/MiniAudioController.dart';
 import 'PlayPage.dart';
 // Applicaation Flow Controller
 
@@ -672,6 +673,27 @@ class Application {
         'fileCount': 0,
         'cachePath': '',
       };
+    }
+  }
+
+  /// Check if mini player is active
+  bool get isMiniPlayerActive {
+    try {
+      final miniController = MiniAudioController.instance;
+      return miniController.hasTrack;
+    } catch (e) {
+      print('Error checking mini player state: $e');
+      return false;
+    }
+  }
+
+  /// Stop mini player
+  void stopMiniPlayer() {
+    try {
+      final miniController = MiniAudioController.instance;
+      miniController.dispose();
+    } catch (e) {
+      print('Error stopping mini player: $e');
     }
   }
 

@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'Model/Music.dart';
 import 'Model/User.dart';
 import 'Application.dart';
+import 'utils/MiniAudioController.dart';
 
 class PlayPage extends StatefulWidget {
   final Music music;
@@ -169,7 +170,6 @@ class _PlayPageState extends State<PlayPage> {
             'Failed to download ${track.title}',
           );
 
-          // Set play/pause button to pause state
           setState(() {
             _isPlaying = false;
             _isLoading = false;
@@ -186,7 +186,6 @@ class _PlayPageState extends State<PlayPage> {
       application.hideSnackBar(context);
       application.showPlaybackErrorSnackBar(context, 'Error loading track: $e');
 
-      // Set play/pause button to pause state
       setState(() {
         _isPlaying = false;
         _isLoading = false;
@@ -198,7 +197,6 @@ class _PlayPageState extends State<PlayPage> {
     try {
       final currentTrackId = _playlist[_currentTrackIndex].id;
 
-      // Don't re-extract if we already have album art for this track
       if (_lastExtractedTrackId == currentTrackId && _albumArtBytes != null) {
         print('Album art already exists for track: $currentTrackId');
         return;
@@ -211,18 +209,16 @@ class _PlayPageState extends State<PlayPage> {
       );
 
       if (cachedPath != null && File(cachedPath).existsSync()) {
-        // Extract album art from the audio file metadata
         final metadata = await readMetadata(File(cachedPath), getImage: true);
 
         if (metadata.pictures.isNotEmpty) {
-          // Get the first picture (usually the album art)
           final picture = metadata.pictures.first;
           final imageData = picture.bytes;
 
           if (imageData != null && imageData.isNotEmpty) {
             setState(() {
               _albumArtBytes = imageData;
-              _albumArtPath = null; // Clear file path since we're using bytes
+              _albumArtPath = null;
               _lastExtractedTrackId = currentTrackId;
             });
 
@@ -264,10 +260,8 @@ class _PlayPageState extends State<PlayPage> {
   void _nextTrack() async {
     if (_playlist.isEmpty || _playlist.length <= 1) return;
 
-    // Pause current song first
     await _audioPlayer?.pause();
 
-    // Navigate to previous track (loop to last if at beginning)
     _currentTrackIndex =
         (_currentTrackIndex - 1 + _playlist.length) % _playlist.length;
     await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
@@ -276,7 +270,6 @@ class _PlayPageState extends State<PlayPage> {
   void _autoAdvanceToNext() async {
     if (_playlist.isEmpty || _playlist.length <= 1) return;
 
-    // Navigate to next track (loop to first if at end)
     _currentTrackIndex =
         (_currentTrackIndex - 1 + _playlist.length) % _playlist.length;
     await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
@@ -285,10 +278,8 @@ class _PlayPageState extends State<PlayPage> {
   void _previousTrack() async {
     if (_playlist.isEmpty || _playlist.length <= 1) return;
 
-    // Pause current song first
     await _audioPlayer?.pause();
 
-    // Navigate to next track (loop to first if at end)
     _currentTrackIndex = (_currentTrackIndex + 1) % _playlist.length;
     await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
   }
@@ -302,7 +293,11 @@ class _PlayPageState extends State<PlayPage> {
 
   @override
   void dispose() {
-    _audioPlayer?.dispose();
+    // Only dispose if mini player is not active
+    final miniController = MiniAudioController.instance;
+    if (!miniController.hasTrack) {
+      _audioPlayer?.dispose();
+    }
 
     // Clean up album art bytes
     _albumArtBytes = null;
@@ -365,7 +360,18 @@ class _PlayPageState extends State<PlayPage> {
       child: Row(
         children: [
           IconButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              // Initialize mini player before closing
+              final miniController = MiniAudioController.instance;
+              miniController.initializeFromPlayPage(
+                audioPlayer: _audioPlayer!,
+                currentTrack: _playlist[_currentTrackIndex],
+                user: widget.user,
+                playlist: _playlist,
+                currentTrackIndex: _currentTrackIndex,
+              );
+              Navigator.pop(context);
+            },
             icon: Icon(
               Icons.keyboard_arrow_down,
               color: Colors.white,
