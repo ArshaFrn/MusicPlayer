@@ -596,4 +596,62 @@ class TcpClient {
       return [];
     }
   }
+
+  Future<Map<String, dynamic>> updateUserInfo(
+    String username, {
+    String? fullName,
+    String? email,
+  }) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      final payload = {
+        "username": username,
+        if (fullName != null) "fullName": fullName,
+        if (email != null) "email": email,
+      };
+      final request = {
+        "Request": "updateUserInfo",
+        "Payload": payload,
+      };
+      socket.write('${jsonEncode(request)}\n\n');
+      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+      return jsonDecode(response);
+    } catch (e) {
+      return {"status": "error", "message": "Failed to connect to server"};
+    }
+  }
+
+  Future<Map<String, dynamic>> changePassword(
+    String username,
+    String oldPassword,
+    String newPassword, {
+    bool isForgotten = false,
+  }) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      final payload = {
+        "username": username,
+        "oldPassword": oldPassword,
+        "newPassword": newPassword,
+        "isForgotten": isForgotten,
+      };
+      final request = {
+        "Request": "updatePassword",
+        "Payload": payload,
+      };
+      socket.write('${jsonEncode(request)}\n\n');
+      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+      return jsonDecode(response);
+    } catch (e) {
+      return {"status": "error", "message": "Failed to connect to server"};
+    }
+  }
 }
