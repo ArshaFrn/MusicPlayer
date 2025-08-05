@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import 'package:second/main.dart';
 import 'ChangePasswordPage.dart';
 import 'Model/User.dart';
 import 'TcpClient.dart';
+import 'LoginPage.dart';
 
 class ProfilePage extends StatefulWidget {
   final User user;
@@ -20,12 +24,113 @@ class _ProfilePage extends State<ProfilePage> {
   final TextEditingController _fullnameController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   bool _isLoading = false;
+  bool _isLoadingProfile = true;
 
   @override
   void initState() {
     super.initState();
     _emailController.text = widget.user.email;
     _fullnameController.text = widget.user.fullname;
+    _loadProfileFromBackend();
+  }
+
+  Future<void> _loadProfileFromBackend() async {
+    try {
+      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final response = await tcpClient.getUserProfile(widget.user.username);
+
+      if (response['status'] == 'getProfileImageSuccess' || response['status'] == 'success') {
+        final profileImageBase64 = response['Payload'] ?? '';
+        
+        print('Profile image response received. Base64 length: ${profileImageBase64.length}');
+        
+        if (profileImageBase64.isNotEmpty) {
+          // Decode base64 image and save locally
+          await _saveProfileImageFromBase64(profileImageBase64);
+        } else {
+          print('Empty profile image data received');
+          // Clear any existing profile image
+          widget.user.setProfileImageUrl('');
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('profileImageUrl', '');
+        }
+      } else if (response['status'] == 'profileImageNotFound') {
+        print('No profile image found for user: ${widget.user.username}');
+        // No profile image found, clear any existing image
+        widget.user.setProfileImageUrl('');
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('profileImageUrl', '');
+      } else {
+        print('Error loading profile image: ${response['message']}');
+      }
+    } catch (e) {
+      print('Error loading profile from backend: $e');
+    } finally {
+      setState(() {
+        _isLoadingProfile = false;
+      });
+    }
+  }
+
+  Future<void> _saveProfileImageFromBase64(String base64Image) async {
+    try {
+      // Validate base64 string before decoding
+      if (base64Image.isEmpty) {
+        print('Empty base64 image data received');
+        return;
+      }
+      
+      // Remove any potential whitespace or newlines
+      base64Image = base64Image.trim();
+      
+      // Check if the base64 string is valid
+      if (base64Image.length % 4 != 0) {
+        print('Invalid base64 string length: ${base64Image.length}');
+        return;
+      }
+      
+      // Try to decode with error handling
+      List<int> imageBytes;
+      try {
+        imageBytes = base64Decode(base64Image);
+      } catch (e) {
+        print('Base64 decode error: $e');
+        print('Base64 string length: ${base64Image.length}');
+        print('Base64 string preview: ${base64Image.substring(0, base64Image.length > 100 ? 100 : base64Image.length)}...');
+        return;
+      }
+      
+      if (imageBytes.isEmpty) {
+        print('Decoded image bytes are empty');
+        return;
+      }
+      
+      // Get app documents directory
+      final Directory appDir = await getApplicationDocumentsDirectory();
+      final String profileDir = path.join(appDir.path, 'profile_images');
+      
+      // Create directory if it doesn't exist
+      final Directory dir = Directory(profileDir);
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+      
+      // Save image file
+      final String imagePath = path.join(profileDir, '${widget.user.username}_profile.jpg');
+      final File imageFile = File(imagePath);
+      await imageFile.writeAsBytes(imageBytes);
+      
+      // Update user and SharedPreferences
+      widget.user.setProfileImageUrl(imagePath);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('profileImageUrl', imagePath);
+      
+      setState(() {});
+      print('Profile image saved successfully to: $imagePath');
+    } catch (e) {
+      print('Error saving profile image: $e');
+      // Don't throw the error, just log it and continue
+    }
   }
 
   void _logout() async {
@@ -34,7 +139,7 @@ class _ProfilePage extends State<ProfilePage> {
     if (mounted) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LogInPage(title: 'Hertz')),
+        MaterialPageRoute(builder: (context) => LogInPage(title: 'Hertz', openForgotPassword: false)),
       );
     }
   }
@@ -78,35 +183,65 @@ class _ProfilePage extends State<ProfilePage> {
           _isLoading = true;
         });
 
-        // Here you would typically upload the image to your server
-        // For now, we'll just update the local state
-        widget.user.setProfileImageUrl(image.path);
-        
-        // Save to SharedPreferences
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('profileImageUrl', image.path);
+        // Upload image to backend
+        final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+        final response = await tcpClient.uploadProfileImage(widget.user.username, image.path);
 
-        setState(() {
-          _isLoading = false;
-        });
+        if (response['status'] == 'profileImageUploadSuccess' || response['status'] == 'success') {
+          // Update local state with the returned image URL from backend
+          final imageUrl = response['imageUrl'] ?? image.path;
+          widget.user.setProfileImageUrl(imageUrl);
+          
+          // Save to SharedPreferences
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('profileImageUrl', imageUrl);
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Profile picture updated!",
-              style: TextStyle(color: Colors.white),
+          setState(() {
+            _isLoading = false;
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Profile picture updated!",
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Color(0xFF8456FF),
+              duration: Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
             ),
-            backgroundColor: Color(0xFF8456FF),
-            duration: Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
+          );
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                response['message'] ?? "Failed to upload profile picture",
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: Colors.red.withOpacity(0.65),
+              duration: Duration(seconds: 3),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
             ),
-            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
-          ),
-        );
+          );
+        }
       }
     } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -123,6 +258,12 @@ class _ProfilePage extends State<ProfilePage> {
         ),
       );
     }
+  }
+
+  bool _isValidEmail(String email) {
+    // Email regex pattern
+    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return emailRegex.hasMatch(email);
   }
 
   Widget _buildProfilePicture() {
@@ -396,7 +537,22 @@ class _ProfilePage extends State<ProfilePage> {
 
   Future<void> _updateUserInfo() async {
     try {
-      final tcpClient = TcpClient(serverAddress: '192.168.1.34', serverPort: 12345);
+      // Validate email format
+      if (!_isValidEmail(_emailController.text)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Please enter a valid email address", style: TextStyle(color: Colors.white)),
+            backgroundColor: Colors.red.withOpacity(0.65),
+            duration: Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
+          ),
+        );
+        return;
+      }
+
+      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
       
       // Check if any changes were made
       bool hasChanges = false;
@@ -433,7 +589,7 @@ class _ProfilePage extends State<ProfilePage> {
       );
       
       if (response['status'] == 'success' || response['status'] == 'userInfoUpdateSuccess') {
-        // Update local user object
+        // Update local user object only after successful backend response
         if (updateData.containsKey('email')) {
           widget.user.email = updateData['email'];
         }
@@ -460,6 +616,20 @@ class _ProfilePage extends State<ProfilePage> {
             margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
           ),
         );
+      } else if (response['status'] == 'emailAlreadyExists' || response['status'] == 'duplicateEmail') {
+        // Handle duplicate email error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Email already exists. Please use a different email address.", style: TextStyle(color: Colors.white)),
+            backgroundColor: Colors.red.withOpacity(0.65),
+            duration: Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
+          ),
+        );
+        // Reset email field to original value
+        _emailController.text = widget.user.email;
       } else {
         throw Exception(response['message'] ?? 'Update failed');
       }
@@ -479,6 +649,32 @@ class _ProfilePage extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoadingProfile) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(
+                  color: Color(0xFF8456FF),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  "Loading profile...",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(

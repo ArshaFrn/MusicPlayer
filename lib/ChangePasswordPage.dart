@@ -40,7 +40,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
       return;
     }
     setState(() { _isLoading = true; });
-    final tcpClient = TcpClient(serverAddress: '192.168.1.34', serverPort: 12345);
+    final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
     final response = await tcpClient.changePassword(
       widget.user.username,
       oldPassword,
