@@ -654,4 +654,161 @@ class TcpClient {
       return {"status": "error", "message": "Failed to connect to server"};
     }
   }
+
+  Future<Map<String, dynamic>> uploadProfileImage(
+    String username,
+    String imagePath,
+  ) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      
+      // Read image file and convert to base64
+      final File imageFile = File(imagePath);
+      final List<int> imageBytes = await imageFile.readAsBytes();
+      final String base64Image = base64Encode(imageBytes);
+      
+      final payload = {
+        "username": username,
+        "imageData": base64Image,
+        "imageName": imagePath.split('/').last,
+      };
+      
+      final request = {
+        "Request": "uploadProfileImage",
+        "Payload": payload,
+      };
+      
+      socket.write('${jsonEncode(request)}\n\n');
+      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+      
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+      
+      return jsonDecode(response);
+    } catch (e) {
+      return {"status": "error", "message": "Failed to connect to server"};
+    }
+  }
+
+  Future<Map<String, dynamic>> getUserProfile(String username) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      
+      final payload = {
+        "username": username,
+      };
+      
+      final request = {
+        "Request": "getProfileImage",
+        "Payload": payload,
+      };
+      
+      socket.write('${jsonEncode(request)}\n\n');
+      
+      // Use a more robust approach for receiving large responses
+      String response = '';
+      await for (String chunk in socket.cast<List<int>>().transform(const Utf8Decoder())) {
+        response += chunk;
+        // Check if we have received a complete JSON response
+        if (response.contains('\n\n')) {
+          break;
+        }
+      }
+      socket.close();
+      
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+      
+      // Clean up the response if needed
+      response = response.trim();
+      
+      return jsonDecode(response);
+    } catch (e) {
+      return {"status": "error", "message": "Failed to connect to server: $e"};
+    }
+  }
+
+  Future<Map<String, dynamic>> forgetPasswordRequest(String email) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      
+      final payload = {
+        "email": email,
+      };
+      
+      final request = {
+        "Request": "forgetPasswordRequest",
+        "Payload": payload,
+      };
+      
+      socket.write('${jsonEncode(request)}\n\n');
+      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+      
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+      
+      return jsonDecode(response);
+    } catch (e) {
+      return {"status": "error", "message": "Failed to connect to server"};
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyResetCode(String email, String code) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      
+      final payload = {
+        "email": email,
+        "code": code,
+      };
+      
+      final request = {
+        "Request": "verifyResetCode",
+        "Payload": payload,
+      };
+      
+      socket.write('${jsonEncode(request)}\n\n');
+      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+      
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+      
+      return jsonDecode(response);
+    } catch (e) {
+      return {"status": "error", "message": "Failed to connect to server"};
+    }
+  }
+
+  Future<Map<String, dynamic>> updatePasswordWithReset(String username, String newPassword, String email) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      final payload = {
+        "username": username,
+        "oldPassword": "",
+        "newPassword": newPassword,
+        "isForgotten": true,
+        "email": email,
+      };
+      final request = {
+        "Request": "updatePassword",
+        "Payload": payload,
+      };
+      socket.write('${jsonEncode(request)}\n\n');
+      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+      return jsonDecode(response);
+    } catch (e) {
+      return {"status": "error", "message": "Failed to connect to server"};
+    }
+  }
 }

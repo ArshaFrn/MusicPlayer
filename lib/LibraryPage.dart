@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'Model/Music.dart';
 import 'Model/User.dart';
@@ -20,46 +18,72 @@ class _LibraryPageState extends State<LibraryPage> {
   final Application application = Application.instance;
   filterOption _selectedSort = filterOption.dateModified;
   bool _isLoading = true;
-  static bool _hasFetchedTracks = false;
+  bool _isRefreshing = false;
 
   @override
   void initState() {
     super.initState();
-    if (!_hasFetchedTracks) {
+    _fetchTracksFromServer();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh data when page becomes visible
+    _fetchTracksFromServer();
+  }
+
+  @override
+  void didUpdateWidget(LibraryPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Refresh when widget updates (e.g., when returning from other pages)
+    if (oldWidget.user != widget.user) {
       _fetchTracksFromServer();
-      _hasFetchedTracks = true;
-    } else {
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
   Future<void> _fetchTracksFromServer() async {
+    if (_isRefreshing) return; // Prevent multiple simultaneous requests
+    
     setState(() {
       _isLoading = true;
+      _isRefreshing = true;
     });
-    final tcpClient = TcpClient(serverAddress: '192.168.1.34', serverPort: 12345);
-    final tracks = await tcpClient.getUserMusicList(widget.user);
-    final likedSongIds = await tcpClient.getUserLikedSongs(widget.user);
+    
+    try {
+      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final tracks = await tcpClient.getUserMusicList(widget.user);
+      final likedSongIds = await tcpClient.getUserLikedSongs(widget.user);
 
-    setState(() {
-      widget.user.tracks
-        ..clear()
-        ..addAll(tracks);
+      setState(() {
+        widget.user.tracks
+          ..clear()
+          ..addAll(tracks);
 
-      // Update likedSongs list based on fetched liked song IDs
-      widget.user.likedSongs
-        ..clear()
-        ..addAll(tracks.where((track) => likedSongIds.contains(track.id)));
+        // Update likedSongs list based on fetched liked song IDs
+        widget.user.likedSongs
+          ..clear()
+          ..addAll(tracks.where((track) => likedSongIds.contains(track.id)));
 
-      // Update isLiked field for each track
-      for (final track in widget.user.tracks) {
-        track.isLiked = likedSongIds.contains(track.id);
-      }
+        // Update isLiked field for each track
+        for (final track in widget.user.tracks) {
+          track.isLiked = likedSongIds.contains(track.id);
+        }
 
-      _isLoading = false;
-    });
+        _isLoading = false;
+        _isRefreshing = false;
+      });
+    } catch (e) {
+      print('Error fetching tracks: $e');
+      setState(() {
+        _isLoading = false;
+        _isRefreshing = false;
+      });
+    }
+  }
+
+  Future<void> _refreshLibrary() async {
+    await _fetchTracksFromServer();
   }
 
   @override
@@ -96,6 +120,14 @@ class _LibraryPageState extends State<LibraryPage> {
                 ),
               );
             },
+          ),
+          IconButton(
+            icon: Icon(
+              _isRefreshing ? Icons.refresh : Icons.refresh_outlined,
+              color: _isRefreshing ? Colors.orange : Colors.white70,
+            ),
+            tooltip: "Refresh Library",
+            onPressed: _isRefreshing ? null : _refreshLibrary,
           ),
           Theme(
             data: Theme.of(context).copyWith(
@@ -229,7 +261,7 @@ class _LibraryPageState extends State<LibraryPage> {
           _isLoading
               ? Center(child: CircularProgressIndicator())
               : RefreshIndicator(
-                onRefresh: _fetchTracksFromServer,
+                onRefresh: _refreshLibrary,
                 child:
                     tracks.isEmpty
                         ? ListView(
@@ -261,27 +293,32 @@ class _LibraryPageState extends State<LibraryPage> {
                               onLongPress:
                                   () => _onTrackLongPress(context, music),
                               leading: Icon(Icons.music_note),
-                              title: Text(music.title),
-                              subtitle: Text(music.artist.name),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    application.formatDuration(
-                                      music.durationInSeconds,
-                                    ),
-                                    style: TextStyle(fontSize: 11),
-                                  ),
-                                  SizedBox(width: 15),
-                                  AnimatedSwitcher(
-                                    duration: Duration(milliseconds: 400),
-                                    transitionBuilder:
-                                        (child, animation) => ScaleTransition(
-                                          scale: animation,
-                                          child: child,
+                              title: Text(
+                                music.title,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                              subtitle: Text(
+                                music.artist.name,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                              trailing: Container(
+                                constraints: BoxConstraints(maxWidth: 80),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        application.formatDuration(
+                                          music.durationInSeconds,
                                         ),
-                                    child: GestureDetector(
-                                      key: ValueKey<bool>(isLiked),
+                                        style: TextStyle(fontSize: 10),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    SizedBox(width: 8),
+                                    GestureDetector(
                                       onTap: () => _onLikeTap(music),
                                       child: Icon(
                                         isLiked
@@ -290,11 +327,11 @@ class _LibraryPageState extends State<LibraryPage> {
                                         color: application.getUniqueColor(
                                           music.id,
                                         ),
-                                        size: 25,
+                                        size: 22,
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                               iconColor: application.getUniqueColor(music.id),
                             );
