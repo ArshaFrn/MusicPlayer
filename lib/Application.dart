@@ -425,21 +425,21 @@ class Application {
     return sorted;
   }
 
-  Future<bool> deleteMusic({
+  Future<bool> removeMusic({
     required BuildContext context,
     required User user,
     required Music music,
   }) async {
     final tcpClient = TcpClient(serverAddress: "10.0.2.2", serverPort: 12345);
-    final response = await tcpClient.deleteMusic(user: user, music: music);
-    if (response['status'] == 'deleteMusicSuccess') {
+    final response = await tcpClient.removeMusic(user: user, music: music);
+    if (response['status'] == 'removeSongSuccess') {
       user.tracks.remove(music);
       _showDeleteSnackBar(context, music.title);
       return true;
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to delete track: ${response['message']}'),
+          content: Text('Failed to remove track: ${response['message']}'),
           backgroundColor: Colors.red,
         ),
       );
@@ -692,6 +692,33 @@ class Application {
         'fileCount': 0,
         'cachePath': '',
       };
+    }
+  }
+
+  /// Add public music to user's library
+  Future<bool> addPublicMusicToLibrary(User user, Music music) async {
+    try {
+      // Check if music is already in user's library
+      if (user.tracks.any((m) => m.id == music.id)) {
+        return false; // Already exists
+      }
+
+      // Send request to server to add music to user's library
+      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final response = await tcpClient.addMusicToLibrary(user.username, music);
+
+      if (response['status'] == 'addMusicToLibrarySuccess' || response['status'] == 'success') {
+        // Add to local user's library only after successful server response
+        user.tracks.add(music);
+        print('Successfully added music to library: ${music.title}');
+        return true;
+      } else {
+        print('Failed to add music to library: ${response['message']}');
+        return false;
+      }
+    } catch (e) {
+      print('Error adding public music to library: $e');
+      return false;
     }
   }
 

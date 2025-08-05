@@ -14,6 +14,8 @@ enum Response {
   downloadMusicSuccess,
   deleteMusicSuccess,
   deleteMusicFailed,
+  removeSongSuccess,
+  removeSongFailed,
   getUserMusicListSuccess,
   likeSuccess,
   dislikedSuccess,

@@ -19,6 +19,8 @@ class Music {
   String _filePath;
   int _likeCount = 0;
   bool _isLiked = false;
+  String? _coverImagePath; // Path to cover image
+  bool _isPublic = false; // Whether the music is public
 
   Music({
     required String title,
@@ -29,6 +31,8 @@ class Music {
     required Album album,
     required String filePath,
     required String extension,
+    String? coverImagePath,
+    bool isPublic = false,
   }) : _title = title,
        _artist = artist,
        _genre = genre,
@@ -40,7 +44,9 @@ class Music {
        _id = _generateId(title, artist, releaseDate),
        _filePath = filePath,
        _likeCount = 0,
-       _isLiked = false;
+       _isLiked = false,
+       _coverImagePath = coverImagePath,
+       _isPublic = isPublic;
 
   static int _generateId(String title, Artist artist, DateTime releaseDate) {
     return (title + artist.name + releaseDate.toString()).hashCode;
@@ -91,6 +97,8 @@ class Music {
         'isLiked': _isLiked,
         'filePath': _filePath,
         'extension': _extension,
+        'coverImagePath': _coverImagePath,
+        'isPublic': _isPublic,
       };
     } else {
       return {
@@ -105,6 +113,8 @@ class Music {
         'isLiked': _isLiked,
         'filePath': '',
         'extension': _extension,
+        'coverImagePath': _coverImagePath,
+        'isPublic': _isPublic,
       };
     }
   }
@@ -112,20 +122,28 @@ class Music {
   Music.fromMap(Map<String, dynamic> map)
     : _id = map['id'],
       _title = _cleanTitle(map['title']),
-      _artist = Artist(name: map['artist']), // Handle artist as string
+      _artist = map['artist'] is Map 
+          ? Artist.fromMap(map['artist']) 
+          : Artist(name: map['artist'].toString()),
       _genre = map['genre'],
       _durationInSeconds = map['durationInSeconds'],
       _releaseDate = DateTime.parse(map['releaseDate']),
       _addedDate =
           DateTime.now(), // Use current time since server doesn't provide this
-      _album = Album(
-        title: _cleanTitle(map['title']),
-        artist: Artist(name: map['artist']),
-      ), // Create default album
+      _album = map['album'] is Map
+          ? Album.fromMap(map['album'])
+          : Album(
+              title: _cleanTitle(map['title']),
+              artist: map['artist'] is Map 
+                  ? Artist.fromMap(map['artist']) 
+                  : Artist(name: map['artist'].toString()),
+            ),
       _likeCount = map['likeCount'] ?? 0,
       _isLiked = map['isLiked'] ?? false,
       _extension = _cleanExtension(map['extension'] ?? 'mp3'),
-      _filePath = map['filePath'] ?? '';
+      _filePath = map['filePath'] ?? '',
+      _coverImagePath = map['coverImagePath'],
+      _isPublic = map['isPublic'] ?? false;
 
   // * Getters
   int get id => _id;
@@ -151,6 +169,10 @@ class Music {
   String get filePath => _filePath;
 
   String get extension => _extension;
+  
+  String? get coverImagePath => _coverImagePath;
+  
+  bool get isPublic => _isPublic;
 
   // * Setters
   set likeCount(int value) => _likeCount = value;
@@ -158,6 +180,10 @@ class Music {
   set isLiked(bool value) => _isLiked = value;
 
   set filePath(String value) => _filePath = value;
+  
+  set coverImagePath(String? value) => _coverImagePath = value;
+  
+  set isPublic(bool value) => _isPublic = value;
 
   @override
   bool operator ==(Object other) {

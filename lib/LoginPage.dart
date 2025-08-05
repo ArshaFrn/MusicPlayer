@@ -5,6 +5,7 @@ import 'Model/User.dart';
 import 'package:second/TcpClient.dart';
 import 'SignUpPage.dart';
 import 'HomePage.dart';
+import 'AdminLoginPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LogInPage extends StatefulWidget {
@@ -827,6 +828,39 @@ class _LogInPage extends State<LogInPage> {
                                         color: Color(0xFFD644FF),
                                         fontWeight: FontWeight.w500,
                                         fontSize: 16,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Admin? ",
+                                    style: TextStyle(
+                                      color: Colors.grey[400],
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => AdminLoginPage(),
+                                        ),
+                                      );
+                                    },
+                                    child: Text(
+                                      "Login as Admin",
+                                      style: TextStyle(
+                                        color: Color(0xFF8456FF),
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 14,
                                         decoration: TextDecoration.underline,
                                       ),
                                     ),

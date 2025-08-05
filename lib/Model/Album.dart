@@ -6,10 +6,12 @@ class Album {
   final int _id;
   final String _title;
   final Artist _artist;
+  final String? _coverImagePath; // Path to album cover image
 
-  Album({required String title, required Artist artist})
+  Album({required String title, required Artist artist, String? coverImagePath})
     : _title = title,
       _artist = artist,
+      _coverImagePath = coverImagePath,
       _id = _generateId(title, artist);
 
   static int _generateId(String title, Artist artist) {
@@ -17,13 +19,19 @@ class Album {
   }
 
   Map<String, dynamic> toMap() {
-    return {'id': _id, 'title': _title, 'artist': _artist.toMap()};
+    return {
+      'id': _id, 
+      'title': _title, 
+      'artist': _artist.toMap(),
+      'coverImagePath': _coverImagePath,
+    };
   }
 
   Album.fromMap(Map<String, dynamic> map)
     : _id = map['id'],
       _title = map['title'],
-      _artist = Artist.fromMap(map['artist']);
+      _artist = Artist.fromMap(map['artist']),
+      _coverImagePath = map['coverImagePath'];
 
   // Getters
   int get id => _id;
@@ -31,6 +39,8 @@ class Album {
   String get title => _title;
 
   Artist get artist => _artist;
+  
+  String? get coverImagePath => _coverImagePath;
 
   @override
   bool operator ==(Object other) {

@@ -7,9 +7,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:second/main.dart';
 import 'ChangePasswordPage.dart';
+import 'Model/Playlist.dart';
 import 'Model/User.dart';
 import 'TcpClient.dart';
 import 'LoginPage.dart';
+import 'LibraryPage.dart';
+import 'PlaylistsPage.dart';
 
 class ProfilePage extends StatefulWidget {
   final User user;
@@ -31,7 +34,131 @@ class _ProfilePage extends State<ProfilePage> {
     super.initState();
     _emailController.text = widget.user.email;
     _fullnameController.text = widget.user.fullname;
-    _loadProfileFromBackend();
+    _loadProfileImage();
+  }
+
+  /// Check if profile image is cached locally
+  Future<bool> _isProfileImageCached() async {
+    try {
+      if (widget.user.profileImageUrl == null || widget.user.profileImageUrl!.isEmpty) {
+        return false;
+      }
+
+      final File imageFile = File(widget.user.profileImageUrl!);
+      if (await imageFile.exists()) {
+        final int fileSize = await imageFile.length();
+        return fileSize > 0; // Check if file has content
+      }
+      return false;
+    } catch (e) {
+      print('Error checking profile image cache: $e');
+      return false;
+    }
+  }
+
+  /// Get the profile image cache path
+  Future<String> _getProfileImageCachePath() async {
+    final Directory appDir = await getApplicationDocumentsDirectory();
+    final String profileDir = path.join(appDir.path, 'profile_images');
+    
+    // Create directory if it doesn't exist
+    final Directory dir = Directory(profileDir);
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
+    
+    return path.join(profileDir, '${widget.user.username}_profile.jpg');
+  }
+
+  /// Validate if a cached profile image is valid
+  Future<bool> _isValidCachedImage(String imagePath) async {
+    try {
+      final File imageFile = File(imagePath);
+      if (!await imageFile.exists()) {
+        return false;
+      }
+
+      final int fileSize = await imageFile.length();
+      if (fileSize == 0) {
+        return false;
+      }
+
+      // Try to read the file to ensure it's not corrupted
+      final List<int> bytes = await imageFile.readAsBytes();
+      return bytes.isNotEmpty;
+    } catch (e) {
+      print('Error validating cached image: $e');
+      return false;
+    }
+  }
+
+  /// Clear profile image cache
+  Future<void> _clearProfileImageCache() async {
+    try {
+      final String cachePath = await _getProfileImageCachePath();
+      final File cacheFile = File(cachePath);
+      
+      if (await cacheFile.exists()) {
+        await cacheFile.delete();
+        print('Profile image cache cleared: $cachePath');
+      }
+      
+      // Clear SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('profileImageUrl');
+      
+      // Clear user object
+      widget.user.setProfileImageUrl('');
+      
+      setState(() {});
+    } catch (e) {
+      print('Error clearing profile image cache: $e');
+    }
+  }
+
+  /// Load profile image with smart caching
+  Future<void> _loadProfileImage() async {
+    try {
+      // First, check if we have a cached profile image
+      bool isCached = await _isProfileImageCached();
+      
+      if (isCached) {
+        print('Profile image found in cache, using local version');
+        setState(() {
+          _isLoadingProfile = false;
+        });
+        return; // Use existing cached image
+      }
+
+      // If not cached, try to load from SharedPreferences first
+      final prefs = await SharedPreferences.getInstance();
+      final String? cachedPath = prefs.getString('profileImageUrl');
+      
+      if (cachedPath != null && cachedPath.isNotEmpty) {
+        // Validate the cached image
+        bool isValid = await _isValidCachedImage(cachedPath);
+        if (isValid) {
+          print('Profile image found in SharedPreferences, using cached version');
+          widget.user.setProfileImageUrl(cachedPath);
+          setState(() {
+            _isLoadingProfile = false;
+          });
+          return; // Use existing cached image
+        } else {
+          print('Cached profile image is invalid, clearing cache');
+          await _clearProfileImageCache();
+        }
+      }
+
+      // If no valid cached image found, fetch from server
+      print('No cached profile image found, fetching from server...');
+      await _loadProfileFromBackend();
+    } catch (e) {
+      print('Error loading profile image: $e');
+      setState(() {
+        _isLoadingProfile = false;
+      });
+    }
   }
 
   Future<void> _loadProfileFromBackend() async {
@@ -105,18 +232,8 @@ class _ProfilePage extends State<ProfilePage> {
         return;
       }
       
-      // Get app documents directory
-      final Directory appDir = await getApplicationDocumentsDirectory();
-      final String profileDir = path.join(appDir.path, 'profile_images');
-      
-      // Create directory if it doesn't exist
-      final Directory dir = Directory(profileDir);
-      if (!await dir.exists()) {
-        await dir.create(recursive: true);
-      }
-      
-      // Save image file
-      final String imagePath = path.join(profileDir, '${widget.user.username}_profile.jpg');
+      // Get cache path and save image file
+      final String imagePath = await _getProfileImageCachePath();
       final File imageFile = File(imagePath);
       await imageFile.writeAsBytes(imageBytes);
       
@@ -150,12 +267,34 @@ class _ProfilePage extends State<ProfilePage> {
       position: RelativeRect.fromLTRB(MediaQuery.of(context).size.width, 80, 0, 0),
       items: [
         PopupMenuItem<String>(
+          value: 'refresh_profile',
+          child: Row(
+            children: [
+              Icon(Icons.refresh, color: Color(0xFF8456FF), size: 20),
+              SizedBox(width: 8),
+              Text('Refresh Profile'),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
           value: 'change_password',
-          child: Text('Change Password'),
+          child: Row(
+            children: [
+              Icon(Icons.lock, color: Color(0xFF8456FF), size: 20),
+              SizedBox(width: 8),
+              Text('Change Password'),
+            ],
+          ),
         ),
         PopupMenuItem<String>(
           value: 'logout',
-          child: Text('Log out'),
+          child: Row(
+            children: [
+              Icon(Icons.logout, color: Colors.red, size: 20),
+              SizedBox(width: 8),
+              Text('Log out'),
+            ],
+          ),
         ),
       ],
     );
@@ -166,6 +305,60 @@ class _ProfilePage extends State<ProfilePage> {
         context,
         MaterialPageRoute(builder: (context) => ChangePasswordPage(user: widget.user)),
       );
+    } else if (selected == 'refresh_profile') {
+      _refreshProfileFromServer();
+    }
+  }
+
+  /// Force refresh profile image from server
+  Future<void> _refreshProfileFromServer() async {
+    try {
+      setState(() {
+        _isLoadingProfile = true;
+      });
+
+      // Clear existing cache first
+      await _clearProfileImageCache();
+      
+      // Fetch fresh data from server
+      await _loadProfileFromBackend();
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Profile refreshed successfully!",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Color(0xFF8456FF),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
+        ),
+      );
+    } catch (e) {
+      print('Error refreshing profile: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Error refreshing profile: $e",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red.withOpacity(0.65),
+          duration: Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoadingProfile = false;
+      });
     }
   }
 
@@ -188,13 +381,11 @@ class _ProfilePage extends State<ProfilePage> {
         final response = await tcpClient.uploadProfileImage(widget.user.username, image.path);
 
         if (response['status'] == 'profileImageUploadSuccess' || response['status'] == 'success') {
-          // Update local state with the returned image URL from backend
-          final imageUrl = response['imageUrl'] ?? image.path;
-          widget.user.setProfileImageUrl(imageUrl);
+          // Clear existing cache to force fresh download
+          await _clearProfileImageCache();
           
-          // Save to SharedPreferences
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('profileImageUrl', imageUrl);
+          // Fetch the updated profile image from server
+          await _loadProfileFromBackend();
 
           setState(() {
             _isLoading = false;
@@ -535,6 +726,53 @@ class _ProfilePage extends State<ProfilePage> {
     );
   }
 
+  Future<void> _navigateToRecentlyPlayed() async {
+    try {
+      // Get recently played song IDs from server
+      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final recentlyPlayedIds = await tcpClient.getRecentlyPlayedSongs(widget.user.username);
+      
+      if (recentlyPlayedIds.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("No recently played songs found"),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+      
+      // Create a static playlist for recently played
+      final recentlyPlayedPlaylist = Playlist(
+        name: "Recently Played",
+        owner: widget.user,
+        description: "Your recently played songs",
+        isStatic: true,
+        songIds: recentlyPlayedIds,
+      );
+      
+      // Navigate to playlist page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PlaylistsPage(
+            user: widget.user,
+            staticPlaylist: recentlyPlayedPlaylist,
+          ),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error loading recently played songs: ${e.toString()}"),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
   Future<void> _updateUserInfo() async {
     try {
       // Validate email format
@@ -721,11 +959,11 @@ class _ProfilePage extends State<ProfilePage> {
                       "All Songs",
                       Icons.music_note,
                       () {
-                        // Navigate to all songs page
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("All Songs feature coming soon!"),
-                            backgroundColor: Color(0xFF8456FF),
+                        // Navigate to library page with all songs
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LibraryPage(user: widget.user),
                           ),
                         );
                       },
@@ -734,11 +972,14 @@ class _ProfilePage extends State<ProfilePage> {
                       "Favorites",
                       Icons.favorite,
                       () {
-                        // Navigate to favorites page
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Favorites feature coming soon!"),
-                            backgroundColor: Color(0xFF8456FF),
+                        // Navigate to library page with favorites filter
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => LibraryPage(
+                              user: widget.user,
+                              showOnlyFavorites: true,
+                            ),
                           ),
                         );
                       },
@@ -747,13 +988,8 @@ class _ProfilePage extends State<ProfilePage> {
                       "Recently\nPlayed",
                       Icons.history,
                       () {
-                        // Navigate to recently played page
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Recently Played feature coming soon!"),
-                            backgroundColor: Color(0xFF8456FF),
-                          ),
-                        );
+                        // Navigate to recently played playlist
+                        _navigateToRecentlyPlayed();
                       },
                     ),
                   ],

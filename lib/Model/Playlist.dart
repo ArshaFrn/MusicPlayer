@@ -12,14 +12,20 @@ class Playlist {
   String _name;
   String _description;
   final List<Music> _tracks;
+  bool _isStatic;
+  List<int>? _songIds;
 
   Playlist({
     required String name,
     required User owner,
     required String description,
+    bool isStatic = false,
+    List<int>? songIds,
   })  : _name = name,
         _owner = owner,
         _description = description,
+        _isStatic = isStatic,
+        _songIds = songIds,
         _createdDate = DateTime.now(),
         _id = _generateId(name, owner),
         _tracks = [];
@@ -51,6 +57,8 @@ class Playlist {
   String get name => _name;
   String get description => _description;
   List<Music> get tracks => _tracks;
+  bool get isStatic => _isStatic;
+  List<int>? get songIds => _songIds;
 
   //Setter
   set name(String value) => _name = value;

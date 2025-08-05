@@ -4,6 +4,7 @@ enum Request {
   uploadMusic, // "uploadMusic"
   getUserMusicList, // "getUserMusicList"
   deleteMusic, // "deleteMusic"
+  removeSong, // "removeSong"
   downloadMusic, // "downloadMusic"
   likeSong, // "likeSong"
   dislikeSong, // "dislikeSong"

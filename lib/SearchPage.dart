@@ -139,8 +139,8 @@ class _SearchPage extends State<SearchPage> {
                 ),
                 ListTile(
                   leading: Icon(Icons.delete, color: Colors.red),
-                  title: Text('Delete'),
-                  onTap: () => Navigator.pop(context, 'delete'),
+                  title: Text('Remove'),
+                  onTap: () => Navigator.pop(context, 'remove'),
                 ),
                 ListTile(
                   leading: Icon(Icons.info_outline, color: Colors.grey),
@@ -151,8 +151,8 @@ class _SearchPage extends State<SearchPage> {
             ),
           ),
     );
-    if (result == 'delete') {
-      await application.deleteMusic(
+    if (result == 'remove') {
+      await application.removeMusic(
         context: context,
         user: widget._user,
         music: music,
