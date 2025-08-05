@@ -14,7 +14,7 @@ import 'TcpClient.dart';
 import 'LibraryPage.dart';
 import 'package:just_audio/just_audio.dart';
 import 'utils/CacheManager.dart';
-import 'utils/MiniAudioController.dart';
+import 'utils/AudioController.dart';
 import 'PlayPage.dart';
 // Applicaation Flow Controller
 
@@ -22,9 +22,6 @@ enum filterOption { dateModified, az, za, duration, favourite }
 
 class Application {
   static final Application _instance = Application._privateConstructor();
-
-  // Global audio player instance
-  static AudioPlayer? _audioPlayer;
 
   final List<Color> _colorList = [
     Colors.red,
@@ -679,8 +676,8 @@ class Application {
   /// Check if mini player is active
   bool get isMiniPlayerActive {
     try {
-      final miniController = MiniAudioController.instance;
-      return miniController.hasTrack;
+      final audioController = AudioController.instance;
+      return audioController.hasTrack;
     } catch (e) {
       print('Error checking mini player state: $e');
       return false;
@@ -690,8 +687,8 @@ class Application {
   /// Stop mini player
   void stopMiniPlayer() {
     try {
-      final miniController = MiniAudioController.instance;
-      miniController.dispose();
+      final audioController = AudioController.instance;
+      audioController.dispose();
     } catch (e) {
       print('Error stopping mini player: $e');
     }

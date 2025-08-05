@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../utils/MiniAudioController.dart';
+import '../utils/AudioController.dart';
 import '../Application.dart';
 
 class MiniPlayer extends StatefulWidget {
@@ -10,41 +10,51 @@ class MiniPlayer extends StatefulWidget {
 }
 
 class _MiniPlayerState extends State<MiniPlayer> {
-  final MiniAudioController _miniController = MiniAudioController.instance;
+  final AudioController _audioController = AudioController.instance;
   final Application _application = Application.instance;
 
   @override
   void initState() {
     super.initState();
-    _miniController.setCallbacks(
-      onStateChanged: () {
-        if (mounted) {
-          setState(() {});
-        }
-      },
-      onTrackChanged: () {
-        if (mounted) {
-          setState(() {});
-        }
-      },
-    );
+    _audioController.addOnStateChangedListener(_onStateChanged);
+    _audioController.addOnTrackChangedListener(_onTrackChanged);
 
     // Force a rebuild after a short delay to ensure the mini player shows up
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && _miniController.hasTrack) {
+      if (mounted && _audioController.hasTrack) {
         setState(() {});
       }
     });
   }
 
   @override
+  void dispose() {
+    _audioController.removeOnStateChangedListener(_onStateChanged);
+    _audioController.removeOnTrackChangedListener(_onTrackChanged);
+    super.dispose();
+  }
+
+  void _onStateChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _onTrackChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Only show if there's a track playing
-    if (!_miniController.hasTrack) {
+    if (!_audioController.hasTrack) {
       return SizedBox.shrink();
     }
 
-    final currentTrack = _miniController.currentTrack!;
+    final currentTrack = _audioController.currentTrack!;
+    final playlist = _audioController.playlist;
 
     return Container(
       height: 60,
@@ -90,13 +100,13 @@ class _MiniPlayerState extends State<MiniPlayer> {
           // Previous Button
           IconButton(
             onPressed:
-                _miniController.playlist.length > 1
-                    ? _miniController.previousTrack
+                playlist.length > 1
+                    ? _audioController.previousTrack
                     : null,
             icon: Icon(
               Icons.skip_previous,
               color:
-                  _miniController.playlist.length > 1
+                  playlist.length > 1
                       ? _application.getUniqueColor(currentTrack.id)
                       : Colors.white38,
               size: 28,
@@ -108,9 +118,9 @@ class _MiniPlayerState extends State<MiniPlayer> {
           // Play/Pause Button
           IconButton(
             onPressed:
-                _miniController.isLoading ? null : _miniController.playPause,
+                _audioController.isLoading ? null : _audioController.playPause,
             icon:
-                _miniController.isLoading
+                _audioController.isLoading
                     ? SizedBox(
                       width: 20,
                       height: 20,
@@ -122,7 +132,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                       ),
                     )
                     : Icon(
-                      _miniController.isPlaying
+                      _audioController.isPlaying
                           ? Icons.pause
                           : Icons.play_arrow,
                       color: _application.getUniqueColor(currentTrack.id),
@@ -135,13 +145,13 @@ class _MiniPlayerState extends State<MiniPlayer> {
           // Next Button
           IconButton(
             onPressed:
-                _miniController.playlist.length > 1
-                    ? _miniController.nextTrack
+                playlist.length > 1
+                    ? _audioController.nextTrack
                     : null,
             icon: Icon(
               Icons.skip_next,
               color:
-                  _miniController.playlist.length > 1
+                  playlist.length > 1
                       ? _application.getUniqueColor(currentTrack.id)
                       : Colors.white38,
               size: 28,

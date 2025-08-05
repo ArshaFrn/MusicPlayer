@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:just_audio/just_audio.dart';
 import '../Model/Music.dart';
 import '../Model/User.dart';
-import '../Application.dart';
 import '../utils/CacheManager.dart';
 import 'dart:io';
 
-class MiniAudioController {
-  static final MiniAudioController _instance =
-      MiniAudioController._privateConstructor();
-  static MiniAudioController get instance => _instance;
+class AudioController {
+  static final AudioController _instance = AudioController._privateConstructor();
+  static AudioController get instance => _instance;
 
   AudioPlayer? _audioPlayer;
   Music? _currentTrack;
@@ -23,40 +20,25 @@ class MiniAudioController {
   Duration _duration = Duration.zero;
 
   // Callbacks for UI updates
-  VoidCallback? onStateChanged;
-  VoidCallback? onTrackChanged;
+  final List<VoidCallback> _onStateChangedListeners = [];
+  final List<VoidCallback> _onTrackChangedListeners = [];
 
-  MiniAudioController._privateConstructor();
+  AudioController._privateConstructor() {
+    _audioPlayer = AudioPlayer();
+    _setupAudioPlayerListeners();
+  }
 
-  // Initialize the mini player with data from PlayPage
-  void initializeFromPlayPage({
-    required AudioPlayer audioPlayer,
-    required Music currentTrack,
-    required User user,
-    required List<Music> playlist,
-    required int currentTrackIndex,
-  }) {
-    _audioPlayer = audioPlayer;
-    _currentTrack = currentTrack;
-    _currentUser = user;
-    _playlist = playlist;
-    _currentTrackIndex = currentTrackIndex;
-
-    // Trigger initial state change to show mini player immediately
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      onStateChanged?.call();
-    });
-
-    // Set up listeners
+  // Set up audio player listeners
+  void _setupAudioPlayerListeners() {
     _audioPlayer!.positionStream.listen((position) {
       _position = position;
-      this.onStateChanged?.call();
+      _notifyStateChanged();
     });
 
     _audioPlayer!.durationStream.listen((duration) {
       if (duration != null) {
         _duration = duration;
-        this.onStateChanged?.call();
+        _notifyStateChanged();
       }
     });
 
@@ -65,15 +47,56 @@ class MiniAudioController {
       _isLoading =
           state.processingState == ProcessingState.loading ||
           state.processingState == ProcessingState.buffering;
-      this.onStateChanged?.call();
-    });
-
-    // Listen for song completion
-    _audioPlayer!.playerStateStream.listen((state) {
+      _notifyStateChanged();
+      
+      // Listen for song completion
       if (state.processingState == ProcessingState.completed) {
         _autoAdvanceToNext();
       }
     });
+  }
+
+  // Notify all state changed listeners
+  void _notifyStateChanged() {
+    for (final listener in _onStateChangedListeners) {
+      listener();
+    }
+  }
+
+  // Notify all track changed listeners
+  void _notifyTrackChanged() {
+    for (final listener in _onTrackChangedListeners) {
+      listener();
+    }
+  }
+
+  // Initialize the audio controller with a track and playlist
+  Future<void> initialize({
+    required Music currentTrack,
+    required User user,
+    List<Music>? playlist,
+    int? currentTrackIndex,
+  }) async {
+    _currentTrack = currentTrack;
+    _currentUser = user;
+    _playlist = playlist ?? user.tracks;
+    
+    if (_playlist.isEmpty) {
+      _playlist = [currentTrack];
+    }
+    
+    _currentTrackIndex = currentTrackIndex ?? _playlist.indexWhere(
+      (track) => track.id == currentTrack.id,
+    );
+    
+    if (_currentTrackIndex == -1) _currentTrackIndex = 0;
+
+    // Trigger initial state change
+    // We don't immediately notify listeners to avoid calling setState during build
+    // The listeners will be notified when the track is loaded and played
+
+    // Load and play the current track
+    await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
   }
 
   // Getters for UI
@@ -84,14 +107,23 @@ class MiniAudioController {
   Duration get duration => _duration;
   bool get hasTrack => _currentTrack != null;
   List<Music> get playlist => _playlist;
+  int get currentTrackIndex => _currentTrackIndex;
 
-  // Set callbacks for UI updates
-  void setCallbacks({
-    required VoidCallback onStateChanged,
-    required VoidCallback onTrackChanged,
-  }) {
-    this.onStateChanged = onStateChanged;
-    this.onTrackChanged = onTrackChanged;
+  // Add listeners for UI updates
+  void addOnStateChangedListener(VoidCallback listener) {
+    _onStateChangedListeners.add(listener);
+  }
+
+  void removeOnStateChangedListener(VoidCallback listener) {
+    _onStateChangedListeners.remove(listener);
+  }
+
+  void addOnTrackChangedListener(VoidCallback listener) {
+    _onTrackChangedListeners.add(listener);
+  }
+
+  void removeOnTrackChangedListener(VoidCallback listener) {
+    _onTrackChangedListeners.remove(listener);
   }
 
   // Play/Pause functionality
@@ -109,11 +141,14 @@ class MiniAudioController {
 
     await _audioPlayer?.pause();
     _currentTrackIndex =
-        (_currentTrackIndex - 1 + _playlist.length) % _playlist.length;
+        (_currentTrackIndex + 1) % _playlist.length;
 
     // Update current track immediately for UI
     _currentTrack = _playlist[_currentTrackIndex];
-    onTrackChanged?.call();
+    // Defer notification to avoid calling setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifyTrackChanged();
+    });
 
     await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
   }
@@ -123,11 +158,14 @@ class MiniAudioController {
     if (_playlist.isEmpty || _playlist.length <= 1) return;
 
     await _audioPlayer?.pause();
-    _currentTrackIndex = (_currentTrackIndex + 1) % _playlist.length;
+    _currentTrackIndex = (_currentTrackIndex - 1 + _playlist.length) % _playlist.length;
 
     // Update current track immediately for UI
     _currentTrack = _playlist[_currentTrackIndex];
-    onTrackChanged?.call();
+    // Defer notification to avoid calling setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifyTrackChanged();
+    });
 
     await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
   }
@@ -137,11 +175,14 @@ class MiniAudioController {
     if (_playlist.isEmpty || _playlist.length <= 1) return;
 
     _currentTrackIndex =
-        (_currentTrackIndex - 1 + _playlist.length) % _playlist.length;
+        (_currentTrackIndex + 1) % _playlist.length;
 
     // Update current track immediately for UI
     _currentTrack = _playlist[_currentTrackIndex];
-    onTrackChanged?.call();
+    // Defer notification to avoid calling setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifyTrackChanged();
+    });
 
     await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
   }
@@ -150,7 +191,10 @@ class MiniAudioController {
   Future<void> _loadAndPlayTrack(Music track) async {
     try {
       _isLoading = true;
-      onStateChanged?.call();
+      // Defer notification to avoid calling setState during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _notifyStateChanged();
+      });
 
       final cacheManager = CacheManager.instance;
       final String? cachedPath = await cacheManager.getCachedMusicPath(
@@ -164,7 +208,10 @@ class MiniAudioController {
         // Only update track if it hasn't been set already
         if (_currentTrack?.id != track.id) {
           _currentTrack = track;
-          onTrackChanged?.call();
+          // Defer notification to avoid calling setState during build
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _notifyTrackChanged();
+          });
         }
       } else {
         // Download track
@@ -185,7 +232,10 @@ class MiniAudioController {
             // Only update track if it hasn't been set already
             if (_currentTrack?.id != track.id) {
               _currentTrack = track;
-              onTrackChanged?.call();
+              // Defer notification to avoid calling setState during build
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _notifyTrackChanged();
+              });
             }
           }
         } else {
@@ -194,13 +244,24 @@ class MiniAudioController {
       }
 
       _isLoading = false;
-      onStateChanged?.call();
+      // Defer notification to avoid calling setState during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _notifyStateChanged();
+      });
     } catch (e) {
-      print('Error loading track in mini player: $e');
+      print('Error loading track in audio controller: $e');
       _isPlaying = false;
       _isLoading = false;
-      onStateChanged?.call();
+      // Defer notification to avoid calling setState during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _notifyStateChanged();
+      });
     }
+  }
+
+  // Seek to position
+  void seekTo(Duration position) {
+    _audioPlayer?.seek(position);
   }
 
   // Dispose
@@ -210,8 +271,8 @@ class MiniAudioController {
     _currentTrack = null;
     _currentUser = null;
     _playlist.clear();
-    onStateChanged = null;
-    onTrackChanged = null;
+    _onStateChangedListeners.clear();
+    _onTrackChangedListeners.clear();
   }
 
   // Format duration

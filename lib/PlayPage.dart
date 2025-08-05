@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'Model/Music.dart';
 import 'Model/User.dart';
 import 'Application.dart';
-import 'utils/MiniAudioController.dart';
+import 'utils/AudioController.dart';
 
 class PlayPage extends StatefulWidget {
   final Music music;
@@ -27,15 +27,9 @@ class PlayPage extends StatefulWidget {
 
 class _PlayPageState extends State<PlayPage> {
   final Application application = Application.instance;
-  AudioPlayer? _audioPlayer;
-  Duration _position = Duration.zero;
-  Duration _duration = Duration.zero;
-  bool _isPlaying = false;
-  bool _isLoading = true;
+  final AudioController _audioController = AudioController.instance;
   String? _albumArtPath;
   Uint8List? _albumArtBytes;
-  int _currentTrackIndex = 0;
-  List<Music> _playlist = [];
   int? _lastExtractedTrackId;
 
   @override
@@ -46,57 +40,16 @@ class _PlayPageState extends State<PlayPage> {
 
   Future<void> _initializePlayback() async {
     try {
-      // Initialize playlist
-      _playlist = widget.playlist ?? widget.user.tracks;
-      if (_playlist.isEmpty) {
-        _playlist = [widget.music];
-      }
-      _currentTrackIndex = _playlist.indexWhere(
-        (track) => track.id == widget.music.id,
+      // Set up callbacks for UI updates
+      _audioController.addOnStateChangedListener(_onStateChanged);
+      _audioController.addOnTrackChangedListener(_onTrackChanged);
+
+      // Initialize the audio controller
+      await _audioController.initialize(
+        currentTrack: widget.music,
+        user: widget.user,
+        playlist: widget.playlist,
       );
-      if (_currentTrackIndex == -1) _currentTrackIndex = 0;
-
-      // Initialize audio player
-      _audioPlayer = AudioPlayer();
-
-      // Set up audio player listeners
-      _audioPlayer!.positionStream.listen((position) {
-        if (mounted) {
-          setState(() {
-            _position = position;
-          });
-        }
-      });
-
-      _audioPlayer!.durationStream.listen((duration) {
-        if (mounted && duration != null) {
-          setState(() {
-            _duration = duration;
-          });
-        }
-      });
-
-      _audioPlayer!.playerStateStream.listen((state) {
-        if (mounted) {
-          setState(() {
-            _isPlaying = state.playing;
-            _isLoading =
-                state.processingState == ProcessingState.loading ||
-                state.processingState == ProcessingState.buffering;
-          });
-        }
-      });
-
-      // Listen for song completion and auto-play next song
-      _audioPlayer!.playerStateStream.listen((state) {
-        if (mounted && state.processingState == ProcessingState.completed) {
-          // Song finished, play next song
-          _autoAdvanceToNext();
-        }
-      });
-
-      // Load and play the current track
-      await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
     } catch (e) {
       print('Error initializing playback: $e');
       if (mounted) {
@@ -110,92 +63,49 @@ class _PlayPageState extends State<PlayPage> {
     }
   }
 
-  Future<void> _loadAndPlayTrack(Music track) async {
-    try {
-      setState(() {
-        _isLoading = true;
-      });
+  @override
+  void dispose() {
+    _audioController.removeOnStateChangedListener(_onStateChanged);
+    _audioController.removeOnTrackChangedListener(_onTrackChanged);
+    
+    // Clean up album art bytes
+    _albumArtBytes = null;
+    _albumArtPath = null;
+    _lastExtractedTrackId = null;
 
-      // Get cached file path
-      final cacheManager = application.cacheManager;
-      final String? cachedPath = await cacheManager.getCachedMusicPath(
-        widget.user,
-        track,
-      );
+    super.dispose();
+  }
 
-      if (cachedPath != null && File(cachedPath).existsSync()) {
-        // Extract album art immediately when we have the file path
-        await _extractAlbumArt();
-
-        await _audioPlayer!.setFilePath(cachedPath);
-        await _audioPlayer!.play();
-
-        setState(() {
-          _isLoading = false;
-        });
-      } else {
-        // Track not cached, download it
-        application.showDownloadingSnackBar(
-          context,
-          'Downloading ${track.title}...',
-        );
-
-        final bool downloadSuccess = await cacheManager.downloadAndCacheMusic(
-          user: widget.user,
-          music: track,
-        );
-
-        if (downloadSuccess) {
-          application.hideSnackBar(context);
-          application.showPlaybackSuccessSnackBar(
-            context,
-            'Now playing: ${track.title}',
-          );
-
-          // Get the newly cached path
-          final String? newCachedPath = await cacheManager.getCachedMusicPath(
-            widget.user,
-            track,
-          );
-
-          if (newCachedPath != null && File(newCachedPath).existsSync()) {
-            await _extractAlbumArt();
-            await _audioPlayer!.setFilePath(newCachedPath);
-            await _audioPlayer!.play();
-          }
-        } else {
-          application.hideSnackBar(context);
-          application.showPlaybackErrorSnackBar(
-            context,
-            'Failed to download ${track.title}',
-          );
-
-          setState(() {
-            _isPlaying = false;
-            _isLoading = false;
-          });
-          return;
-        }
-
-        setState(() {
-          _isLoading = false;
-        });
+  void _onStateChanged() {
+    if (mounted) {
+      setState(() {});
+      
+      // Extract album art when the track is loaded
+      if (!_audioController.isLoading && _audioController.hasTrack) {
+        _extractAlbumArt();
       }
-    } catch (e) {
-      print('Error loading track: $e');
-      application.hideSnackBar(context);
-      application.showPlaybackErrorSnackBar(context, 'Error loading track: $e');
+    }
+  }
 
+  void _onTrackChanged() {
+    if (mounted) {
       setState(() {
-        _isPlaying = false;
-        _isLoading = false;
+        // Clear album art when track changes
+        _albumArtBytes = null;
+        _albumArtPath = null;
+        _lastExtractedTrackId = null;
       });
+      // Extract album art for the new track
+      // We'll extract it when the track is loaded, not immediately
     }
   }
 
   Future<void> _extractAlbumArt() async {
     try {
-      final currentTrackId = _playlist[_currentTrackIndex].id;
+      final currentTrack = _audioController.currentTrack;
+      if (currentTrack == null) return;
+
+      final currentTrackId = currentTrack.id;
 
       if (_lastExtractedTrackId == currentTrackId && _albumArtBytes != null) {
         print('Album art already exists for track: $currentTrackId');
@@ -205,7 +115,7 @@ class _PlayPageState extends State<PlayPage> {
       final cacheManager = application.cacheManager;
       final String? cachedPath = await cacheManager.getCachedMusicPath(
         widget.user,
-        _playlist[_currentTrackIndex],
+        currentTrack,
       );
 
       if (cachedPath != null && File(cachedPath).existsSync()) {
@@ -240,77 +150,34 @@ class _PlayPageState extends State<PlayPage> {
       setState(() {
         _albumArtBytes = null;
         _albumArtPath = null;
-        _lastExtractedTrackId = _playlist[_currentTrackIndex].id;
+        _lastExtractedTrackId = _audioController.currentTrack?.id;
       });
     }
   }
 
-  void _playPause() {
-    if (_isPlaying) {
-      _audioPlayer?.pause();
-    } else {
-      _audioPlayer?.play();
-    }
-  }
-
   void _seekTo(Duration position) {
-    _audioPlayer?.seek(position);
-  }
-
-  void _nextTrack() async {
-    if (_playlist.isEmpty || _playlist.length <= 1) return;
-
-    await _audioPlayer?.pause();
-
-    _currentTrackIndex =
-        (_currentTrackIndex - 1 + _playlist.length) % _playlist.length;
-    await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
-  }
-
-  void _autoAdvanceToNext() async {
-    if (_playlist.isEmpty || _playlist.length <= 1) return;
-
-    _currentTrackIndex =
-        (_currentTrackIndex - 1 + _playlist.length) % _playlist.length;
-    await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
-  }
-
-  void _previousTrack() async {
-    if (_playlist.isEmpty || _playlist.length <= 1) return;
-
-    await _audioPlayer?.pause();
-
-    _currentTrackIndex = (_currentTrackIndex + 1) % _playlist.length;
-    await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
+    _audioController.seekTo(position);
   }
 
   String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
-    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
-    return "$twoDigitMinutes:$twoDigitSeconds";
+    return _audioController.formatDuration(duration);
   }
 
-  @override
-  void dispose() {
-    // Only dispose if mini player is not active
-    final miniController = MiniAudioController.instance;
-    if (!miniController.hasTrack) {
-      _audioPlayer?.dispose();
-    }
-
-    // Clean up album art bytes
-    _albumArtBytes = null;
-    _albumArtPath = null;
-    _lastExtractedTrackId = null;
-
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
-    final currentTrack =
-        _playlist.isNotEmpty ? _playlist[_currentTrackIndex] : widget.music;
+    final currentTrack = _audioController.currentTrack;
+    if (currentTrack == null) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: Text(
+            'No track selected',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -361,15 +228,6 @@ class _PlayPageState extends State<PlayPage> {
         children: [
           IconButton(
             onPressed: () {
-              // Initialize mini player before closing
-              final miniController = MiniAudioController.instance;
-              miniController.initializeFromPlayPage(
-                audioPlayer: _audioPlayer!,
-                currentTrack: _playlist[_currentTrackIndex],
-                user: widget.user,
-                playlist: _playlist,
-                currentTrackIndex: _currentTrackIndex,
-              );
               Navigator.pop(context);
             },
             icon: Icon(
@@ -509,13 +367,13 @@ class _PlayPageState extends State<PlayPage> {
             ),
             child: Slider(
               value:
-                  _duration.inMilliseconds > 0
-                      ? (_position.inMilliseconds.toDouble()).clamp(
+                  _audioController.duration.inMilliseconds > 0
+                      ? (_audioController.position.inMilliseconds.toDouble()).clamp(
                         0.0,
-                        _duration.inMilliseconds.toDouble(),
+                        _audioController.duration.inMilliseconds.toDouble(),
                       )
                       : 0.0,
-              max: _duration.inMilliseconds.toDouble(),
+              max: _audioController.duration.inMilliseconds.toDouble(),
               onChanged: (value) {
                 _seekTo(Duration(milliseconds: value.toInt()));
               },
@@ -529,11 +387,11 @@ class _PlayPageState extends State<PlayPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  _formatDuration(_position),
+                  _formatDuration(_audioController.position),
                   style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
                 Text(
-                  _formatDuration(_duration),
+                  _formatDuration(_audioController.duration),
                   style: TextStyle(color: Colors.white70, fontSize: 14),
                 ),
               ],
@@ -562,10 +420,10 @@ class _PlayPageState extends State<PlayPage> {
               ),
             ),
             child: IconButton(
-              onPressed: _playlist.length > 1 ? _previousTrack : null,
+              onPressed: _audioController.playlist.length > 1 ? _audioController.previousTrack : null,
               icon: Icon(
                 Icons.skip_previous,
-                color: _playlist.length > 1 ? Colors.white : Colors.white38,
+                color: _audioController.playlist.length > 1 ? Colors.white : Colors.white38,
                 size: 35,
               ),
             ),
@@ -587,9 +445,9 @@ class _PlayPageState extends State<PlayPage> {
               ],
             ),
             child: IconButton(
-              onPressed: _isLoading ? null : _playPause,
+              onPressed: _audioController.isLoading ? null : _audioController.playPause,
               icon:
-                  _isLoading
+                  _audioController.isLoading
                       ? SizedBox(
                         width: 30,
                         height: 30,
@@ -601,7 +459,7 @@ class _PlayPageState extends State<PlayPage> {
                         ),
                       )
                       : Icon(
-                        _isPlaying ? Icons.pause : Icons.play_arrow,
+                        _audioController.isPlaying ? Icons.pause : Icons.play_arrow,
                         color: Colors.white,
                         size: 45,
                       ),
@@ -620,10 +478,10 @@ class _PlayPageState extends State<PlayPage> {
               ),
             ),
             child: IconButton(
-              onPressed: _playlist.length > 1 ? _nextTrack : null,
+              onPressed: _audioController.playlist.length > 1 ? _audioController.nextTrack : null,
               icon: Icon(
                 Icons.skip_next,
-                color: _playlist.length > 1 ? Colors.white : Colors.white38,
+                color: _audioController.playlist.length > 1 ? Colors.white : Colors.white38,
                 size: 35,
               ),
             ),
