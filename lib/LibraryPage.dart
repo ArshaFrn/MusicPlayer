@@ -19,6 +19,7 @@ class _LibraryPageState extends State<LibraryPage> {
   filterOption _selectedSort = filterOption.dateModified;
   bool _isLoading = true;
   bool _isRefreshing = false;
+  bool _isAscending = false; // false = descending, true = ascending
 
   @override
   void initState() {
@@ -88,7 +89,7 @@ class _LibraryPageState extends State<LibraryPage> {
 
   @override
   Widget build(BuildContext context) {
-    var tracks = application.sortTracks(widget.user.tracks, _selectedSort);
+    var tracks = application.sortTracks(widget.user.tracks, _selectedSort, isAscending: _isAscending);
 
     return Scaffold(
       appBar: AppBar(
@@ -145,11 +146,29 @@ class _LibraryPageState extends State<LibraryPage> {
               ),
             ),
             child: PopupMenuButton<filterOption>(
-              icon: Icon(Icons.filter_list, color: Colors.white70),
+              icon: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.filter_list, color: Colors.white70),
+                  if (_selectedSort != filterOption.dateModified) // Show arrow if not default sort
+                    Icon(
+                      _isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                      color: Colors.orange,
+                      size: 16,
+                    ),
+                ],
+              ),
               tooltip: "Filter",
               onSelected: (option) {
                 setState(() {
-                  _selectedSort = option;
+                  if (_selectedSort == option) {
+                    // Same option selected - toggle ascending/descending
+                    _isAscending = !_isAscending;
+                  } else {
+                    // Different option selected - reset to ascending
+                    _selectedSort = option;
+                    _isAscending = true;
+                  }
                 });
               },
               itemBuilder:
@@ -166,7 +185,11 @@ class _LibraryPageState extends State<LibraryPage> {
                           SizedBox(width: 10),
                           Expanded(child: Text('Date Modified')),
                           if (_selectedSort == filterOption.dateModified)
-                            Icon(Icons.check, color: Colors.purple, size: 20),
+                            Icon(
+                              _isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                              color: Colors.purple,
+                              size: 20,
+                            ),
                         ],
                       ),
                     ),
@@ -182,23 +205,11 @@ class _LibraryPageState extends State<LibraryPage> {
                           SizedBox(width: 10),
                           Expanded(child: Text('A-Z')),
                           if (_selectedSort == filterOption.az)
-                            Icon(Icons.check, color: Colors.purple, size: 20),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: filterOption.za,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.sort_by_alpha,
-                            color: Colors.redAccent,
-                            size: 20,
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(child: Text('Z-A')),
-                          if (_selectedSort == filterOption.za)
-                            Icon(Icons.check, color: Colors.purple, size: 20),
+                            Icon(
+                              _isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                              color: Colors.purple,
+                              size: 20,
+                            ),
                         ],
                       ),
                     ),
@@ -214,7 +225,11 @@ class _LibraryPageState extends State<LibraryPage> {
                           SizedBox(width: 10),
                           Expanded(child: Text('Duration')),
                           if (_selectedSort == filterOption.duration)
-                            Icon(Icons.check, color: Colors.purple, size: 20),
+                            Icon(
+                              _isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                              color: Colors.purple,
+                              size: 20,
+                            ),
                         ],
                       ),
                     ),
@@ -230,7 +245,11 @@ class _LibraryPageState extends State<LibraryPage> {
                           SizedBox(width: 10),
                           Expanded(child: Text('Like Count')),
                           if (_selectedSort == filterOption.favourite)
-                            Icon(Icons.check, color: Colors.purple, size: 22),
+                            Icon(
+                              _isAscending ? Icons.arrow_upward : Icons.arrow_downward,
+                              color: Colors.purple,
+                              size: 22,
+                            ),
                         ],
                       ),
                     ),
@@ -240,17 +259,26 @@ class _LibraryPageState extends State<LibraryPage> {
               padding: EdgeInsets.symmetric(vertical: 6),
             ),
           ),
-          IconButton(
-            icon: const Icon(Icons.storage, color: Colors.white70),
-            tooltip: "Cache Management",
-            onPressed: () {
-              application.showCacheManagementDialog(context, widget.user);
+          PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert, color: Colors.white70),
+            tooltip: "More Options",
+            onSelected: (value) {
+              if (value == 'cache') {
+                application.showCacheManagementDialog(context, widget.user);
+              }
             },
-          ),
-          IconButton(
-            icon: const Icon(Icons.shuffle, color: Colors.white70),
-            tooltip: "Shuffle",
-            onPressed: null,
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'cache',
+                child: Row(
+                  children: [
+                    Icon(Icons.storage, color: Colors.blue),
+                    SizedBox(width: 10),
+                    Text('Cache Management'),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
@@ -292,7 +320,25 @@ class _LibraryPageState extends State<LibraryPage> {
                               onTap: () => _onTrackTap(context, music),
                               onLongPress:
                                   () => _onTrackLongPress(context, music),
-                              leading: Icon(Icons.music_note),
+                              leading: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.music_note),
+                                  SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: () => _onLikeTap(music),
+                                    child: Icon(
+                                      isLiked
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: application.getUniqueColor(
+                                        music.id,
+                                      ),
+                                      size: 20,
+                                    ),
+                                  ),
+                                ],
+                              ),
                               title: Text(
                                 music.title,
                                 overflow: TextOverflow.ellipsis,
@@ -303,35 +349,11 @@ class _LibraryPageState extends State<LibraryPage> {
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                               ),
-                              trailing: Container(
-                                constraints: BoxConstraints(maxWidth: 80),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        application.formatDuration(
-                                          music.durationInSeconds,
-                                        ),
-                                        style: TextStyle(fontSize: 10),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                    SizedBox(width: 8),
-                                    GestureDetector(
-                                      onTap: () => _onLikeTap(music),
-                                      child: Icon(
-                                        isLiked
-                                            ? Icons.favorite
-                                            : Icons.favorite_border,
-                                        color: application.getUniqueColor(
-                                          music.id,
-                                        ),
-                                        size: 22,
-                                      ),
-                                    ),
-                                  ],
+                              trailing: Text(
+                                application.formatDuration(
+                                  music.durationInSeconds,
                                 ),
+                                style: TextStyle(fontSize: 10),
                               ),
                               iconColor: application.getUniqueColor(music.id),
                             );

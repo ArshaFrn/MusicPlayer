@@ -382,30 +382,44 @@ class Application {
     return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
-  List<Music> sortTracks(List<Music> tracks, filterOption option) {
+  List<Music> sortTracks(List<Music> tracks, filterOption option, {bool isAscending = false}) {
     final sorted = List<Music>.from(tracks);
     switch (option) {
       case filterOption.az:
         sorted.sort(
-          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+          (a, b) => isAscending 
+            ? a.title.toLowerCase().compareTo(b.title.toLowerCase())
+            : b.title.toLowerCase().compareTo(a.title.toLowerCase()),
         );
         break;
       case filterOption.za:
         sorted.sort(
-          (a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()),
+          (a, b) => isAscending 
+            ? a.title.toLowerCase().compareTo(b.title.toLowerCase())
+            : b.title.toLowerCase().compareTo(a.title.toLowerCase()),
         );
         break;
       case filterOption.duration:
         sorted.sort(
-          (a, b) => b.durationInSeconds.compareTo(a.durationInSeconds),
+          (a, b) => isAscending 
+            ? a.durationInSeconds.compareTo(b.durationInSeconds)
+            : b.durationInSeconds.compareTo(a.durationInSeconds),
         );
         break;
       case filterOption.favourite:
-        sorted.sort((a, b) => b.likeCount.compareTo(a.likeCount));
+        sorted.sort(
+          (a, b) => isAscending 
+            ? a.likeCount.compareTo(b.likeCount)
+            : b.likeCount.compareTo(a.likeCount),
+        );
         break;
       case filterOption.dateModified:
       default:
-        sorted.sort((a, b) => b.addedDate.compareTo(a.addedDate));
+        sorted.sort(
+          (a, b) => isAscending 
+            ? a.addedDate.compareTo(b.addedDate)
+            : b.addedDate.compareTo(a.addedDate),
+        );
         break;
     }
     return sorted;
