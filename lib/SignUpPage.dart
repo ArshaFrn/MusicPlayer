@@ -5,6 +5,7 @@ import 'package:second/TcpClient.dart';
 import 'main.dart';
 import 'package:second/HomePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'LoginPage.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -425,12 +426,12 @@ class _SignUpPageState extends State<SignUpPage> {
           ),
           Center(
             child: SingleChildScrollView(
-              child: SizedBox(
-                height: 673,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // "Welcome to" in neon style
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.05),
                     ShaderMask(
                       shaderCallback: (Rect bounds) {
                         return const LinearGradient(
@@ -469,7 +470,6 @@ class _SignUpPageState extends State<SignUpPage> {
                       ),
                     ),
                     SizedBox(height: 3),
-                    // * "Hertz" in neon style, centered
                     ShaderMask(
                       shaderCallback: (Rect bounds) {
                         return const LinearGradient(
@@ -478,7 +478,6 @@ class _SignUpPageState extends State<SignUpPage> {
                           end: Alignment.bottomRight,
                         ).createShader(bounds);
                       },
-
                       child: Text(
                         'Hertz',
                         textAlign: TextAlign.center,
@@ -508,11 +507,9 @@ class _SignUpPageState extends State<SignUpPage> {
                         ),
                       ),
                     ),
-                    // ! Image.asset('assets/images/logoTPP.png', width: 120, height: 90), //NOT FOR NOW
                     SizedBox(height: 30),
                     Container(
                       width: 350,
-                      height: 480,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
@@ -524,262 +521,272 @@ class _SignUpPageState extends State<SignUpPage> {
                           ),
                         ],
                       ),
-                      child: Stack(
-                        children: [
-                          Positioned.fill(
-                            top: 14,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 25.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(height: 0),
-                                  TextField(
-                                    controller: _fullnameController,
-                                    style: TextStyle(color: Colors.white),
-                                    decoration: InputDecoration(
-                                      prefixIcon: Icon(
-                                        Icons.drive_file_rename_outline_sharp,
-                                        color: Colors.white70,
-                                      ),
-                                      hintText: 'Full Name',
-                                      hintStyle: TextStyle(
-                                        color: Colors.white70,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.white.withValues(
-                                        alpha: 0.15,
-                                      ),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        vertical: 18,
-                                      ),
-
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color: Colors.white24,
-                                          width: 1.3,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color: Color(0xFF8456FF),
-                                          width: 2,
-                                        ),
-                                      ),
-                                    ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24.0, horizontal: 0),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(height: 0),
+                            TextField(
+                              controller: _fullnameController,
+                              style: TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                prefixIcon: Icon(
+                                  Icons.drive_file_rename_outline_sharp,
+                                  color: Colors.white70,
+                                ),
+                                hintText: 'Full Name',
+                                hintStyle: TextStyle(
+                                  color: Colors.white70,
+                                ),
+                                filled: true,
+                                fillColor: Colors.white.withValues(
+                                  alpha: 0.15,
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 18,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: Colors.white24,
+                                    width: 1.3,
                                   ),
-                                  SizedBox(height: 25),
-                                  TextField(
-                                    controller: _usernameController,
-                                    focusNode: _usernameFocusNode,
-                                    onChanged: (value) {
-                                      setState(() {});
-                                    },
-                                    onTap: () {
-                                      showUsernameRequirementsSnackBar(context);
-                                    },
-                                    style: TextStyle(color: Colors.white),
-                                    decoration: InputDecoration(
-                                      prefixIcon: Icon(
-                                        Icons.person,
-                                        color: Colors.white70,
-                                      ),
-                                      hintText: 'Username',
-                                      hintStyle: TextStyle(
-                                        color: Colors.white70,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.white.withValues(
-                                        alpha: 0.15,
-                                      ),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        vertical: 18,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color: getBorderColor("Username"),
-                                          width: 1.3,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color: getFocusedBorderColor(
-                                            "Username",
-                                          ),
-                                          width: 2,
-                                        ),
-                                      ),
-                                    ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: Color(0xFF8456FF),
+                                    width: 2,
                                   ),
-                                  SizedBox(height: 25),
-                                  TextField(
-                                    controller: _emailController,
-                                    onChanged: (value) {
-                                      setState(() {});
-                                    },
-                                    style: TextStyle(color: Colors.white),
-                                    decoration: InputDecoration(
-                                      prefixIcon: Icon(
-                                        Icons.email,
-                                        color: Colors.white70,
-                                      ),
-                                      hintText: 'Email Address',
-                                      hintStyle: TextStyle(
-                                        color: Colors.white70,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.white.withValues(
-                                        alpha: 0.15,
-                                      ),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        vertical: 18,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color: getBorderColor("Email"),
-                                          width: 1.3,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color: getFocusedBorderColor("Email"),
-                                          width: 2,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 25),
-                                  TextField(
-                                    controller: _passwordController,
-                                    focusNode: _passwordFocusNode,
-
-                                    obscureText: true,
-                                    onChanged: (value) {
-                                      setState(() {});
-                                    },
-                                    onTap: () {
-                                      showPasswordRequirementsSnackBar(context);
-                                    },
-                                    style: TextStyle(color: Colors.white),
-                                    decoration: InputDecoration(
-                                      prefixIcon: Icon(
-                                        Icons.lock,
-                                        color: Colors.white70,
-                                      ),
-                                      hintText: 'Password',
-                                      hintStyle: TextStyle(
-                                        color: Colors.white70,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.white.withValues(
-                                        alpha: 0.15,
-                                      ),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        vertical: 18,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color: getBorderColor("Password"),
-                                          width: 1.3,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color: getFocusedBorderColor(
-                                            "Password",
-                                          ),
-                                          width: 2,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 20),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      if (isSignUpValid()) {
-                                        signUpProcess();
-                                      }
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xFF671BAF),
-                                      // Deep dark purple
-                                      foregroundColor: Colors.white,
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 30,
-                                        vertical: 14,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'Sign Up',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        letterSpacing: 2,
-                                        shadows: [
-                                          Shadow(
-                                            blurRadius: 15,
-                                            color: Color(0xFF8456FF),
-                                            offset: Offset(1, 2),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 5),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        "Already have an account?",
-                                        style: TextStyle(
-                                          color: Colors.white70,
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (context) =>
-                                                      LogInPage(title: 'Hertz'),
-                                            ),
-                                          );
-                                        },
-                                        child: Text(
-                                          "Log In",
-                                          style: TextStyle(
-                                            color: Color(0xFFD644FF),
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 16,
-                                            decoration:
-                                                TextDecoration.underline,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                            SizedBox(height: 25),
+                            TextField(
+                              controller: _usernameController,
+                              focusNode: _usernameFocusNode,
+                              onChanged: (value) {
+                                setState(() {});
+                              },
+                              onTap: () {
+                                showUsernameRequirementsSnackBar(context);
+                              },
+                              style: TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                prefixIcon: Icon(
+                                  Icons.person,
+                                  color: Colors.white70,
+                                ),
+                                hintText: 'Username',
+                                hintStyle: TextStyle(
+                                  color: Colors.white70,
+                                ),
+                                filled: true,
+                                fillColor: Colors.white.withValues(
+                                  alpha: 0.15,
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 18,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: getBorderColor("Username"),
+                                    width: 1.3,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: getFocusedBorderColor("Username"),
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 25),
+                            TextField(
+                              controller: _emailController,
+                              onChanged: (value) {
+                                setState(() {});
+                              },
+                              style: TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                prefixIcon: Icon(
+                                  Icons.email,
+                                  color: Colors.white70,
+                                ),
+                                hintText: 'Email Address',
+                                hintStyle: TextStyle(
+                                  color: Colors.white70,
+                                ),
+                                filled: true,
+                                fillColor: Colors.white.withValues(
+                                  alpha: 0.15,
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 18,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: getBorderColor("Email"),
+                                    width: 1.3,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: getFocusedBorderColor("Email"),
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 25),
+                            TextField(
+                              controller: _passwordController,
+                              focusNode: _passwordFocusNode,
+                              obscureText: true,
+                              onChanged: (value) {
+                                setState(() {});
+                              },
+                              onTap: () {
+                                showPasswordRequirementsSnackBar(context);
+                              },
+                              style: TextStyle(color: Colors.white),
+                              decoration: InputDecoration(
+                                prefixIcon: Icon(
+                                  Icons.lock,
+                                  color: Colors.white70,
+                                ),
+                                hintText: 'Password',
+                                hintStyle: TextStyle(
+                                  color: Colors.white70,
+                                ),
+                                filled: true,
+                                fillColor: Colors.white.withValues(
+                                  alpha: 0.15,
+                                ),
+                                contentPadding: EdgeInsets.symmetric(
+                                  vertical: 18,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: getBorderColor("Password"),
+                                    width: 1.3,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: getFocusedBorderColor("Password"),
+                                    width: 2,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                            ElevatedButton(
+                              onPressed: () {
+                                if (isSignUpValid()) {
+                                  signUpProcess();
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Color(0xFF671BAF),
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 30,
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: Text(
+                                'Sign Up',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  letterSpacing: 2,
+                                  shadows: [
+                                    Shadow(
+                                      blurRadius: 15,
+                                      color: Color(0xFF8456FF),
+                                      offset: Offset(1, 2),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Already have an account?",
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => LogInPage(
+                                          title: 'Hertz',
+                                          openForgotPassword: false,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Text(
+                                    "Log In",
+                                    style: TextStyle(
+                                      color: Color(0xFFD644FF),
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 16,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LogInPage(
+                                      title: 'Hertz',
+                                      openForgotPassword: true,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "Forgot Password?",
+                                style: TextStyle(
+                                  color: Color(0xFFD644FF),
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
+                    SizedBox(height: 20),
                   ],
                 ),
               ),
