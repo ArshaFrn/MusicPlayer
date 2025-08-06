@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
-import '../Model/Music.dart';
-import '../Model/User.dart';
-import '../utils/CacheManager.dart';
+import '/Model/Music.dart';
+import '/Model/User.dart';
+import '/utils/CacheManager.dart';
 import 'dart:io';
+import '/TcpClient.dart';
 
 class AudioController {
   static final AudioController _instance =
@@ -92,10 +93,6 @@ class AudioController {
         _playlist.indexWhere((track) => track.id == currentTrack.id);
 
     if (_currentTrackIndex == -1) _currentTrackIndex = 0;
-
-    // Trigger initial state change
-    // We don't immediately notify listeners to avoid calling setState during build
-    // The listeners will be notified when the track is loaded and played
 
     // Load and play the current track
     await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
@@ -207,6 +204,11 @@ class AudioController {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _notifyStateChanged();
       });
+
+      // Add recently played tracking here
+      final tcpClient = TcpClient(serverAddress: "10.0.2.2", serverPort: 12345);
+      await tcpClient.updateRecentlyPlayed(currentUser!.username, track.id);
+      currentUser!.recentlyPlayed.add(track);
 
       final cacheManager = CacheManager.instance;
       final String? cachedPath = await cacheManager.getCachedMusicPath(

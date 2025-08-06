@@ -5,52 +5,54 @@ class Playlist {
 
   // Immutable properties
   final int _id;
-  final User _owner;
   final DateTime _createdDate;
 
   // Mutable properties
   String _name;
   String _description;
   final List<Music> _tracks;
+  bool _isStatic;
 
   Playlist({
     required String name,
-    required User owner,
     required String description,
+    bool isStatic = false,
+    List<Music>? tracks,
   })  : _name = name,
-        _owner = owner,
         _description = description,
+        _isStatic = isStatic,
         _createdDate = DateTime.now(),
-        _id = _generateId(name, owner),
-        _tracks = [];
+        _id = _generateId(name, description, DateTime.now()),
+        _tracks = tracks ?? [];
 
-  static int _generateId(String name, User owner) {
-    return (name+owner.username).hashCode;
+  static int _generateId(String name, String description,DateTime createdDate) {
+    return (name + description + createdDate.toString()).hashCode;
   }
 
   factory Playlist.fromMap(Map<String, dynamic> map) {
     return Playlist(
       name: map['name'],
-      owner: map['owner'],
       description: map['description'],
+      tracks: List<Music>.from(map['tracks']?.map((x) => Music.fromMap(x)) ?? []),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'name': _name,
-      'owner': _owner,
       'description': _description,
+      'tracks': _tracks.map((track) => track.toMap()).toList(),
+      'id': _id,
     };
   }
 
   //Getter
   int get id => _id;
-  User get owner => _owner;
   DateTime get createdDate => _createdDate;
   String get name => _name;
   String get description => _description;
   List<Music> get tracks => _tracks;
+  bool get isStatic => _isStatic;
 
   //Setter
   set name(String value) => _name = value;
@@ -67,6 +69,7 @@ class Playlist {
 
   @override
   String toString() {
-    return 'Playlist: $_name (${_owner.toString()})';
+    return 'Playlist(id: $_id, name: $_name, description: $_description, createdDate: $_createdDate, isStatic: $_isStatic)';
   }
+
 }

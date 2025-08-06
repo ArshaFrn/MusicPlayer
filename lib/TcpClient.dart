@@ -17,11 +17,11 @@ class TcpClient {
   TcpClient({required this.serverAddress, required this.serverPort});
 
   Future<Map<String, dynamic>> signUp(
-      String fullname,
-      String username,
-      String email,
-      String password,
-      ) async {
+    String fullname,
+    String username,
+    String email,
+    String password,
+  ) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
       print(
@@ -42,7 +42,7 @@ class TcpClient {
       print("Request sent: ${jsonEncode(request)}");
 
       final response =
-      await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
 
       socket.close();
 
@@ -79,7 +79,7 @@ class TcpClient {
       print("Request sent: ${jsonEncode(request)}");
 
       final response =
-      await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
 
       print('Raw response received: $response');
 
@@ -104,11 +104,11 @@ class TcpClient {
 
   //------------------------------------------------------------------------------
   Future<Map<String, dynamic>> uploadMusic(
-      User user,
-      Music music,
-      String base64Data,
-      {bool isPublic = false}
-      ) async {
+    User user,
+    Music music,
+    String base64Data, {
+    bool isPublic = false,
+  }) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
       print(
@@ -130,7 +130,7 @@ class TcpClient {
       print("Request sent: ${jsonEncode(request)}");
 
       final response =
-      await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       // Example response format:
       // {'status': 'uploadMusicSuccess', 'message': 'Music uploaded successfully'}
       // {'status': 'error', 'message': 'Error message'}
@@ -156,7 +156,6 @@ class TcpClient {
     }
   }
 
-
   Future<List<Music>> getUserMusicList(User user) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
@@ -173,7 +172,7 @@ class TcpClient {
       print("Request sent: ${jsonEncode(request)}");
 
       final response =
-      await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       // Example response format: (status and payload (list of music maps))
       // {'status': 'getUserMusicListSuccess', 'Payload': [musicMap1, musicMap2, ...]}
       // {'status': 'getUserMusicListSuccess', 'Payload': []}
@@ -210,8 +209,6 @@ class TcpClient {
     }
   }
 
-
-
   /// Remove song from user's library (for regular users)
   Future<Map<String, dynamic>> removeMusic({
     required User user,
@@ -232,7 +229,7 @@ class TcpClient {
       print("Request sent: ${jsonEncode(request)}");
 
       final response =
-      await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
 
       print('Raw response received: $response');
       // Example response format:
@@ -286,7 +283,7 @@ class TcpClient {
         final Completer<String> responseCompleter = Completer<String>();
 
         socket.listen(
-              (List<int> data) {
+          (List<int> data) {
             final String chunk = String.fromCharCodes(data);
             responseBuffer.write(chunk);
           },
@@ -440,7 +437,7 @@ class TcpClient {
       print("Request sent: ${jsonEncode(request)}");
 
       final response =
-      await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
 
       // Example response format:
       // {'status': 'likeSuccess', 'message': 'Song liked successfully'}
@@ -487,7 +484,7 @@ class TcpClient {
       print("Request sent: ${jsonEncode(request)}");
 
       final response =
-      await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
 
       // Example response format:
       // {'status': 'dislikeSuccess', 'message': 'Song disliked successfully'}
@@ -528,12 +525,9 @@ class TcpClient {
       print("Request sent: ${jsonEncode(request)}");
 
       final response =
-      await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
 
-      // Example response format:
-      // {'status': 'getUserPlaylistsSuccess', 'Payload': [playlistMap1, playlistMap2, ...]}
-      // {'status': 'getUserPlaylistsSuccess', 'Payload': []}
-      // {'status': 'error', 'message': 'Error message'}
+      print('Raw response received: $response');
 
       socket.close();
 
@@ -543,10 +537,17 @@ class TcpClient {
       }
 
       try {
-        final List<dynamic> playlistListJson = jsonDecode(response);
-        return playlistListJson
-            .map((playlistJson) => Playlist.fromMap(playlistJson))
-            .toList();
+        final Map<String, dynamic> responseMap = jsonDecode(response);
+
+        if (responseMap['status'] == 'getUserPlaylistsSuccess') {
+          final List<dynamic> playlistsJson = responseMap['Payload'] ?? [];
+          return playlistsJson
+              .map((playlistJson) => Playlist.fromMap(playlistJson))
+              .toList();
+        } else {
+          print('Error: Server returned status: ${responseMap['status']}');
+          return [];
+        }
       } catch (e) {
         print('Error decoding response: $e');
         return [];
@@ -554,6 +555,56 @@ class TcpClient {
     } catch (e) {
       print('Error fetching playlists: $e');
       return [];
+    }
+  }
+
+  // Upload a playlist to the server
+  Future<Map<String, dynamic>> uploadPlaylist(
+    User user,
+    Playlist playlist,
+  ) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
+
+      final request = {
+        "Request": "uploadPlaylist",
+        "Payload": {
+          "username": user.username,
+          "playlistMap": playlist.toMap(),
+        },
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+
+      // Example response format:
+      // {'status': 'uploadPlaylistSuccess', 'message': 'Playlist uploaded successfully'}
+      // {'status': 'error', 'message': 'Error message'}
+
+      print('Raw response received: $response');
+
+      socket.close();
+
+      if (response.isEmpty) {
+        print('Error: Empty response from server');
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      try {
+        return jsonDecode(response);
+      } catch (e) {
+        print('Error decoding response: $e');
+        return {"status": "error", "message": "Invalid response format"};
+      }
+    } catch (e) {
+      print('Error uploading playlist: $e');
+      return {"status": "error", "message": "Failed to connect to server"};
     }
   }
 
@@ -573,7 +624,7 @@ class TcpClient {
       print("Request sent: ${jsonEncode(request)}");
 
       final response =
-      await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
 
       print('Raw response received: $response');
 
@@ -605,10 +656,10 @@ class TcpClient {
   }
 
   Future<Map<String, dynamic>> updateUserInfo(
-      String username, {
-        String? fullName,
-        String? email,
-      }) async {
+    String username, {
+    String? fullName,
+    String? email,
+  }) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
       final payload = {
@@ -616,12 +667,10 @@ class TcpClient {
         if (fullName != null) "fullName": fullName,
         if (email != null) "email": email,
       };
-      final request = {
-        "Request": "updateUserInfo",
-        "Payload": payload,
-      };
+      final request = {"Request": "updateUserInfo", "Payload": payload};
       socket.write('${jsonEncode(request)}\n\n');
-      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       socket.close();
       if (response.isEmpty) {
         return {"status": "error", "message": "Empty response from server"};
@@ -633,11 +682,11 @@ class TcpClient {
   }
 
   Future<Map<String, dynamic>> changePassword(
-      String username,
-      String oldPassword,
-      String newPassword, {
-        bool isForgotten = false,
-      }) async {
+    String username,
+    String oldPassword,
+    String newPassword, {
+    bool isForgotten = false,
+  }) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
       final payload = {
@@ -646,12 +695,10 @@ class TcpClient {
         "newPassword": newPassword,
         "isForgotten": isForgotten,
       };
-      final request = {
-        "Request": "updatePassword",
-        "Payload": payload,
-      };
+      final request = {"Request": "updatePassword", "Payload": payload};
       socket.write('${jsonEncode(request)}\n\n');
-      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       socket.close();
       if (response.isEmpty) {
         return {"status": "error", "message": "Empty response from server"};
@@ -663,9 +710,9 @@ class TcpClient {
   }
 
   Future<Map<String, dynamic>> uploadProfileImage(
-      String username,
-      String imagePath,
-      ) async {
+    String username,
+    String imagePath,
+  ) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
 
@@ -680,13 +727,11 @@ class TcpClient {
         "imageName": imagePath.split('/').last,
       };
 
-      final request = {
-        "Request": "uploadProfileImage",
-        "Payload": payload,
-      };
+      final request = {"Request": "uploadProfileImage", "Payload": payload};
 
       socket.write('${jsonEncode(request)}\n\n');
-      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       socket.close();
 
       if (response.isEmpty) {
@@ -703,20 +748,17 @@ class TcpClient {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
 
-      final payload = {
-        "username": username,
-      };
+      final payload = {"username": username};
 
-      final request = {
-        "Request": "getProfileImage",
-        "Payload": payload,
-      };
+      final request = {"Request": "getProfileImage", "Payload": payload};
 
       socket.write('${jsonEncode(request)}\n\n');
 
       // Use a more robust approach for receiving large responses
       String response = '';
-      await for (String chunk in socket.cast<List<int>>().transform(const Utf8Decoder())) {
+      await for (String chunk in socket.cast<List<int>>().transform(
+        const Utf8Decoder(),
+      )) {
         response += chunk;
         // Check if we have received a complete JSON response
         if (response.contains('\n\n')) {
@@ -742,17 +784,13 @@ class TcpClient {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
 
-      final payload = {
-        "email": email,
-      };
+      final payload = {"email": email};
 
-      final request = {
-        "Request": "forgetPasswordRequest",
-        "Payload": payload,
-      };
+      final request = {"Request": "forgetPasswordRequest", "Payload": payload};
 
       socket.write('${jsonEncode(request)}\n\n');
-      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       socket.close();
 
       if (response.isEmpty) {
@@ -765,22 +803,20 @@ class TcpClient {
     }
   }
 
-  Future<Map<String, dynamic>> verifyResetCode(String email, String code) async {
+  Future<Map<String, dynamic>> verifyResetCode(
+    String email,
+    String code,
+  ) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
 
-      final payload = {
-        "email": email,
-        "code": code,
-      };
+      final payload = {"email": email, "code": code};
 
-      final request = {
-        "Request": "verifyResetCode",
-        "Payload": payload,
-      };
+      final request = {"Request": "verifyResetCode", "Payload": payload};
 
       socket.write('${jsonEncode(request)}\n\n');
-      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       socket.close();
 
       if (response.isEmpty) {
@@ -793,7 +829,11 @@ class TcpClient {
     }
   }
 
-  Future<Map<String, dynamic>> updatePasswordWithReset(String username, String newPassword, String email) async {
+  Future<Map<String, dynamic>> updatePasswordWithReset(
+    String username,
+    String newPassword,
+    String email,
+  ) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
       final payload = {
@@ -803,12 +843,10 @@ class TcpClient {
         "isForgotten": true,
         "email": email,
       };
-      final request = {
-        "Request": "updatePassword",
-        "Payload": payload,
-      };
+      final request = {"Request": "updatePassword", "Payload": payload};
       socket.write('${jsonEncode(request)}\n\n');
-      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       socket.close();
       if (response.isEmpty) {
         return {"status": "error", "message": "Empty response from server"};
@@ -818,6 +856,7 @@ class TcpClient {
       return {"status": "error", "message": "Failed to connect to server"};
     }
   }
+
   Future<List<Music>> getPublicMusicList() async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
@@ -825,15 +864,13 @@ class TcpClient {
         'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
       );
 
-      final request = {
-        "Request": "getPublicMusicList",
-      };
+      final request = {"Request": "getPublicMusicList"};
 
       socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
 
       final response =
-      await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       // Example response format:
       // {'status': 'getPublicMusicListSuccess', 'Payload': [musicMap1, musicMap2, ...]}
       // {'status': 'getPublicMusicListSuccess', 'Payload': []}
@@ -871,10 +908,15 @@ class TcpClient {
   }
 
   /// Add public music to user's library on the server
-  Future<Map<String, dynamic>> addMusicToLibrary(String username, Music music) async {
+  Future<Map<String, dynamic>> addMusicToLibrary(
+    String username,
+    Music music,
+  ) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
-      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
 
       final payload = {
         "username": username,
@@ -882,15 +924,13 @@ class TcpClient {
         "musicData": music.toMap(),
       };
 
-      final request = {
-        "Request": "addMusicToLibrary",
-        "Payload": payload,
-      };
+      final request = {"Request": "addMusicToLibrary", "Payload": payload};
 
       socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
 
-      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       socket.close();
 
       if (response.isEmpty) {
@@ -906,25 +946,25 @@ class TcpClient {
   }
 
   /// Make music public
-  Future<Map<String, dynamic>> makeMusicPublic(String username, int musicId) async {
+  Future<Map<String, dynamic>> makeMusicPublic(
+    String username,
+    int musicId,
+  ) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
-      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
 
-      final payload = {
-        "username": username,
-        "musicId": musicId,
-      };
+      final payload = {"username": username, "musicId": musicId};
 
-      final request = {
-        "Request": "makeMusicPublic",
-        "Payload": payload,
-      };
+      final request = {"Request": "makeMusicPublic", "Payload": payload};
 
       socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
 
-      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       socket.close();
 
       if (response.isEmpty) {
@@ -943,21 +983,19 @@ class TcpClient {
   Future<List<int>> getRecentlyPlayedSongs(String username) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
-      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
 
-      final payload = {
-        "username": username,
-      };
+      final payload = {"username": username};
 
-      final request = {
-        "Request": "getRecentlyPlayedSongs",
-        "Payload": payload,
-      };
+      final request = {"Request": "getRecentlyPlayedSongs", "Payload": payload};
 
       socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
 
-      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       socket.close();
 
       if (response.isEmpty) {
@@ -982,25 +1020,25 @@ class TcpClient {
   }
 
   /// Admin login
-  Future<Map<String, dynamic>> adminLogin(String username, String password) async {
+  Future<Map<String, dynamic>> adminLogin(
+    String username,
+    String password,
+  ) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
-      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
 
-      final payload = {
-        "username": username,
-        "password": password,
-      };
+      final payload = {"username": username, "password": password};
 
-      final request = {
-        "Request": "adminLogin",
-        "Payload": payload,
-      };
+      final request = {"Request": "adminLogin", "Payload": payload};
 
       socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
 
-      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       socket.close();
 
       if (response.isEmpty) {
@@ -1019,16 +1057,17 @@ class TcpClient {
   Future<Map<String, dynamic>> getAllUsers() async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
-      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
 
-      final request = {
-        "Request": "getAllUsers",
-      };
+      final request = {"Request": "getAllUsers"};
 
       socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
 
-      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       socket.close();
 
       if (response.isEmpty) {
@@ -1047,16 +1086,17 @@ class TcpClient {
   Future<Map<String, dynamic>> getAllMusic() async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
-      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
 
-      final request = {
-        "Request": "getAllMusic",
-      };
+      final request = {"Request": "getAllMusic"};
 
       socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
 
-      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       socket.close();
 
       if (response.isEmpty) {
@@ -1075,21 +1115,19 @@ class TcpClient {
   Future<Map<String, dynamic>> deleteUser(String username) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
-      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
 
-      final payload = {
-        "username": username,
-      };
+      final payload = {"username": username};
 
-      final request = {
-        "Request": "deleteUser",
-        "Payload": payload,
-      };
+      final request = {"Request": "deleteUser", "Payload": payload};
 
       socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
 
-      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       socket.close();
 
       if (response.isEmpty) {
@@ -1108,21 +1146,19 @@ class TcpClient {
   Future<Map<String, dynamic>> deleteMusic(int musicId) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
-      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
 
-      final payload = {
-        "musicId": musicId,
-      };
+      final payload = {"musicId": musicId};
 
-      final request = {
-        "Request": "deleteMusic",
-        "Payload": payload,
-      };
+      final request = {"Request": "deleteMusic", "Payload": payload};
 
       socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
 
-      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       socket.close();
 
       if (response.isEmpty) {
@@ -1133,6 +1169,40 @@ class TcpClient {
       return jsonDecode(response);
     } catch (e) {
       print('Error deleting music: $e');
+      return {"status": "error", "message": "Failed to connect to server: $e"};
+    }
+  }
+
+  /// Update recently played songs
+  Future<Map<String, dynamic>> updateRecentlyPlayed(
+    String username,
+    int musicId,
+  ) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
+
+      final payload = {"username": username, "musicId": musicId};
+
+      final request = {"Request": "updateRecentlyPlayed", "Payload": payload};
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      print('Raw response received: $response');
+      return jsonDecode(response);
+    } catch (e) {
+      print('Error updating recently played: $e');
       return {"status": "error", "message": "Failed to connect to server: $e"};
     }
   }
