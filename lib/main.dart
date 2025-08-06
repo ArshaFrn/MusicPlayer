@@ -7,6 +7,7 @@ import 'package:second/TcpClient.dart';
 import 'SignUpPage.dart';
 import 'HomePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'ForgotPasswordPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -553,13 +554,22 @@ class _LogInPage extends State<LogInPage> {
                                   ),
                                   // forgot password
                                   TextButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ForgotPasswordPage(),
+                                        ),
+                                      );
+                                    },
                                     child: Text(
                                       "Forgot Password?",
                                       style: TextStyle(
                                         color: Color(0xFFD644FF),
                                         fontWeight: FontWeight.w500,
                                         fontSize: 16,
+                                        letterSpacing: 1.2,
                                         decoration: TextDecoration.underline,
                                       ),
                                     ),

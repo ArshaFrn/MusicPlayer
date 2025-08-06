@@ -5,10 +5,10 @@ class User {
   // Immutable properties
   final int _id;
   final String _username;
-  final String _email;
   final DateTime _registrationDate;
 
   // Mutable properties
+  String _email;
   String _password;
   String _fullname;
   String? _profileImageUrl;
@@ -24,15 +24,15 @@ class User {
     required String password,
     required DateTime registrationDate,
   }) : _username = username,
-       _email = email,
-       _fullname = fullname,
-       _password = password,
-       _registrationDate = registrationDate,
-       _id = _generateId(username, email),
-       _tracks = [],
-       _likedSongs = [],
-       _recentlyPlayed = [],
-       _playlists = [];
+        _email = email,
+        _fullname = fullname,
+        _password = password,
+        _registrationDate = registrationDate,
+        _id = _generateId(username, email),
+        _tracks = [],
+        _likedSongs = [],
+        _recentlyPlayed = [],
+        _playlists = [];
 
   void setProfileImageUrl(String url) {
     _profileImageUrl = url;
@@ -69,6 +69,9 @@ class User {
   set password(String value) => _password = value;
 
   set fullname(String value) => _fullname = value;
+
+  set email(String value) => _email = value;
+
 
   @override
   bool operator ==(Object other) {
