@@ -297,7 +297,7 @@ class _LogInPage extends State<LogInPage> {
           Center(
             child: SingleChildScrollView(
               child: SizedBox(
-                height: 635,
+                height: 650,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -344,7 +344,7 @@ class _LogInPage extends State<LogInPage> {
                     SizedBox(height: 55),
                     Container(
                       width: 350,
-                      height: 430,
+                      height: 470,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
@@ -550,6 +550,19 @@ class _LogInPage extends State<LogInPage> {
                                         ),
                                       ),
                                     ],
+                                  ),
+                                  // forgot password
+                                  TextButton(
+                                    onPressed: () {},
+                                    child: Text(
+                                      "Forgot Password?",
+                                      style: TextStyle(
+                                        color: Color(0xFFD644FF),
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 16,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
