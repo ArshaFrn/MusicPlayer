@@ -36,11 +36,6 @@ class CacheManager {
     return '${cacheDir.path}/$fileName';
   }
 
-  /// Get the cache file path for a specific music track (private version)
-  Future<String> _getCacheFilePath(User user, Music music) async {
-    return getCacheFilePath(user, music);
-  }
-
   /// Check if a music track is cached
   Future<bool> isMusicCached(User user, Music music) async {
     try {
@@ -48,7 +43,6 @@ class CacheManager {
       final File cacheFile = File(cacheFilePath);
 
       if (await cacheFile.exists()) {
-        // Check if file has content (not empty)
         final int fileSize = await cacheFile.length();
         return fileSize > 0;
       }
