@@ -6,7 +6,9 @@ import '../utils/CacheManager.dart';
 import 'dart:io';
 
 class AudioController {
-  static final AudioController _instance = AudioController._privateConstructor();
+  static final AudioController _instance =
+      AudioController._privateConstructor();
+
   static AudioController get instance => _instance;
 
   AudioPlayer? _audioPlayer;
@@ -48,7 +50,7 @@ class AudioController {
           state.processingState == ProcessingState.loading ||
           state.processingState == ProcessingState.buffering;
       _notifyStateChanged();
-      
+
       // Listen for song completion
       if (state.processingState == ProcessingState.completed) {
         _autoAdvanceToNext();
@@ -80,15 +82,15 @@ class AudioController {
     _currentTrack = currentTrack;
     _currentUser = user;
     _playlist = playlist ?? user.tracks;
-    
+
     if (_playlist.isEmpty) {
       _playlist = [currentTrack];
     }
-    
-    _currentTrackIndex = currentTrackIndex ?? _playlist.indexWhere(
-      (track) => track.id == currentTrack.id,
-    );
-    
+
+    _currentTrackIndex =
+        currentTrackIndex ??
+        _playlist.indexWhere((track) => track.id == currentTrack.id);
+
     if (_currentTrackIndex == -1) _currentTrackIndex = 0;
 
     // Trigger initial state change
@@ -101,12 +103,21 @@ class AudioController {
 
   // Getters for UI
   Music? get currentTrack => _currentTrack;
+
+  User? get currentUser => _currentUser;
+
   bool get isPlaying => _isPlaying;
+
   bool get isLoading => _isLoading;
+
   Duration get position => _position;
+
   Duration get duration => _duration;
+
   bool get hasTrack => _currentTrack != null;
+
   List<Music> get playlist => _playlist;
+
   int get currentTrackIndex => _currentTrackIndex;
 
   // Add listeners for UI updates
@@ -140,8 +151,9 @@ class AudioController {
     if (_playlist.isEmpty || _playlist.length <= 1) return;
 
     await _audioPlayer?.pause();
+
     _currentTrackIndex =
-        (_currentTrackIndex + 1) % _playlist.length;
+        (_currentTrackIndex - 1 + _playlist.length) % _playlist.length;
 
     // Update current track immediately for UI
     _currentTrack = _playlist[_currentTrackIndex];
@@ -158,7 +170,7 @@ class AudioController {
     if (_playlist.isEmpty || _playlist.length <= 1) return;
 
     await _audioPlayer?.pause();
-    _currentTrackIndex = (_currentTrackIndex - 1 + _playlist.length) % _playlist.length;
+    _currentTrackIndex = (_currentTrackIndex + 1) % _playlist.length;
 
     // Update current track immediately for UI
     _currentTrack = _playlist[_currentTrackIndex];
@@ -175,7 +187,7 @@ class AudioController {
     if (_playlist.isEmpty || _playlist.length <= 1) return;
 
     _currentTrackIndex =
-        (_currentTrackIndex + 1) % _playlist.length;
+        (_currentTrackIndex - 1 + _playlist.length) % _playlist.length;
 
     // Update current track immediately for UI
     _currentTrack = _playlist[_currentTrackIndex];

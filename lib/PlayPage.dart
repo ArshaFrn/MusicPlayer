@@ -44,7 +44,15 @@ class _PlayPageState extends State<PlayPage> {
       _audioController.addOnStateChangedListener(_onStateChanged);
       _audioController.addOnTrackChangedListener(_onTrackChanged);
 
-      // Initialize the audio controller
+      // Check if the audio controller is already playing the same song
+      if (_audioController.hasTrack &&
+          _audioController.currentTrack!.id == widget.music.id) {
+        // The same song is already playing, don't reinitialize
+        print('Same song is already playing, not reinitializing');
+        return;
+      }
+
+      // Initialize the audio controller with the new song
       await _audioController.initialize(
         currentTrack: widget.music,
         user: widget.user,

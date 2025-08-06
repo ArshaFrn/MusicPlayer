@@ -3,6 +3,8 @@ import 'Model/User.dart';
 import 'Model/Music.dart';
 import 'Application.dart';
 import 'TcpClient.dart';
+import 'utils/AudioController.dart';
+import 'PlayPage.dart';
 
 class SearchPage extends StatefulWidget {
   final User _user;
@@ -94,7 +96,7 @@ class _SearchPage extends State<SearchPage> {
                     final music = _searchResults[index];
                     final isLiked = music.isLiked;
                     return ListTile(
-                      onTap: () {},
+                      onTap: () => _onTrackTap(context, music),
                       onLongPress: () => _onTrackLongPress(context, music),
                       leading: Icon(Icons.music_note),
                       title: Text(music.title),
@@ -151,7 +153,16 @@ class _SearchPage extends State<SearchPage> {
             ),
           ),
     );
-    if (result == 'delete') {
+    if (result == 'play') {
+      final success = await application.handleMusicPlayback(
+        context: context,
+        user: widget._user,
+        music: music,
+      );
+      if (!success) {
+        print("Error Playing The Song");
+      }
+    } else if (result == 'delete') {
       await application.deleteMusic(
         context: context,
         user: widget._user,
@@ -167,6 +178,49 @@ class _SearchPage extends State<SearchPage> {
     final success = await application.toggleLike(widget._user, music);
     if (success) {
       setState(() {});
+    }
+  }
+  
+  /// Handles tap events on music tracks
+  Future<void> _onTrackTap(BuildContext context, Music music) async {
+    try {
+      // Check if the audio controller is already playing the same song
+      final audioController = AudioController.instance;
+      if (audioController.hasTrack &&
+          audioController.currentTrack!.id == music.id) {
+        // The same song is already playing, navigate to PlayPage without reinitializing
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PlayPage(
+              music: music,
+              user: widget._user,
+              playlist: widget._user.tracks,
+            ),
+          ),
+        );
+        return;
+      }
+
+      // Handle music playback logic
+      final success = await application.handleMusicPlayback(
+        context: context,
+        user: widget._user,
+        music: music,
+      );
+
+      if (!success) {
+        print("Error Playing The Song");
+      }
+    } catch (e) {
+      print('Error handling track tap: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error playing music'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
     }
   }
 }

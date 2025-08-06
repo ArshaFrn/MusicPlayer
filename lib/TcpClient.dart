@@ -113,7 +113,6 @@ class TcpClient {
       print(
         'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
       );
-
       final request = {
         "Request": "uploadMusic",
         "Payload": {
@@ -595,10 +594,11 @@ class TcpClient {
       return [];
     }
   }
+
   Future<Map<String, dynamic>> updateRecentlyPlayed(
-      User user,
-      Music music,
-      ) async {
+    User user,
+    Music music,
+  ) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
       print(
@@ -611,7 +611,7 @@ class TcpClient {
       socket.write('${jsonEncode(request)}\n\n');
       print("Request sent: ${jsonEncode(request)}");
       final response =
-      await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
       // Example response format:
       // {'status': 'updateRecentlyPlayedSuccess', 'message': 'Recently played songs updated successfully'}
       // {'status': 'error', 'message': 'Error message'}

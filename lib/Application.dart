@@ -477,6 +477,22 @@ class Application {
           music,
         );
         if (cachedPath != null) {
+          // Check if the audio controller is already playing the same song
+          final audioController = AudioController.instance;
+          if (audioController.hasTrack &&
+              audioController.currentTrack!.id == music.id) {
+            // The same song is already playing, navigate to PlayPage without reinitializing
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) =>
+                        PlayPage(music: music, user: user, playlist: user.tracks),
+              ),
+            );
+            return true;
+          }
+          
           //Navigate to play page
           Navigator.push(
             context,
@@ -503,6 +519,22 @@ class Application {
 
       if (downloadSuccess) {
         _hideSnackBar(context);
+        // Check if the audio controller is already playing the same song
+        final audioController = AudioController.instance;
+        if (audioController.hasTrack &&
+            audioController.currentTrack!.id == music.id) {
+          // The same song is already playing, navigate to PlayPage without reinitializing
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      PlayPage(music: music, user: user, playlist: user.tracks),
+            ),
+          );
+          return true;
+        }
+        
         //Navigate to play page
         Navigator.push(
           context,

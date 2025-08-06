@@ -6,6 +6,8 @@ import 'Model/User.dart';
 import 'Application.dart';
 import 'SearchPage.dart';
 import 'TcpClient.dart';
+import 'utils/AudioController.dart';
+import 'PlayPage.dart';
 
 class LibraryPage extends StatefulWidget {
   final User user;
@@ -362,6 +364,24 @@ class _LibraryPageState extends State<LibraryPage> {
   /// Handles tap events on music tracks
   Future<void> _onTrackTap(BuildContext context, Music music) async {
     try {
+      // Check if the audio controller is already playing the same song
+      final audioController = AudioController.instance;
+      if (audioController.hasTrack &&
+          audioController.currentTrack!.id == music.id) {
+        // The same song is already playing, navigate to PlayPage without reinitializing
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PlayPage(
+              music: music,
+              user: widget.user,
+              playlist: widget.user.tracks,
+            ),
+          ),
+        );
+        return;
+      }
+
       // Handle music playback logic
       final success = await application.handleMusicPlayback(
         context: context,
