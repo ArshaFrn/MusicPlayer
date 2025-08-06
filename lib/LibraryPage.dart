@@ -70,6 +70,7 @@ class _LibraryPageState extends State<LibraryPage> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Row(
           children: [
             const Icon(Icons.library_music, color: Colors.white, size: 24),
