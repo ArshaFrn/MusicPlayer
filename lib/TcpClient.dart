@@ -107,12 +107,14 @@ class TcpClient {
       User user,
       Music music,
       String base64Data,
+      {bool isPublic = false}
       ) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
       print(
         'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
       );
+      String isPublicString = isPublic ? "true" : "false";
 
       final request = {
         "Request": "uploadMusic",
@@ -120,6 +122,7 @@ class TcpClient {
           "username": user.username,
           "musicMap": music.toMap(includeFilePath: false),
           "base64Data": base64Data,
+          "isPublic": isPublicString,
         },
       };
 
@@ -152,6 +155,7 @@ class TcpClient {
       return {"status": "error", "message": "Failed to connect to server"};
     }
   }
+
 
   Future<List<Music>> getUserMusicList(User user) async {
     try {
@@ -206,7 +210,10 @@ class TcpClient {
     }
   }
 
-  Future<Map<String, dynamic>> deleteMusic({
+
+
+  /// Remove song from user's library (for regular users)
+  Future<Map<String, dynamic>> removeMusic({
     required User user,
     required Music music,
   }) async {
@@ -217,7 +224,7 @@ class TcpClient {
       );
 
       final request = {
-        "Request": "deleteMusic",
+        "Request": "removeMusic",
         "Payload": {"musicId": music.id, "username": user.username},
       };
 
@@ -229,7 +236,7 @@ class TcpClient {
 
       print('Raw response received: $response');
       // Example response format:
-      // {'status': 'deleteMusicSuccess', 'message': 'Music deleted successfully'}
+      // {'status': 'removeSongSuccess', 'message': 'Song removed successfully'}
       // {'status': 'error', 'message': 'Error message'}
 
       socket.close();
@@ -246,7 +253,7 @@ class TcpClient {
         return {"status": "error", "message": "Invalid response format"};
       }
     } catch (e) {
-      print('Error deleting music: $e');
+      print('Error removing song: $e');
       return {"status": "error", "message": "Failed to connect to server"};
     }
   }
@@ -809,6 +816,324 @@ class TcpClient {
       return jsonDecode(response);
     } catch (e) {
       return {"status": "error", "message": "Failed to connect to server"};
+    }
+  }
+  Future<List<Music>> getPublicMusicList() async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
+
+      final request = {
+        "Request": "getPublicMusicList",
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response =
+      await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      // Example response format:
+      // {'status': 'getPublicMusicListSuccess', 'Payload': [musicMap1, musicMap2, ...]}
+      // {'status': 'getPublicMusicListSuccess', 'Payload': []}
+      // {'status': 'error', 'message': 'Error message'}
+
+      print('Raw response received: $response');
+
+      socket.close();
+
+      if (response.isEmpty) {
+        print('Error: Empty response from server');
+        return [];
+      }
+
+      try {
+        final Map<String, dynamic> responseMap = jsonDecode(response);
+
+        if (responseMap['status'] == 'getPublicMusicListSuccess') {
+          final List<dynamic> musicListJson = responseMap['Payload'] ?? [];
+          return musicListJson
+              .map((musicJson) => Music.fromMap(musicJson))
+              .toList();
+        } else {
+          print('Error: Server returned status: ${responseMap['status']}');
+          return [];
+        }
+      } catch (e) {
+        print('Error decoding response: $e');
+        return [];
+      }
+    } catch (e) {
+      print('Error: $e');
+      return [];
+    }
+  }
+
+  /// Add public music to user's library on the server
+  Future<Map<String, dynamic>> addMusicToLibrary(String username, Music music) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+
+      final payload = {
+        "username": username,
+        "musicId": music.id,
+        "musicData": music.toMap(),
+      };
+
+      final request = {
+        "Request": "addMusicToLibrary",
+        "Payload": payload,
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      print('Raw response received: $response');
+      return jsonDecode(response);
+    } catch (e) {
+      print('Error adding music to library: $e');
+      return {"status": "error", "message": "Failed to connect to server: $e"};
+    }
+  }
+
+  /// Make music public
+  Future<Map<String, dynamic>> makeMusicPublic(String username, int musicId) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+
+      final payload = {
+        "username": username,
+        "musicId": musicId,
+      };
+
+      final request = {
+        "Request": "makeMusicPublic",
+        "Payload": payload,
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      print('Raw response received: $response');
+      return jsonDecode(response);
+    } catch (e) {
+      print('Error making music public: $e');
+      return {"status": "error", "message": "Failed to connect to server: $e"};
+    }
+  }
+
+  /// Get user's recently played songs
+  Future<List<int>> getRecentlyPlayedSongs(String username) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+
+      final payload = {
+        "username": username,
+      };
+
+      final request = {
+        "Request": "getRecentlyPlayedSongs",
+        "Payload": payload,
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+
+      if (response.isEmpty) {
+        print('Error: Empty response from server');
+        return [];
+      }
+
+      print('Raw response received: $response');
+      final Map<String, dynamic> responseMap = jsonDecode(response);
+
+      if (responseMap['status'] == 'getRecentlyPlayedSongsSuccess') {
+        final List<dynamic> songIdsJson = responseMap['Payload'] ?? [];
+        return songIdsJson.map((id) => id as int).toList();
+      } else {
+        print('Error: Server returned status: ${responseMap['status']}');
+        return [];
+      }
+    } catch (e) {
+      print('Error getting recently played songs: $e');
+      return [];
+    }
+  }
+
+  /// Admin login
+  Future<Map<String, dynamic>> adminLogin(String username, String password) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+
+      final payload = {
+        "username": username,
+        "password": password,
+      };
+
+      final request = {
+        "Request": "adminLogin",
+        "Payload": payload,
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      print('Raw response received: $response');
+      return jsonDecode(response);
+    } catch (e) {
+      print('Error during admin login: $e');
+      return {"status": "error", "message": "Failed to connect to server: $e"};
+    }
+  }
+
+  /// Get all users (admin only)
+  Future<Map<String, dynamic>> getAllUsers() async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+
+      final request = {
+        "Request": "getAllUsers",
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      print('Raw response received: $response');
+      return jsonDecode(response);
+    } catch (e) {
+      print('Error getting all users: $e');
+      return {"status": "error", "message": "Failed to connect to server: $e"};
+    }
+  }
+
+  /// Get all music (admin only)
+  Future<Map<String, dynamic>> getAllMusic() async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+
+      final request = {
+        "Request": "getAllMusic",
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      print('Raw response received: $response');
+      return jsonDecode(response);
+    } catch (e) {
+      print('Error getting all music: $e');
+      return {"status": "error", "message": "Failed to connect to server: $e"};
+    }
+  }
+
+  /// Delete user (admin only)
+  Future<Map<String, dynamic>> deleteUser(String username) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+
+      final payload = {
+        "username": username,
+      };
+
+      final request = {
+        "Request": "deleteUser",
+        "Payload": payload,
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      print('Raw response received: $response');
+      return jsonDecode(response);
+    } catch (e) {
+      print('Error deleting user: $e');
+      return {"status": "error", "message": "Failed to connect to server: $e"};
+    }
+  }
+
+  /// Delete music (admin only)
+  Future<Map<String, dynamic>> deleteMusic(int musicId) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print('Connected to: ${socket.remoteAddress.address}:${socket.remotePort}');
+
+      final payload = {
+        "musicId": musicId,
+      };
+
+      final request = {
+        "Request": "deleteMusic",
+        "Payload": payload,
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response = await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      print('Raw response received: $response');
+      return jsonDecode(response);
+    } catch (e) {
+      print('Error deleting music: $e');
+      return {"status": "error", "message": "Failed to connect to server: $e"};
     }
   }
 }

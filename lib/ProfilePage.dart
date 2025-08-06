@@ -7,11 +7,16 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import 'package:second/main.dart';
 import 'ChangePasswordPage.dart';
+import 'Model/Playlist.dart';
 import 'Model/User.dart';
 import 'TcpClient.dart';
+import 'main.dart';
+import 'LibraryPage.dart';
+import 'PlaylistsPage.dart';
 
 class ProfilePage extends StatefulWidget {
   final User user;
+
   const ProfilePage({super.key, required User user}) : user = user;
 
   @override
@@ -30,7 +35,134 @@ class _ProfilePage extends State<ProfilePage> {
     super.initState();
     _emailController.text = widget.user.email;
     _fullnameController.text = widget.user.fullname;
-    _loadProfileFromBackend();
+    _loadProfileImage();
+  }
+
+  /// Check if profile image is cached locally
+  Future<bool> _isProfileImageCached() async {
+    try {
+      if (widget.user.profileImageUrl == null ||
+          widget.user.profileImageUrl!.isEmpty) {
+        return false;
+      }
+
+      final File imageFile = File(widget.user.profileImageUrl!);
+      if (await imageFile.exists()) {
+        final int fileSize = await imageFile.length();
+        return fileSize > 0; // Check if file has content
+      }
+      return false;
+    } catch (e) {
+      print('Error checking profile image cache: $e');
+      return false;
+    }
+  }
+
+  /// Get the profile image cache path
+  Future<String> _getProfileImageCachePath() async {
+    final Directory appDir = await getApplicationDocumentsDirectory();
+    final String profileDir = path.join(appDir.path, 'profile_images');
+
+    // Create directory if it doesn't exist
+    final Directory dir = Directory(profileDir);
+    if (!await dir.exists()) {
+      await dir.create(recursive: true);
+    }
+
+    return path.join(profileDir, '${widget.user.username}_profile.jpg');
+  }
+
+  /// Validate if a cached profile image is valid
+  Future<bool> _isValidCachedImage(String imagePath) async {
+    try {
+      final File imageFile = File(imagePath);
+      if (!await imageFile.exists()) {
+        return false;
+      }
+
+      final int fileSize = await imageFile.length();
+      if (fileSize == 0) {
+        return false;
+      }
+
+      // Try to read the file to ensure it's not corrupted
+      final List<int> bytes = await imageFile.readAsBytes();
+      return bytes.isNotEmpty;
+    } catch (e) {
+      print('Error validating cached image: $e');
+      return false;
+    }
+  }
+
+  /// Clear profile image cache
+  Future<void> _clearProfileImageCache() async {
+    try {
+      final String cachePath = await _getProfileImageCachePath();
+      final File cacheFile = File(cachePath);
+
+      if (await cacheFile.exists()) {
+        await cacheFile.delete();
+        print('Profile image cache cleared: $cachePath');
+      }
+
+      // Clear SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('profileImageUrl');
+
+      // Clear user object
+      widget.user.setProfileImageUrl('');
+
+      setState(() {});
+    } catch (e) {
+      print('Error clearing profile image cache: $e');
+    }
+  }
+
+  /// Load profile image with smart caching
+  Future<void> _loadProfileImage() async {
+    try {
+      // First, check if we have a cached profile image
+      bool isCached = await _isProfileImageCached();
+
+      if (isCached) {
+        print('Profile image found in cache, using local version');
+        setState(() {
+          _isLoadingProfile = false;
+        });
+        return; // Use existing cached image
+      }
+
+      // If not cached, try to load from SharedPreferences first
+      final prefs = await SharedPreferences.getInstance();
+      final String? cachedPath = prefs.getString('profileImageUrl');
+
+      if (cachedPath != null && cachedPath.isNotEmpty) {
+        // Validate the cached image
+        bool isValid = await _isValidCachedImage(cachedPath);
+        if (isValid) {
+          print(
+            'Profile image found in SharedPreferences, using cached version',
+          );
+          widget.user.setProfileImageUrl(cachedPath);
+          setState(() {
+            _isLoadingProfile = false;
+          });
+          return; // Use existing cached image
+        } else {
+          print('Cached profile image is invalid, clearing cache');
+          await _clearProfileImageCache();
+        }
+      }
+
+      // If no valid cached image found, fetch from server
+      print('No cached profile image found, fetching from server...');
+      await _loadProfileFromBackend();
+    } catch (e) {
+      print('Error loading profile image: $e');
+      setState(() {
+        _isLoadingProfile = false;
+      });
+    }
   }
 
   Future<void> _loadProfileFromBackend() async {
@@ -38,10 +170,13 @@ class _ProfilePage extends State<ProfilePage> {
       final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
       final response = await tcpClient.getUserProfile(widget.user.username);
 
-      if (response['status'] == 'getProfileImageSuccess' || response['status'] == 'success') {
+      if (response['status'] == 'getProfileImageSuccess' ||
+          response['status'] == 'success') {
         final profileImageBase64 = response['Payload'] ?? '';
 
-        print('Profile image response received. Base64 length: ${profileImageBase64.length}');
+        print(
+          'Profile image response received. Base64 length: ${profileImageBase64.length}',
+        );
 
         if (profileImageBase64.isNotEmpty) {
           // Decode base64 image and save locally
@@ -95,7 +230,9 @@ class _ProfilePage extends State<ProfilePage> {
       } catch (e) {
         print('Base64 decode error: $e');
         print('Base64 string length: ${base64Image.length}');
-        print('Base64 string preview: ${base64Image.substring(0, base64Image.length > 100 ? 100 : base64Image.length)}...');
+        print(
+          'Base64 string preview: ${base64Image.substring(0, base64Image.length > 100 ? 100 : base64Image.length)}...',
+        );
         return;
       }
 
@@ -104,18 +241,8 @@ class _ProfilePage extends State<ProfilePage> {
         return;
       }
 
-      // Get app documents directory
-      final Directory appDir = await getApplicationDocumentsDirectory();
-      final String profileDir = path.join(appDir.path, 'profile_images');
-
-      // Create directory if it doesn't exist
-      final Directory dir = Directory(profileDir);
-      if (!await dir.exists()) {
-        await dir.create(recursive: true);
-      }
-
-      // Save image file
-      final String imagePath = path.join(profileDir, '${widget.user.username}_profile.jpg');
+      // Get cache path and save image file
+      final String imagePath = await _getProfileImageCachePath();
       final File imageFile = File(imagePath);
       await imageFile.writeAsBytes(imageBytes);
 
@@ -138,7 +265,7 @@ class _ProfilePage extends State<ProfilePage> {
     if (mounted) {
       Navigator.pushReplacement(
         context,
-          MaterialPageRoute(builder: (context) => LogInPage(title: 'Hertz'))
+        MaterialPageRoute(builder: (context) => LogInPage(title: 'Hertz')),
       );
     }
   }
@@ -146,15 +273,42 @@ class _ProfilePage extends State<ProfilePage> {
   void _showMenu() async {
     final selected = await showMenu<String>(
       context: context,
-      position: RelativeRect.fromLTRB(MediaQuery.of(context).size.width, 80, 0, 0),
+      position: RelativeRect.fromLTRB(
+        MediaQuery.of(context).size.width,
+        80,
+        0,
+        0,
+      ),
       items: [
         PopupMenuItem<String>(
+          value: 'refresh_profile',
+          child: Row(
+            children: [
+              Icon(Icons.refresh, color: Color(0xFF8456FF), size: 20),
+              SizedBox(width: 8),
+              Text('Refresh Profile'),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
           value: 'change_password',
-          child: Text('Change Password'),
+          child: Row(
+            children: [
+              Icon(Icons.lock, color: Color(0xFF8456FF), size: 20),
+              SizedBox(width: 8),
+              Text('Change Password'),
+            ],
+          ),
         ),
         PopupMenuItem<String>(
           value: 'logout',
-          child: Text('Log out'),
+          child: Row(
+            children: [
+              Icon(Icons.logout, color: Colors.red, size: 20),
+              SizedBox(width: 8),
+              Text('Log out'),
+            ],
+          ),
         ),
       ],
     );
@@ -163,8 +317,64 @@ class _ProfilePage extends State<ProfilePage> {
     } else if (selected == 'change_password') {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => ChangePasswordPage(user: widget.user)),
+        MaterialPageRoute(
+          builder: (context) => ChangePasswordPage(user: widget.user),
+        ),
       );
+    } else if (selected == 'refresh_profile') {
+      _refreshProfileFromServer();
+    }
+  }
+
+  /// Force refresh profile image from server
+  Future<void> _refreshProfileFromServer() async {
+    try {
+      setState(() {
+        _isLoadingProfile = true;
+      });
+
+      // Clear existing cache first
+      await _clearProfileImageCache();
+
+      // Fetch fresh data from server
+      await _loadProfileFromBackend();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Profile refreshed successfully!",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Color(0xFF8456FF),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
+        ),
+      );
+    } catch (e) {
+      print('Error refreshing profile: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Error refreshing profile: $e",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red.withOpacity(0.65),
+          duration: Duration(seconds: 3),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
+        ),
+      );
+    } finally {
+      setState(() {
+        _isLoadingProfile = false;
+      });
     }
   }
 
@@ -183,17 +393,22 @@ class _ProfilePage extends State<ProfilePage> {
         });
 
         // Upload image to backend
-        final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
-        final response = await tcpClient.uploadProfileImage(widget.user.username, image.path);
+        final tcpClient = TcpClient(
+          serverAddress: '10.0.2.2',
+          serverPort: 12345,
+        );
+        final response = await tcpClient.uploadProfileImage(
+          widget.user.username,
+          image.path,
+        );
 
-        if (response['status'] == 'profileImageUploadSuccess' || response['status'] == 'success') {
-          // Update local state with the returned image URL from backend
-          final imageUrl = response['imageUrl'] ?? image.path;
-          widget.user.setProfileImageUrl(imageUrl);
+        if (response['status'] == 'profileImageUploadSuccess' ||
+            response['status'] == 'success') {
+          // Clear existing cache to force fresh download
+          await _clearProfileImageCache();
 
-          // Save to SharedPreferences
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('profileImageUrl', imageUrl);
+          // Fetch the updated profile image from server
+          await _loadProfileFromBackend();
 
           setState(() {
             _isLoading = false;
@@ -211,7 +426,7 @@ class _ProfilePage extends State<ProfilePage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
-              margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
+              margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
             ),
           );
         } else {
@@ -231,7 +446,7 @@ class _ProfilePage extends State<ProfilePage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
-              margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
+              margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
             ),
           );
         }
@@ -253,7 +468,7 @@ class _ProfilePage extends State<ProfilePage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
+          margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
         ),
       );
     }
@@ -261,7 +476,9 @@ class _ProfilePage extends State<ProfilePage> {
 
   bool _isValidEmail(String email) {
     // Email regex pattern
-    final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    final emailRegex = RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    );
     return emailRegex.hasMatch(email);
   }
 
@@ -273,10 +490,7 @@ class _ProfilePage extends State<ProfilePage> {
         height: MediaQuery.of(context).size.width * 0.22,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(
-            color: Color(0xFF8456FF),
-            width: 3,
-          ),
+          border: Border.all(color: Color(0xFF8456FF), width: 3),
           boxShadow: [
             BoxShadow(
               color: Color(0xFF8456FF).withOpacity(0.3),
@@ -288,31 +502,33 @@ class _ProfilePage extends State<ProfilePage> {
         child: Stack(
           children: [
             ClipOval(
-              child: widget.user.profileImageUrl != null && widget.user.profileImageUrl!.isNotEmpty
-                  ? Image.file(
-                File(widget.user.profileImageUrl!),
-                width: double.infinity,
-                height: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[800],
-                    child: Icon(
-                      Icons.person,
-                      size: 50,
-                      color: Colors.white70,
-                    ),
-                  );
-                },
-              )
-                  : Container(
-                color: Colors.grey[800],
-                child: Icon(
-                  Icons.person,
-                  size: 50,
-                  color: Colors.white70,
-                ),
-              ),
+              child:
+                  widget.user.profileImageUrl != null &&
+                          widget.user.profileImageUrl!.isNotEmpty
+                      ? Image.file(
+                        File(widget.user.profileImageUrl!),
+                        width: double.infinity,
+                        height: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.grey[800],
+                            child: Icon(
+                              Icons.person,
+                              size: 50,
+                              color: Colors.white70,
+                            ),
+                          );
+                        },
+                      )
+                      : Container(
+                        color: Colors.grey[800],
+                        child: Icon(
+                          Icons.person,
+                          size: 50,
+                          color: Colors.white70,
+                        ),
+                      ),
             ),
             if (_isLoading)
               Positioned.fill(
@@ -322,9 +538,7 @@ class _ProfilePage extends State<ProfilePage> {
                     shape: BoxShape.circle,
                   ),
                   child: Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFF8456FF),
-                    ),
+                    child: CircularProgressIndicator(color: Color(0xFF8456FF)),
                   ),
                 ),
               ),
@@ -337,12 +551,17 @@ class _ProfilePage extends State<ProfilePage> {
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.7),
                   borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(MediaQuery.of(context).size.width * 0.11),
-                    bottomRight: Radius.circular(MediaQuery.of(context).size.width * 0.11),
+                    bottomLeft: Radius.circular(
+                      MediaQuery.of(context).size.width * 0.11,
+                    ),
+                    bottomRight: Radius.circular(
+                      MediaQuery.of(context).size.width * 0.11,
+                    ),
                   ),
                 ),
                 child: Text(
-                  widget.user.profileImageUrl != null && widget.user.profileImageUrl!.isNotEmpty
+                  widget.user.profileImageUrl != null &&
+                          widget.user.profileImageUrl!.isNotEmpty
                       ? "Change photo"
                       : "Add photo",
                   textAlign: TextAlign.center,
@@ -472,10 +691,7 @@ class _ProfilePage extends State<ProfilePage> {
               backgroundColor: Color(0xFF8456FF),
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 12),
-              textStyle: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-              ),
+              textStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -498,10 +714,7 @@ class _ProfilePage extends State<ProfilePage> {
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.1),
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(
-            color: Color(0xFF8456FF),
-            width: 2,
-          ),
+          border: Border.all(color: Color(0xFF8456FF), width: 2),
           boxShadow: [
             BoxShadow(
               color: Color(0xFF8456FF).withOpacity(0.2),
@@ -513,11 +726,7 @@ class _ProfilePage extends State<ProfilePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              size: 32,
-              color: Color(0xFF8456FF),
-            ),
+            Icon(icon, size: 32, color: Color(0xFF8456FF)),
             SizedBox(height: 8),
             Text(
               title,
@@ -540,12 +749,17 @@ class _ProfilePage extends State<ProfilePage> {
       if (!_isValidEmail(_emailController.text)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Please enter a valid email address", style: TextStyle(color: Colors.white)),
+            content: Text(
+              "Please enter a valid email address",
+              style: TextStyle(color: Colors.white),
+            ),
             backgroundColor: Colors.red.withOpacity(0.65),
             duration: Duration(seconds: 3),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
           ),
         );
         return;
@@ -570,12 +784,17 @@ class _ProfilePage extends State<ProfilePage> {
       if (!hasChanges) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("No changes to update", style: TextStyle(color: Colors.white)),
+            content: Text(
+              "No changes to update",
+              style: TextStyle(color: Colors.white),
+            ),
             backgroundColor: Colors.orange.withOpacity(0.7),
             duration: Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
           ),
         );
         return;
@@ -587,7 +806,8 @@ class _ProfilePage extends State<ProfilePage> {
         email: updateData['email'],
       );
 
-      if (response['status'] == 'success' || response['status'] == 'userInfoUpdateSuccess') {
+      if (response['status'] == 'success' ||
+          response['status'] == 'userInfoUpdateSuccess') {
         // Update local user object only after successful backend response
         if (updateData.containsKey('email')) {
           widget.user.email = updateData['email'];
@@ -607,24 +827,35 @@ class _ProfilePage extends State<ProfilePage> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Information updated successfully!", style: TextStyle(color: Colors.white)),
+            content: Text(
+              "Information updated successfully!",
+              style: TextStyle(color: Colors.white),
+            ),
             backgroundColor: Color(0xFF8456FF),
             duration: Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
           ),
         );
-      } else if (response['status'] == 'emailAlreadyExists' || response['status'] == 'duplicateEmail') {
+      } else if (response['status'] == 'emailAlreadyExists' ||
+          response['status'] == 'duplicateEmail') {
         // Handle duplicate email error
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Email already exists. Please use a different email address.", style: TextStyle(color: Colors.white)),
+            content: Text(
+              "Email already exists. Please use a different email address.",
+              style: TextStyle(color: Colors.white),
+            ),
             backgroundColor: Colors.red.withOpacity(0.65),
             duration: Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
           ),
         );
         // Reset email field to original value
@@ -635,12 +866,17 @@ class _ProfilePage extends State<ProfilePage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text("Error updating information: $e", style: TextStyle(color: Colors.white)),
+          content: Text(
+            "Error updating information: $e",
+            style: TextStyle(color: Colors.white),
+          ),
           backgroundColor: Colors.red.withOpacity(0.65),
           duration: Duration(seconds: 3),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
         ),
       );
     }
@@ -656,16 +892,11 @@ class _ProfilePage extends State<ProfilePage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(
-                  color: Color(0xFF8456FF),
-                ),
+                CircularProgressIndicator(color: Color(0xFF8456FF)),
                 SizedBox(height: 20),
                 Text(
                   "Loading profile...",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ],
             ),
@@ -716,48 +947,23 @@ class _ProfilePage extends State<ProfilePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildActionSquare(
-                      "All Songs",
-                      Icons.music_note,
-                          () {
-                        // Navigate to all songs page
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("All Songs feature coming soon!"),
-                            backgroundColor: Color(0xFF8456FF),
-                          ),
-                        );
-                      },
-                    ),
-                    _buildActionSquare(
-                      "Favorites",
-                      Icons.favorite,
-                          () {
-                        // Navigate to favorites page
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Favorites feature coming soon!"),
-                            backgroundColor: Color(0xFF8456FF),
-                          ),
-                        );
-                      },
-                    ),
+                    _buildActionSquare("All Songs", Icons.music_note, () {
+                      // Navigate to library page with all songs
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LibraryPage(user: widget.user),
+                        ),
+                      );
+                    }),
+                    _buildActionSquare("Favorites", Icons.favorite, () {}),
                     _buildActionSquare(
                       "Recently\nPlayed",
                       Icons.history,
-                          () {
-                        // Navigate to recently played page
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text("Recently Played feature coming soon!"),
-                            backgroundColor: Color(0xFF8456FF),
-                          ),
-                        );
-                      },
+                      () {},
                     ),
                   ],
                 ),
-                SizedBox(height: 20),
               ],
             ),
           ),
