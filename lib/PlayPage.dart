@@ -31,6 +31,7 @@ class _PlayPageState extends State<PlayPage> {
   String? _albumArtPath;
   Uint8List? _albumArtBytes;
   int? _lastExtractedTrackId;
+  bool _isExtractingAlbumArt = false;
 
   @override
   void initState() {
@@ -44,11 +45,14 @@ class _PlayPageState extends State<PlayPage> {
       _audioController.addOnStateChangedListener(_onStateChanged);
       _audioController.addOnTrackChangedListener(_onTrackChanged);
 
-      // Check if the audio controller is already playing the same song
+      // Check if the audio controller is already playing the same song from the same playlist
       if (_audioController.hasTrack &&
-          _audioController.currentTrack!.id == widget.music.id) {
-        // The same song is already playing, don't reinitialize
-        print('Same song is already playing, not reinitializing');
+          _audioController.currentTrack!.id == widget.music.id &&
+          _audioController.playlist == widget.playlist) {
+        // The same song from the same playlist is already playing, don't reinitialize
+        print(
+          'Same song from same playlist is already playing, not reinitializing',
+        );
         return;
       }
 
@@ -75,11 +79,12 @@ class _PlayPageState extends State<PlayPage> {
   void dispose() {
     _audioController.removeOnStateChangedListener(_onStateChanged);
     _audioController.removeOnTrackChangedListener(_onTrackChanged);
-    
+
     // Clean up album art bytes
     _albumArtBytes = null;
     _albumArtPath = null;
     _lastExtractedTrackId = null;
+    _isExtractingAlbumArt = false;
 
     super.dispose();
   }
@@ -87,9 +92,11 @@ class _PlayPageState extends State<PlayPage> {
   void _onStateChanged() {
     if (mounted) {
       setState(() {});
-      
-      // Extract album art when the track is loaded
-      if (!_audioController.isLoading && _audioController.hasTrack) {
+
+      // Extract album art only when the track is first loaded (not during playback)
+      if (!_audioController.isLoading &&
+          _audioController.hasTrack &&
+          _lastExtractedTrackId != _audioController.currentTrack?.id) {
         _extractAlbumArt();
       }
     }
@@ -109,14 +116,19 @@ class _PlayPageState extends State<PlayPage> {
   }
 
   Future<void> _extractAlbumArt() async {
+    // Prevent multiple simultaneous extraction attempts
+    if (_isExtractingAlbumArt) return;
+
     try {
+      _isExtractingAlbumArt = true;
+
       final currentTrack = _audioController.currentTrack;
       if (currentTrack == null) return;
 
       final currentTrackId = currentTrack.id;
 
+      // Early return if we already have album art for this track
       if (_lastExtractedTrackId == currentTrackId && _albumArtBytes != null) {
-        print('Album art already exists for track: $currentTrackId');
         return;
       }
 
@@ -160,6 +172,8 @@ class _PlayPageState extends State<PlayPage> {
         _albumArtPath = null;
         _lastExtractedTrackId = _audioController.currentTrack?.id;
       });
+    } finally {
+      _isExtractingAlbumArt = false;
     }
   }
 
@@ -170,7 +184,6 @@ class _PlayPageState extends State<PlayPage> {
   String _formatDuration(Duration duration) {
     return _audioController.formatDuration(duration);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -376,10 +389,11 @@ class _PlayPageState extends State<PlayPage> {
             child: Slider(
               value:
                   _audioController.duration.inMilliseconds > 0
-                      ? (_audioController.position.inMilliseconds.toDouble()).clamp(
-                        0.0,
-                        _audioController.duration.inMilliseconds.toDouble(),
-                      )
+                      ? (_audioController.position.inMilliseconds.toDouble())
+                          .clamp(
+                            0.0,
+                            _audioController.duration.inMilliseconds.toDouble(),
+                          )
                       : 0.0,
               max: _audioController.duration.inMilliseconds.toDouble(),
               onChanged: (value) {
@@ -428,10 +442,16 @@ class _PlayPageState extends State<PlayPage> {
               ),
             ),
             child: IconButton(
-              onPressed: _audioController.playlist.length > 1 ? _audioController.previousTrack : null,
+              onPressed:
+                  _audioController.playlist.length > 1
+                      ? _audioController.previousTrack
+                      : null,
               icon: Icon(
                 Icons.skip_previous,
-                color: _audioController.playlist.length > 1 ? Colors.white : Colors.white38,
+                color:
+                    _audioController.playlist.length > 1
+                        ? Colors.white
+                        : Colors.white38,
                 size: 35,
               ),
             ),
@@ -453,7 +473,10 @@ class _PlayPageState extends State<PlayPage> {
               ],
             ),
             child: IconButton(
-              onPressed: _audioController.isLoading ? null : _audioController.playPause,
+              onPressed:
+                  _audioController.isLoading
+                      ? null
+                      : _audioController.playPause,
               icon:
                   _audioController.isLoading
                       ? SizedBox(
@@ -467,7 +490,9 @@ class _PlayPageState extends State<PlayPage> {
                         ),
                       )
                       : Icon(
-                        _audioController.isPlaying ? Icons.pause : Icons.play_arrow,
+                        _audioController.isPlaying
+                            ? Icons.pause
+                            : Icons.play_arrow,
                         color: Colors.white,
                         size: 45,
                       ),
@@ -486,10 +511,16 @@ class _PlayPageState extends State<PlayPage> {
               ),
             ),
             child: IconButton(
-              onPressed: _audioController.playlist.length > 1 ? _audioController.nextTrack : null,
+              onPressed:
+                  _audioController.playlist.length > 1
+                      ? _audioController.nextTrack
+                      : null,
               icon: Icon(
                 Icons.skip_next,
-                color: _audioController.playlist.length > 1 ? Colors.white : Colors.white38,
+                color:
+                    _audioController.playlist.length > 1
+                        ? Colors.white
+                        : Colors.white38,
                 size: 35,
               ),
             ),

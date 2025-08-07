@@ -3,6 +3,7 @@ import 'Model/User.dart';
 import 'Model/Playlist.dart';
 import 'TcpClient.dart';
 import 'Application.dart';
+import 'PlaylistTracksPage.dart';
 
 class PlaylistsPage extends StatefulWidget {
   final User _user;
@@ -201,6 +202,179 @@ class _PlaylistsPage extends State<PlaylistsPage> {
     );
   }
 
+  Future<void> _onPlaylistLongPress(
+    BuildContext context,
+    Playlist playlist,
+  ) async {
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      builder:
+          (context) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: Icon(Icons.playlist_play, color: Colors.blue),
+                  title: Text('Open Playlist'),
+                  onTap: () => Navigator.pop(context, 'open'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.delete, color: Colors.red),
+                  title: Text('Delete Playlist'),
+                  onTap: () => Navigator.pop(context, 'delete'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.info_outline, color: Colors.grey),
+                  title: Text('Playlist Info'),
+                  onTap: () => Navigator.pop(context, 'info'),
+                ),
+              ],
+            ),
+          ),
+    );
+
+    if (result == 'open') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) =>
+                  PlaylistTracksPage(user: widget._user, playlist: playlist),
+        ),
+      );
+    } else if (result == 'delete') {
+      await _deletePlaylist(playlist);
+    } else if (result == 'info') {
+      _showPlaylistInfo(context, playlist);
+    }
+  }
+
+  Future<void> _deletePlaylist(Playlist playlist) async {
+    try {
+      final response = await _tcpClient.removePlaylist(
+        user: widget._user,
+        playlist: playlist,
+      );
+
+      if (response['status'] == 'removePlaylistSuccess') {
+        setState(() {
+          _playlists.remove(playlist);
+          widget._user.playlists.remove(playlist);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Playlist "${playlist.name}" deleted'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['message'] ?? 'Failed to delete playlist'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error deleting playlist: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error deleting playlist'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _showPlaylistInfo(BuildContext context, Playlist playlist) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.75),
+      builder:
+          (context) => Dialog(
+            backgroundColor: Theme.of(
+              context,
+            ).colorScheme.surface.withOpacity(0.85),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.playlist_play,
+                        color: Application.instance.getPlaylistColor(
+                          playlist.id,
+                        ),
+                        size: 30,
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        'Playlist Details',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 24,
+                          letterSpacing: 1.1,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  _detailsRow('Name', playlist.name),
+                  _detailsRow('Description', playlist.description),
+                  _detailsRow('Tracks', '${playlist.tracks.length} songs'),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        'Close',
+                        style: TextStyle(color: Colors.purpleAccent),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
+  }
+
+  Widget _detailsRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '$label: ',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              color: Colors.white,
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 16.5,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -225,7 +399,7 @@ class _PlaylistsPage extends State<PlaylistsPage> {
             icon: const Icon(Icons.add),
             onPressed: _showCreatePlaylistDialog,
             color: Colors.pinkAccent,
-            iconSize: 25,
+            iconSize: 30,
           ),
         ],
       ),
@@ -275,16 +449,15 @@ class _PlaylistsPage extends State<PlaylistsPage> {
                           itemCount: _playlists.length,
                           itemBuilder: (context, index) {
                             final playlist = _playlists[index];
-                            final color = Application.instance.getPlaylistColor(playlist.id);
+                            final color = Application.instance.getPlaylistColor(
+                              playlist.id,
+                            );
                             return Container(
                               margin: const EdgeInsets.fromLTRB(5, 10, 5, 2),
                               decoration: BoxDecoration(
                                 color: Colors.grey.shade900.withOpacity(0.4),
                                 borderRadius: BorderRadius.circular(18),
-                                border: Border.all(
-                                  color: color,
-                                  width: 2.2,
-                                ),
+                                border: Border.all(color: color, width: 2.2),
                               ),
                               child: ListTile(
                                 leading: Icon(
@@ -318,8 +491,20 @@ class _PlaylistsPage extends State<PlaylistsPage> {
                                   style: const TextStyle(fontSize: 15),
                                 ),
                                 onTap: () {
-                                  // TODO: Navigate to playlist details page
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => PlaylistTracksPage(
+                                            user: widget._user,
+                                            playlist: playlist,
+                                          ),
+                                    ),
+                                  );
                                 },
+                                onLongPress:
+                                    () =>
+                                        _onPlaylistLongPress(context, playlist),
                               ),
                             );
                           },

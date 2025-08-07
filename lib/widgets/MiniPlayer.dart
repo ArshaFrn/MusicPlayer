@@ -72,14 +72,14 @@ class _MiniPlayerState extends State<MiniPlayer> {
         );
       },
       child: Container(
-        height: 60,
+        height: 70,
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.05),
           border: Border(
-            top: BorderSide(color: Colors.purple.shade800, width: 0.7),
-            bottom: BorderSide(color: Colors.purple.shade800, width: 0.7),
-            left: BorderSide(color: Colors.purple.shade800, width: 0.7),
-            right: BorderSide(color: Colors.purple.shade800, width: 0.7),
+            top: BorderSide(color: Colors.purple.shade800, width: 0.9),
+            bottom: BorderSide(color: Colors.purple.shade800, width: 0.9),
+            left: BorderSide(color: Colors.purple.shade800, width: 0.9),
+            right: BorderSide(color: Colors.purple.shade800, width: 0.9),
           ),
           borderRadius: BorderRadius.all(Radius.circular(20)),
         ),
@@ -91,7 +91,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
               child: Icon(
                 Icons.music_note,
                 color: _application.getUniqueColor(currentTrack.id),
-                size: 24,
+                size: 25,
               ),
             ),
 
@@ -103,7 +103,7 @@ class _MiniPlayerState extends State<MiniPlayer> {
                   currentTrack.title,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 14,
+                    fontSize: 17,
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 1,
