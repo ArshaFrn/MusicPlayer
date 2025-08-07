@@ -271,6 +271,8 @@ class Application {
     return _colorList[id.abs() % _colorList.length];
   }
 
+  Color getPlaylistColor(int id) => getUniqueColor(id);
+
   void showMusicDetailsDialog(BuildContext context, Music music) {
     showDialog(
       context: context,

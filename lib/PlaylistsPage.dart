@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'Model/User.dart';
 import 'Model/Playlist.dart';
 import 'TcpClient.dart';
+import 'Application.dart';
 
 class PlaylistsPage extends StatefulWidget {
   final User _user;
@@ -14,24 +15,16 @@ class PlaylistsPage extends StatefulWidget {
 
 class _PlaylistsPage extends State<PlaylistsPage> {
   late TcpClient _tcpClient;
-  late List<Playlist> _playlists;
+  List<Playlist> _playlists = [];
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   bool _isLoading = true;
-  static bool _hasFetchedPlaylists = false;
 
   @override
   void initState() {
     super.initState();
     _tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
-    if (!_hasFetchedPlaylists) {
-      _fetchPlaylistsFromServer();
-      _hasFetchedPlaylists = true;
-    } else {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    _fetchPlaylistsFromServer();
   }
 
   Future<void> _fetchPlaylistsFromServer() async {
@@ -41,6 +34,9 @@ class _PlaylistsPage extends State<PlaylistsPage> {
     final playlists = await _tcpClient.getUserPlaylists(widget._user);
     setState(() {
       _playlists = playlists;
+      widget._user.playlists
+        ..clear()
+        ..addAll(playlists);
       _isLoading = false;
     });
   }
@@ -60,10 +56,7 @@ class _PlaylistsPage extends State<PlaylistsPage> {
       return;
     }
 
-    final newPlaylist = Playlist(
-      name: name,
-      description: description,
-    );
+    final newPlaylist = Playlist(name: name, description: description);
 
     final response = await _tcpClient.uploadPlaylist(widget._user, newPlaylist);
 
@@ -76,7 +69,9 @@ class _PlaylistsPage extends State<PlaylistsPage> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(response['message'] ?? 'Failed to create playlist')),
+        SnackBar(
+          content: Text(response['message'] ?? 'Failed to create playlist'),
+        ),
       );
     }
   }
@@ -84,118 +79,125 @@ class _PlaylistsPage extends State<PlaylistsPage> {
   Future<void> _showCreatePlaylistDialog() async {
     return showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey.shade900.withOpacity(0.95),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Column(
-          children: [
-            const Icon(
-              Icons.playlist_add,
-              size: 48,
-              color: Colors.purple,
+      builder:
+          (context) => AlertDialog(
+            backgroundColor: Colors.grey.shade900.withOpacity(0.95),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Create New Playlist',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Container(
-              height: 2,
-              width: 40,
-              margin: const EdgeInsets.symmetric(vertical: 10),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.purple[300]!, Colors.pink[300]!],
-                ),
-                borderRadius: BorderRadius.circular(1),
-              ),
-            ),
-          ],
-        ),
-        content: Container(
-          //color
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _nameController,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'Playlist Name',
-                  labelStyle: const TextStyle(color: Color(0xFFEE00DA)),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide(color: Colors.purple[200]!,width: 1.4),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(color: Colors.purple,width: 1.6),
+            title: Column(
+              children: [
+                const Icon(Icons.playlist_add, size: 48, color: Colors.purple),
+                const SizedBox(height: 16),
+                const Text(
+                  'Create New Playlist',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _descriptionController,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  labelText: 'Playlist Description',
-                  labelStyle: const TextStyle(color: Color(0xFFEE00DA)),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide(color: Colors.purple[200]!,width: 1.4),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(color: Colors.purple,width: 1.6),
+                Container(
+                  height: 2,
+                  width: 40,
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.purple[300]!, Colors.pink[300]!],
+                    ),
+                    borderRadius: BorderRadius.circular(1),
                   ),
                 ),
-                maxLines: 3,
+              ],
+            ),
+            content: Container(
+              //color
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _nameController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Playlist Name',
+                      labelStyle: const TextStyle(color: Color(0xFFEE00DA)),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide(
+                          color: Colors.purple[200]!,
+                          width: 1.4,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: const BorderSide(
+                          color: Colors.purple,
+                          width: 1.6,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  TextField(
+                    controller: _descriptionController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      labelText: 'Playlist Description',
+                      labelStyle: const TextStyle(color: Color(0xFFEE00DA)),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide(
+                          color: Colors.purple[200]!,
+                          width: 1.4,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: const BorderSide(
+                          color: Colors.purple,
+                          width: 1.6,
+                        ),
+                      ),
+                    ),
+                    maxLines: 3,
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                style: TextButton.styleFrom(foregroundColor: Colors.red[400]),
+                child: const Text('Cancel'),
+              ),
+              SizedBox(width: 10),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.purple[400]!, Colors.pink[300]!],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _createPlaylist();
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: const Text('Create', style: TextStyle(fontSize: 16)),
+                ),
               ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red[400],
-            ),
-            child: const Text('Cancel'),
-          ),
-          SizedBox(width: 10,),
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.purple[400]!, Colors.pink[300]!],
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                _createPlaylist();
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              child: const Text(
-                'Create',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -222,72 +224,107 @@ class _PlaylistsPage extends State<PlaylistsPage> {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: _showCreatePlaylistDialog,
-            color: Colors.purple[200],
+            color: Colors.pinkAccent,
+            iconSize: 25,
           ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: _refreshPlaylists,
-              color: Colors.purple,
-              backgroundColor: Colors.grey[900],
-              strokeWidth: 3,
-              child: _playlists.isEmpty
-                  ? ListView(
-                      children: [
-                        SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.7,
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.playlist_play,
-                                  size: 64,
-                                  color: Colors.grey,
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                onRefresh: _refreshPlaylists,
+                color: Colors.purple,
+                backgroundColor: Colors.grey[900],
+                strokeWidth: 3,
+                child:
+                    _playlists.isEmpty
+                        ? ListView(
+                          children: [
+                            SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.7,
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.playlist_play,
+                                      size: 64,
+                                      color: Colors.grey,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    const Text(
+                                      'No playlists yet',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    const Text(
+                                      'Create a playlist to start organizing your music',
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'No playlists yet',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                const Text(
-                                  'Create a playlist to start organizing your music',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : ListView.builder(
-                      itemCount: _playlists.length,
-                      itemBuilder: (context, index) {
-                        final playlist = _playlists[index];
-                        return ListTile(
-                          leading: const Icon(Icons.playlist_play),
-                          title: Text(playlist.name),
-                          subtitle: Text(
-                            playlist.description,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          trailing: Text('${playlist.tracks.length} tracks'),
-                          onTap: () {
-                            // TODO: Navigate to playlist details page
+                          ],
+                        )
+                        : ListView.builder(
+                          itemCount: _playlists.length,
+                          itemBuilder: (context, index) {
+                            final playlist = _playlists[index];
+                            final color = Application.instance.getPlaylistColor(playlist.id);
+                            return Container(
+                              margin: const EdgeInsets.fromLTRB(5, 10, 5, 2),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade900.withOpacity(0.4),
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: color,
+                                  width: 2.2,
+                                ),
+                              ),
+                              child: ListTile(
+                                leading: Icon(
+                                  Icons.playlist_play,
+                                  size: 26,
+                                  color: color,
+                                ),
+                                title: Text(
+                                  playlist.name,
+                                  style: TextStyle(
+                                    color: color,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                                subtitle: Row(
+                                  children: [
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      playlist.description,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Colors.white70,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                trailing: Text(
+                                  '${playlist.tracks.length} tracks',
+                                  style: const TextStyle(fontSize: 15),
+                                ),
+                                onTap: () {
+                                  // TODO: Navigate to playlist details page
+                                },
+                              ),
+                            );
                           },
-                        );
-                      },
-                    ),
-            ),
+                        ),
+              ),
     );
   }
 }

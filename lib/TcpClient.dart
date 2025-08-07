@@ -571,10 +571,7 @@ class TcpClient {
 
       final request = {
         "Request": "uploadPlaylist",
-        "Payload": {
-          "username": user.username,
-          "playlistMap": playlist.toMap(),
-        },
+        "Payload": {"username": user.username, "playlistMap": playlist.toMap()},
       };
 
       socket.write('${jsonEncode(request)}\n\n');
@@ -604,6 +601,157 @@ class TcpClient {
       }
     } catch (e) {
       print('Error uploading playlist: $e');
+      return {"status": "error", "message": "Failed to connect to server"};
+    }
+  }
+
+  //add song to playlist
+  Future<Map<String, dynamic>> addSongToPlaylist({
+    required User user,
+    required Playlist playlist,
+    required Music music,
+  }) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
+
+      final request = {
+        "Request": "addSongToPlaylist",
+        "Payload": {
+          "username": user.username,
+          "playlistId": playlist.id,
+          "musicId": music.id,
+        },
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+
+      // Example response format:
+      // {'status': 'addSongToPlaylistSuccess', 'message': 'Song added to playlist successfully'}
+      // {'status': 'error', 'message': 'Error message'}
+
+      print('Raw response received: $response');
+
+      socket.close();
+
+      if (response.isEmpty) {
+        print('Error: Empty response from server');
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      try {
+        return jsonDecode(response);
+      } catch (e) {
+        print('Error decoding response: $e');
+        return {"status": "error", "message": "Invalid response format"};
+      }
+    } catch (e) {
+      print('Error adding song to playlist: $e');
+      return {"status": "error", "message": "Failed to connect to server"};
+    }
+  }
+
+  //delete song from playlist
+  Future<Map<String, dynamic>> deleteSongFromPlaylist({
+    required User user,
+    required Playlist playlist,
+    required Music music,
+  }) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
+
+      final request = {
+        "Request": "deleteSongFromPlaylist",
+        "Payload": {
+          "username": user.username,
+          "playlistId": playlist.id,
+          "musicId": music.id,
+        },
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+
+      // Example response format:
+      // {'status': 'deleteSongFromPlaylistSuccess', 'message': 'Song deleted from playlist successfully'}
+      // {'status': 'error', 'message': 'Error message'}
+
+      print('Raw response received: $response');
+
+      socket.close();
+
+      if (response.isEmpty) {
+        print('Error: Empty response from server');
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      try {
+        return jsonDecode(response);
+      } catch (e) {
+        print('Error decoding response: $e');
+        return {"status": "error", "message": "Invalid response format"};
+      }
+    } catch (e) {
+      print('Error deleting song from playlist: $e');
+      return {"status": "error", "message": "Failed to connect to server"};
+    }
+  }
+
+  //remove playlist
+  Future<Map<String, dynamic>> removePlaylist({
+    required User user,
+    required Playlist playlist,
+  }) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
+
+      final request = {
+        "Request": "removePlaylist",
+        "Payload": {"username": user.username, "playlistId": playlist.id},
+      };
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+
+      // Example response format:
+      // {'status': 'removePlaylistSuccess', 'message': 'Playlist removed successfully'}
+      // {'status': 'error', 'message': 'Error message'}
+
+      print('Raw response received: $response');
+
+      socket.close();
+
+      if (response.isEmpty) {
+        print('Error: Empty response from server');
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      try {
+        return jsonDecode(response);
+      } catch (e) {
+        print('Error decoding response: $e');
+        return {"status": "error", "message": "Invalid response format"};
+      }
+    } catch (e) {
+      print('Error removing playlist: $e');
       return {"status": "error", "message": "Failed to connect to server"};
     }
   }

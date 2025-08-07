@@ -46,30 +46,20 @@ class Music {
     return (title + artist.name + releaseDate.toString()).hashCode;
   }
 
-  /// Clean the title to remove path separators and other problematic characters
   static String _cleanTitle(String title) {
-    // Remove path separators and other problematic characters
     String cleanTitle = title.replaceAll(RegExp(r'[\\/:*?"<>|]'), '');
-    // Remove multiple spaces and trim
     cleanTitle = cleanTitle.replaceAll(RegExp(r'\s+'), ' ').trim();
-    // If the title is empty after cleaning, use a default
     if (cleanTitle.isEmpty) {
       cleanTitle = 'Unknown Title';
     }
     return cleanTitle;
   }
 
-  /// Clean the extension to ensure it's a valid file extension
   static String _cleanExtension(String extension) {
-    // Remove any path separators and get only the extension part
     String cleanExtension = extension.replaceAll(RegExp(r'[\\/:*?"<>|]'), '');
-
-    // If the extension doesn't start with a dot, add one
     if (!cleanExtension.startsWith('.') && cleanExtension.isNotEmpty) {
       cleanExtension = '.$cleanExtension';
     }
-
-    // If the extension is empty or invalid, default to .mp3
     if (cleanExtension.isEmpty || cleanExtension == '.') {
       cleanExtension = '.mp3';
     }

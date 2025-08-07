@@ -2,10 +2,8 @@ import 'User.dart';
 import 'Music.dart';
 
 class Playlist {
-
   // Immutable properties
   final int _id;
-  final DateTime _createdDate;
 
   // Mutable properties
   String _name;
@@ -16,23 +14,24 @@ class Playlist {
   Playlist({
     required String name,
     required String description,
+    int? id,
     bool isStatic = false,
     List<Music>? tracks,
   })  : _name = name,
         _description = description,
         _isStatic = isStatic,
-        _createdDate = DateTime.now(),
-        _id = _generateId(name, description, DateTime.now()),
+        _id = id ?? _generateId(name, description),
         _tracks = tracks ?? [];
 
-  static int _generateId(String name, String description,DateTime createdDate) {
-    return (name + description + createdDate.toString()).hashCode;
+  static int _generateId(String name, String description) {
+    return (name + description).hashCode;
   }
 
   factory Playlist.fromMap(Map<String, dynamic> map) {
     return Playlist(
       name: map['name'],
       description: map['description'],
+      id: map['id'],
       tracks: List<Music>.from(map['tracks']?.map((x) => Music.fromMap(x)) ?? []),
     );
   }
@@ -48,7 +47,6 @@ class Playlist {
 
   //Getter
   int get id => _id;
-  DateTime get createdDate => _createdDate;
   String get name => _name;
   String get description => _description;
   List<Music> get tracks => _tracks;
@@ -69,7 +67,6 @@ class Playlist {
 
   @override
   String toString() {
-    return 'Playlist(id: $_id, name: $_name, description: $_description, createdDate: $_createdDate, isStatic: $_isStatic)';
+    return 'Playlist(id: $_id, name: $_name, description: $_description, isStatic: $_isStatic)';
   }
-
 }

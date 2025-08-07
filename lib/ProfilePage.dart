@@ -525,7 +525,7 @@ class _ProfilePage extends State<ProfilePage> {
                         color: Colors.grey[800],
                         child: Icon(
                           Icons.person,
-                          size: 50,
+                          size: 77,
                           color: Colors.white70,
                         ),
                       ),
