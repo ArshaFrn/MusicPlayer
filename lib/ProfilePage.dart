@@ -13,6 +13,8 @@ import 'TcpClient.dart';
 import 'main.dart';
 import 'LibraryPage.dart';
 import 'PlaylistsPage.dart';
+import 'RecentlyPlayedPage.dart';
+import 'FavouritesPage.dart';
 
 class ProfilePage extends StatefulWidget {
   final User user;
@@ -956,12 +958,25 @@ class _ProfilePage extends State<ProfilePage> {
                         ),
                       );
                     }),
-                    _buildActionSquare("Favorites", Icons.favorite, () {}),
-                    _buildActionSquare(
-                      "Recently\nPlayed",
-                      Icons.history,
-                      () {},
-                    ),
+                    _buildActionSquare("Favorites", Icons.favorite, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => FavouritesPage(user: widget.user),
+                        ),
+                      );
+                    }),
+                    _buildActionSquare("Recently\nPlayed", Icons.history, () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) =>
+                                  RecentlyPlayedPage(user: widget.user),
+                        ),
+                      );
+                    }),
                   ],
                 ),
               ],

@@ -209,6 +209,7 @@ class Application {
     if (response['status'] == 'likeSuccess') {
       music.isLiked = true;
       music.likeCount += 1;
+      // Add the music object to likedSongs list
       if (!user.likedSongs.contains(music)) {
         user.likedSongs.add(music);
       }
@@ -230,13 +231,14 @@ class Application {
     if (response['status'] == 'dislikeSuccess') {
       music.isLiked = false;
       music.likeCount = (music.likeCount > 0) ? music.likeCount - 1 : 0;
-      user.likedSongs.remove(music);
+      // Remove the music object from likedSongs list
+      user.likedSongs.removeWhere((likedMusic) => likedMusic.id == music.id);
       return true;
     } else if (response['status'] == 'NotLiked') {
       // Song is not liked, ensure local state is correct
       music.isLiked = false;
-      user.likedSongs.remove(music);
-      return true; // Consider this a success since the desired state is achieved
+      user.likedSongs.removeWhere((likedMusic) => likedMusic.id == music.id);
+      return true;
     } else {
       return false;
     }
@@ -253,7 +255,9 @@ class Application {
   /// Synchronizes the like state of music tracks with the user's liked songs
   void syncLikeState(User user, List<Music> tracks) {
     for (Music track in tracks) {
-      bool isLiked = user.likedSongs.contains(track);
+      bool isLiked = user.likedSongs.any(
+        (likedMusic) => likedMusic.id == track.id,
+      );
       track.isLiked = isLiked;
     }
   }
@@ -488,13 +492,16 @@ class Application {
               context,
               MaterialPageRoute(
                 builder:
-                    (context) =>
-                        PlayPage(music: music, user: user, playlist: user.tracks),
+                    (context) => PlayPage(
+                      music: music,
+                      user: user,
+                      playlist: user.tracks,
+                    ),
               ),
             );
             return true;
           }
-          
+
           //Navigate to play page
           Navigator.push(
             context,
@@ -536,7 +543,7 @@ class Application {
           );
           return true;
         }
-        
+
         //Navigate to play page
         Navigator.push(
           context,

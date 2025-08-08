@@ -1128,7 +1128,7 @@ class TcpClient {
   }
 
   /// Get user's recently played songs
-  Future<List<int>> getRecentlyPlayedSongs(String username) async {
+  Future<List<Music>> getRecentlyPlayedSongs(String username) async {
     try {
       final socket = await Socket.connect(serverAddress, serverPort);
       print(
@@ -1155,8 +1155,10 @@ class TcpClient {
       final Map<String, dynamic> responseMap = jsonDecode(response);
 
       if (responseMap['status'] == 'getRecentlyPlayedSongsSuccess') {
-        final List<dynamic> songIdsJson = responseMap['Payload'] ?? [];
-        return songIdsJson.map((id) => id as int).toList();
+        final List<dynamic> musicListJson = responseMap['Payload'] ?? [];
+        return musicListJson
+            .map((musicJson) => Music.fromMap(musicJson))
+            .toList();
       } else {
         print('Error: Server returned status: ${responseMap['status']}');
         return [];
