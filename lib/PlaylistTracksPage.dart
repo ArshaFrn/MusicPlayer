@@ -52,6 +52,8 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
 
       setState(() {
         _tracks = updatedPlaylist.tracks;
+        // Sync like states for playlist tracks
+        _application.syncLikeState(widget.user, _tracks);
         _isLoading = false;
       });
     } catch (e) {
@@ -309,7 +311,7 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.add, color: Colors.white70,),
+            icon: Icon(Icons.add, color: playlistColor, size: 30),
             onPressed: _showAddTrackDialog,
             tooltip: 'Add Track to Playlist',
           ),

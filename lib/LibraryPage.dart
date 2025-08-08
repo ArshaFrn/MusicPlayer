@@ -218,11 +218,6 @@ class _LibraryPageState extends State<LibraryPage> {
               application.showCacheManagementDialog(context, widget.user);
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.shuffle, color: Colors.white70),
-            tooltip: "Shuffle",
-            onPressed: null,
-          ),
         ],
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0.1,

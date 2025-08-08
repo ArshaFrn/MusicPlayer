@@ -52,6 +52,8 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
 
       setState(() {
         _userTracks = availableTracks;
+        // Sync like states for available tracks
+        _application.syncLikeState(widget.user, _userTracks);
         _isLoading = false;
       });
     } catch (e) {
@@ -88,7 +90,10 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Added "${track.title}" to playlist',style: TextStyle(color: Colors.white),),
+            content: Text(
+              'Added "${track.title}" to playlist',
+              style: TextStyle(color: Colors.white),
+            ),
             backgroundColor: Colors.green.shade800,
             duration: Duration(seconds: 2),
           ),
@@ -149,12 +154,17 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // make the playlist name (just playlist name) based on the color of the playlist
                         Text(
-                          'Add to ${widget.playlist.name}',
+                          widget.playlist.name,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
+                            color: _application.getPlaylistColor(
+                              widget.playlist.id,
+                            ),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(

@@ -415,7 +415,7 @@ class Application {
   }) async {
     final tcpClient = TcpClient(serverAddress: "10.0.2.2", serverPort: 12345);
     final response = await tcpClient.removeMusic(user: user, music: music);
-    if (response['status'] == 'deleteMusicSuccess') {
+    if (response['status'] == 'removeMusicSuccess') {
       user.tracks.remove(music);
       _showDeleteSnackBar(context, music.title);
       return true;

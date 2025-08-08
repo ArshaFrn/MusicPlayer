@@ -24,7 +24,11 @@ class _SearchPage extends State<SearchPage> {
     setState(() {
       _searchQuery = value;
       _searchResults =
-      value.isEmpty ? [] : application.searchTracks(widget._user, value);
+          value.isEmpty ? [] : application.searchTracks(widget._user, value);
+      // Sync like states for search results
+      if (_searchResults.isNotEmpty) {
+        application.syncLikeState(widget._user, _searchResults);
+      }
     });
   }
 
@@ -66,62 +70,62 @@ class _SearchPage extends State<SearchPage> {
       body: Container(
         color: Colors.black.withOpacity(0.13),
         child:
-        _searchQuery.isEmpty
-            ? Center(
-          child: Text(
-            'Start typing to search your library.',
-            style: TextStyle(
-              fontSize: 20,
-              color: Colors.blueGrey,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.2,
-            ),
-          ),
-        )
-            : _searchResults.isEmpty
-            ? Center(
-          child: Text(
-            'No results found.',
-            style: TextStyle(
-              fontSize: 20,
-              color: Colors.blueGrey,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.2,
-            ),
-          ),
-        )
-            : ListView.builder(
-          itemCount: _searchResults.length,
-          itemBuilder: (context, index) {
-            final music = _searchResults[index];
-            final isLiked = music.isLiked;
-            return ListTile(
-              onTap: () => _onTrackTap(context, music),
-              onLongPress: () => _onTrackLongPress(context, music),
-              leading: Icon(Icons.music_note),
-              title: Text(music.title),
-              subtitle: Text(
-                '${music.artist.name} • ${music.album.title}',
-              ),
-              trailing: AnimatedSwitcher(
-                duration: Duration(milliseconds: 400),
-                transitionBuilder:
-                    (child, animation) =>
-                    ScaleTransition(scale: animation, child: child),
-                child: GestureDetector(
-                  key: ValueKey<bool>(isLiked),
-                  onTap: () => _onLikeTap(music),
-                  child: Icon(
-                    isLiked ? Icons.favorite : Icons.favorite_border,
-                    color: application.getUniqueColor(music.id),
-                    size: 25,
+            _searchQuery.isEmpty
+                ? Center(
+                  child: Text(
+                    'Start typing to search your library.',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.blueGrey,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
+                    ),
                   ),
+                )
+                : _searchResults.isEmpty
+                ? Center(
+                  child: Text(
+                    'No results found.',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.blueGrey,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                )
+                : ListView.builder(
+                  itemCount: _searchResults.length,
+                  itemBuilder: (context, index) {
+                    final music = _searchResults[index];
+                    final isLiked = music.isLiked;
+                    return ListTile(
+                      onTap: () => _onTrackTap(context, music),
+                      onLongPress: () => _onTrackLongPress(context, music),
+                      leading: Icon(Icons.music_note),
+                      title: Text(music.title),
+                      subtitle: Text(
+                        '${music.artist.name} • ${music.album.title}',
+                      ),
+                      trailing: AnimatedSwitcher(
+                        duration: Duration(milliseconds: 400),
+                        transitionBuilder:
+                            (child, animation) =>
+                                ScaleTransition(scale: animation, child: child),
+                        child: GestureDetector(
+                          key: ValueKey<bool>(isLiked),
+                          onTap: () => _onLikeTap(music),
+                          child: Icon(
+                            isLiked ? Icons.favorite : Icons.favorite_border,
+                            color: application.getUniqueColor(music.id),
+                            size: 25,
+                          ),
+                        ),
+                      ),
+                      iconColor: application.getUniqueColor(music.id),
+                    );
+                  },
                 ),
-              ),
-              iconColor: application.getUniqueColor(music.id),
-            );
-          },
-        ),
       ),
     );
   }
@@ -131,27 +135,27 @@ class _SearchPage extends State<SearchPage> {
       context: context,
       builder:
           (context) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(Icons.play_arrow, color: Colors.blue),
-              title: Text('Play'),
-              onTap: () => Navigator.pop(context, 'play'),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: Icon(Icons.play_arrow, color: Colors.blue),
+                  title: Text('Play'),
+                  onTap: () => Navigator.pop(context, 'play'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.delete, color: Colors.red),
+                  title: Text('Delete'),
+                  onTap: () => Navigator.pop(context, 'delete'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.info_outline, color: Colors.grey),
+                  title: Text('Details'),
+                  onTap: () => Navigator.pop(context, 'details'),
+                ),
+              ],
             ),
-            ListTile(
-              leading: Icon(Icons.delete, color: Colors.red),
-              title: Text('Delete'),
-              onTap: () => Navigator.pop(context, 'delete'),
-            ),
-            ListTile(
-              leading: Icon(Icons.info_outline, color: Colors.grey),
-              title: Text('Details'),
-              onTap: () => Navigator.pop(context, 'details'),
-            ),
-          ],
-        ),
-      ),
+          ),
     );
     if (result == 'play') {
       final success = await application.handleMusicPlayback(
@@ -192,11 +196,12 @@ class _SearchPage extends State<SearchPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PlayPage(
-              music: music,
-              user: widget._user,
-              playlist: widget._user.tracks,
-            ),
+            builder:
+                (context) => PlayPage(
+                  music: music,
+                  user: widget._user,
+                  playlist: widget._user.tracks,
+                ),
           ),
         );
         return;
