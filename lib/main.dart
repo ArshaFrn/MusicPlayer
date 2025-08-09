@@ -8,6 +8,7 @@ import 'SignUpPage.dart';
 import 'HomePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'ForgotPasswordPage.dart';
+import 'package:second/AdminLoginPage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -298,7 +299,7 @@ class _LogInPage extends State<LogInPage> {
           Center(
             child: SingleChildScrollView(
               child: SizedBox(
-                height: 650,
+                height: 680,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -543,36 +544,60 @@ class _LogInPage extends State<LogInPage> {
                                           "Sign Up",
                                           style: TextStyle(
                                             color: Color(0xFFD644FF),
-                                            fontWeight: FontWeight.w500,
+                                            fontWeight: FontWeight.bold,
                                             fontSize: 16,
                                             decoration:
-                                                TextDecoration.underline,
+                                            TextDecoration.underline,
                                           ),
                                         ),
                                       ),
                                     ],
                                   ),
-                                  // forgot password
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              ForgotPasswordPage(),
+                                  // forgot password and admin
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => ForgotPasswordPage(),
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          "Forgot Password?",
+                                          style: TextStyle(
+                                            color: Color(0xFFD644FF),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            decoration:
+                                            TextDecoration.underline,
+                                          ),
                                         ),
-                                      );
-                                    },
-                                    child: Text(
-                                      "Forgot Password?",
-                                      style: TextStyle(
-                                        color: Color(0xFFD644FF),
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 16,
-                                        letterSpacing: 1.2,
-                                        decoration: TextDecoration.underline,
                                       ),
-                                    ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => AdminLoginPage(),
+                                            ),
+                                          );
+                                        },
+                                        child: Text(
+                                          "Admin?",
+                                          style: TextStyle(
+                                            color: Color(0xFFF500FF),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 17,
+                                            decoration:
+                                            TextDecoration.underline,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
