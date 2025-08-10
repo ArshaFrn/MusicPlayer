@@ -16,6 +16,7 @@ import 'package:just_audio/just_audio.dart';
 import 'utils/CacheManager.dart';
 import 'utils/AudioController.dart';
 import 'PlayPage.dart';
+import 'package:share_plus/share_plus.dart';
 // Applicaation Flow Controller
 
 enum filterOption { dateModified, az, za, duration, favourite }
@@ -520,11 +521,9 @@ class Application {
       // Show loading indicator
       _showDownloadingSnackBar(context, 'Downloading ${music.title}...');
 
-      // Download and cache the music
-      final bool downloadSuccess = await cacheManager.downloadAndCacheMusic(
-        user: user,
-        music: music,
-      );
+      // Download and cache the music without clearing existing cache
+      final bool downloadSuccess = await cacheManager
+          .downloadAndCacheMusicForSharing(user: user, music: music);
 
       if (downloadSuccess) {
         _hideSnackBar(context);
@@ -714,27 +713,6 @@ class Application {
     }
   }
 
-  /// Check if mini player is active
-  bool get isMiniPlayerActive {
-    try {
-      final audioController = AudioController.instance;
-      return audioController.hasTrack;
-    } catch (e) {
-      print('Error checking mini player state: $e');
-      return false;
-    }
-  }
-
-  /// Stop mini player
-  void stopMiniPlayer() {
-    try {
-      final audioController = AudioController.instance;
-      audioController.dispose();
-    } catch (e) {
-      print('Error stopping mini player: $e');
-    }
-  }
-
   /// Show cache management dialog
   void showCacheManagementDialog(BuildContext context, User user) {
     showDialog(
@@ -826,5 +804,69 @@ class Application {
             },
           ),
     );
+  }
+
+  /// Share music functionality
+  /// Downloads the music if not cached, then shares it
+  Future<bool> shareMusic({
+    required BuildContext context,
+    required User user,
+    required Music music,
+  }) async {
+    try {
+      // Check if music is already cached
+      final bool isCached = await cacheManager.isMusicCached(user, music);
+
+      if (!isCached) {
+        // Show downloading indicator
+        _showDownloadingSnackBar(
+          context,
+          'Downloading ${music.title} for sharing...',
+        );
+
+        // Download and cache the music
+        final bool downloadSuccess = await cacheManager.downloadAndCacheMusic(
+          user: user,
+          music: music,
+        );
+
+        if (!downloadSuccess) {
+          _hideSnackBar(context);
+          _showPlaybackErrorSnackBar(
+            context,
+            'Failed to download music for sharing',
+          );
+          return false;
+        }
+
+        _hideSnackBar(context);
+      }
+
+      // Get the cached file path
+      final String? cachedPath = await cacheManager.getCachedMusicPath(
+        user,
+        music,
+      );
+
+      if (cachedPath == null || !File(cachedPath).existsSync()) {
+        _showPlaybackErrorSnackBar(context, 'Music file not found');
+        return false;
+      }
+
+      // Share the music file with custom filename (just the title)
+      await Share.shareXFiles(
+        [XFile(cachedPath, name: '${music.title}.${music.extension}')],
+        text: 'Check out this song: ${music.title} by ${music.artist.name}',
+        subject: 'Music Share: ${music.title}',
+      );
+
+      _showPlaybackSuccessSnackBar(context, 'Music shared successfully!');
+      return true;
+    } catch (e) {
+      print('Error sharing music: $e');
+      _hideSnackBar(context);
+      _showPlaybackErrorSnackBar(context, 'Failed to share music: $e');
+      return false;
+    }
   }
 }

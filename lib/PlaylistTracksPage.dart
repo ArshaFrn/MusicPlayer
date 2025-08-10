@@ -199,6 +199,11 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                   onTap: () => Navigator.pop(context, 'play'),
                 ),
                 ListTile(
+                  leading: Icon(Icons.share, color: Colors.green),
+                  title: Text('Share'),
+                  onTap: () => Navigator.pop(context, 'share'),
+                ),
+                ListTile(
                   leading: Icon(
                     Icons.remove_circle_outline,
                     color: Colors.orange,
@@ -218,6 +223,12 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
 
     if (result == 'play') {
       await _handlePlaylistMusicPlayback(context, music);
+    } else if (result == 'share') {
+      await _application.shareMusic(
+        context: context,
+        user: widget.user,
+        music: music,
+      );
     } else if (result == 'remove') {
       await _removeTrackFromPlaylist(music);
     } else if (result == 'details') {

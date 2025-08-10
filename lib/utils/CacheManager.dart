@@ -144,6 +144,51 @@ class CacheManager {
     }
   }
 
+  /// Download and cache a music track for sharing (without clearing existing cache)
+  Future<bool> downloadAndCacheMusicForSharing({
+    required User user,
+    required Music music,
+  }) async {
+    try {
+      print('Starting download and cache for sharing: ${music.title}');
+
+      // Download music from server without clearing cache
+      final TcpClient tcpClient = TcpClient(
+        serverAddress: '10.0.2.2',
+        serverPort: 12345,
+      );
+      print('Downloading from server for sharing...');
+      final String? base64Data = await tcpClient.getMusicBase64(
+        user: user,
+        music: music,
+      );
+
+      if (base64Data == null) {
+        print('Failed to get base64 data from server for sharing');
+        return false;
+      }
+
+      print('Received base64 data for sharing, length: ${base64Data.length}');
+
+      // Decode and save to cache
+      final bool success = await saveToCache(user, music, base64Data);
+
+      if (success) {
+        print('Successfully cached for sharing: ${music.title}');
+        // Update music file path to point to cache
+        final String newFilePath = await getCacheFilePath(user, music);
+        music.filePath = newFilePath;
+        print('📁 Updated music file path for sharing: ${music.filePath}');
+        print('✅ Cache operation for sharing completed successfully');
+      }
+
+      return success;
+    } catch (e) {
+      print('Error downloading and caching music for sharing: $e');
+      return false;
+    }
+  }
+
   /// Save base64 data to cache file
   Future<bool> saveToCache(User user, Music music, String base64Data) async {
     try {

@@ -41,10 +41,7 @@ class _LibraryPageState extends State<LibraryPage> {
     setState(() {
       _isLoading = true;
     });
-    final tcpClient = TcpClient(
-      serverAddress: '10.0.2.2',
-      serverPort: 12345,
-    );
+    final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
     final tracks = await tcpClient.getUserMusicList(widget.user);
     final likedSongIds = await tcpClient.getUserLikedSongs(widget.user);
 
@@ -316,6 +313,11 @@ class _LibraryPageState extends State<LibraryPage> {
                   onTap: () => Navigator.pop(context, 'play'),
                 ),
                 ListTile(
+                  leading: Icon(Icons.share, color: Colors.green),
+                  title: Text('Share'),
+                  onTap: () => Navigator.pop(context, 'share'),
+                ),
+                ListTile(
                   leading: Icon(Icons.delete, color: Colors.red),
                   title: Text('Delete'),
                   onTap: () => Navigator.pop(context, 'delete'),
@@ -338,6 +340,12 @@ class _LibraryPageState extends State<LibraryPage> {
       if (!success) {
         print("Error Playing The Song");
       }
+    } else if (result == 'share') {
+      await application.shareMusic(
+        context: context,
+        user: widget.user,
+        music: music,
+      );
     } else if (result == 'delete') {
       await application.deleteMusic(
         context: context,
@@ -368,11 +376,12 @@ class _LibraryPageState extends State<LibraryPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => PlayPage(
-              music: music,
-              user: widget.user,
-              playlist: widget.user.tracks,
-            ),
+            builder:
+                (context) => PlayPage(
+                  music: music,
+                  user: widget.user,
+                  playlist: widget.user.tracks,
+                ),
           ),
         );
         return;

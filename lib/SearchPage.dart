@@ -144,6 +144,11 @@ class _SearchPage extends State<SearchPage> {
                   onTap: () => Navigator.pop(context, 'play'),
                 ),
                 ListTile(
+                  leading: Icon(Icons.share, color: Colors.green),
+                  title: Text('Share'),
+                  onTap: () => Navigator.pop(context, 'share'),
+                ),
+                ListTile(
                   leading: Icon(Icons.delete, color: Colors.red),
                   title: Text('Delete'),
                   onTap: () => Navigator.pop(context, 'delete'),
@@ -166,6 +171,12 @@ class _SearchPage extends State<SearchPage> {
       if (!success) {
         print("Error Playing The Song");
       }
+    } else if (result == 'share') {
+      await application.shareMusic(
+        context: context,
+        user: widget._user,
+        music: music,
+      );
     } else if (result == 'delete') {
       await application.deleteMusic(
         context: context,

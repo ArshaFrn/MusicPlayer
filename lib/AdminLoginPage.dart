@@ -86,7 +86,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
           Center(
             child: SingleChildScrollView(
               child: SizedBox(
-                height: 680,
+                height: 710,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -171,7 +171,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                     // Container for fields like LoginPage, with more purple accents
                     Container(
                       width: 350,
-                      height: 470,
+                      height: 450,
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(20),
@@ -226,7 +226,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                             ),
                           ),
                           Positioned.fill(
-                            top: 65,
+                            top: 55,
                             child: Padding(
                               padding: EdgeInsets.symmetric(horizontal: 25.0),
                               child: Form(
@@ -328,7 +328,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                                         return null;
                                       },
                                     ),
-                                    SizedBox(height: 25),
+                                    SizedBox(height: 30),
                                     ElevatedButton(
                                       onPressed: _isLoading ? null : _login,
                                       style: ElevatedButton.styleFrom(
@@ -374,8 +374,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                                                 ),
                                               ),
                                     ),
-                                    SizedBox(height: 25),
-                                    // Back to user login as TextButton with custom color
+                                    SizedBox(height: 20),
                                     TextButton(
                                       onPressed: () {
                                         if (Navigator.canPop(context)) {
@@ -389,7 +388,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                                         style: TextStyle(
                                           color: Color(0xFFD644FF),
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 16,
+                                          fontSize: 20,
                                           decoration: TextDecoration.underline,
                                         ),
                                       ),

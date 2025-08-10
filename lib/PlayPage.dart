@@ -115,6 +115,63 @@ class _PlayPageState extends State<PlayPage> {
     }
   }
 
+  Future<void> _showMoreOptions(BuildContext context) async {
+    final result = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.grey.shade900.withOpacity(0.95),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (context) => SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade600,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                ListTile(
+                  leading: Icon(Icons.share, color: Colors.green),
+                  title: Text('Share', style: TextStyle(color: Colors.white)),
+                  onTap: () => Navigator.pop(context, 'share'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.info_outline, color: Colors.blue),
+                  title: Text(
+                    'Track Details',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  onTap: () => Navigator.pop(context, 'details'),
+                ),
+                SizedBox(height: 10),
+              ],
+            ),
+          ),
+    );
+
+    if (result == 'share') {
+      final currentTrack = _audioController.currentTrack;
+      if (currentTrack != null) {
+        await application.shareMusic(
+          context: context,
+          user: widget.user,
+          music: currentTrack,
+        );
+      }
+    } else if (result == 'details') {
+      final currentTrack = _audioController.currentTrack;
+      if (currentTrack != null) {
+        application.showMusicDetailsDialog(context, currentTrack);
+      }
+    }
+  }
+
   Future<void> _extractAlbumArt() async {
     // Prevent multiple simultaneous extraction attempts
     if (_isExtractingAlbumArt) return;
@@ -269,9 +326,7 @@ class _PlayPageState extends State<PlayPage> {
             ),
           ),
           IconButton(
-            onPressed: () {
-              // TODO: Add more options
-            },
+            onPressed: () => _showMoreOptions(context),
             icon: Icon(Icons.more_vert, color: Colors.white, size: 30),
           ),
         ],
