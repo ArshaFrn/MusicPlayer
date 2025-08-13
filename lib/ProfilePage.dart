@@ -263,7 +263,8 @@ class _ProfilePage extends State<ProfilePage> {
 
   void _logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    // Only set isLoggedIn to false, keep other credentials for fingerprint login
+    await prefs.setBool('isLoggedIn', false);
     if (mounted) {
       Navigator.pushReplacement(
         context,

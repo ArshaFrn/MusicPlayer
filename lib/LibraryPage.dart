@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'Model/Music.dart';
 import 'Model/User.dart';
@@ -22,19 +20,11 @@ class _LibraryPageState extends State<LibraryPage> {
   final Application application = Application.instance;
   filterOption _selectedSort = filterOption.dateModified;
   bool _isLoading = true;
-  static bool _hasFetchedTracks = false;
 
   @override
   void initState() {
-    super.initState();
-    if (!_hasFetchedTracks) {
-      _fetchTracksFromServer();
-      _hasFetchedTracks = true;
-    } else {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+  super.initState();
+  _fetchTracksFromServer();
   }
 
   Future<void> _fetchTracksFromServer() async {

@@ -9,6 +9,7 @@ import 'HomePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'ForgotPasswordPage.dart';
 import 'package:second/AdminLoginPage.dart';
+import 'package:second/widgets/FingerprintLoginButton.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -299,7 +300,7 @@ class _LogInPage extends State<LogInPage> {
           Center(
             child: SingleChildScrollView(
               child: SizedBox(
-                height: 680,
+                height: 670,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
@@ -343,7 +344,7 @@ class _LogInPage extends State<LogInPage> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 55),
+                    SizedBox(height: 40),
                     Container(
                       width: 350,
                       height: 470,
@@ -518,7 +519,7 @@ class _LogInPage extends State<LogInPage> {
                                       ),
                                     ),
                                   ),
-                                  SizedBox(height: 25),
+                                  SizedBox(height: 10),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -547,22 +548,24 @@ class _LogInPage extends State<LogInPage> {
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
                                             decoration:
-                                            TextDecoration.underline,
+                                                TextDecoration.underline,
                                           ),
                                         ),
                                       ),
                                     ],
                                   ),
-                                  // forgot password and admin
                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
                                     children: [
                                       TextButton(
                                         onPressed: () {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) => ForgotPasswordPage(),
+                                              builder:
+                                                  (context) =>
+                                                      ForgotPasswordPage(),
                                             ),
                                           );
                                         },
@@ -573,7 +576,7 @@ class _LogInPage extends State<LogInPage> {
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
                                             decoration:
-                                            TextDecoration.underline,
+                                                TextDecoration.underline,
                                           ),
                                         ),
                                       ),
@@ -582,7 +585,8 @@ class _LogInPage extends State<LogInPage> {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) => AdminLoginPage(),
+                                              builder:
+                                                  (context) => AdminLoginPage(),
                                             ),
                                           );
                                         },
@@ -593,7 +597,7 @@ class _LogInPage extends State<LogInPage> {
                                             fontWeight: FontWeight.bold,
                                             fontSize: 17,
                                             decoration:
-                                            TextDecoration.underline,
+                                                TextDecoration.underline,
                                           ),
                                         ),
                                       ),
@@ -606,6 +610,8 @@ class _LogInPage extends State<LogInPage> {
                         ],
                       ),
                     ),
+                    SizedBox(height: 25),
+                    FingerprintLoginButton(),
                   ],
                 ),
               ),
