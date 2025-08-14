@@ -521,9 +521,11 @@ class Application {
       // Show loading indicator
       _showDownloadingSnackBar(context, 'Downloading ${music.title}...');
 
-      // Download and cache the music without clearing existing cache
-      final bool downloadSuccess = await cacheManager
-          .downloadAndCacheMusicForSharing(user: user, music: music);
+      // Download and cache the music (WITH cache clearing for playback)
+      final bool downloadSuccess = await cacheManager.downloadAndCacheMusic(
+        user: user,
+        music: music,
+      );
 
       if (downloadSuccess) {
         _hideSnackBar(context);
@@ -824,11 +826,9 @@ class Application {
           'Downloading ${music.title} for sharing...',
         );
 
-        // Download and cache the music
-        final bool downloadSuccess = await cacheManager.downloadAndCacheMusic(
-          user: user,
-          music: music,
-        );
+        // Download and cache the music without clearing existing cache
+        final bool downloadSuccess = await cacheManager
+            .downloadAndCacheMusicForSharing(user: user, music: music);
 
         if (!downloadSuccess) {
           _hideSnackBar(context);
