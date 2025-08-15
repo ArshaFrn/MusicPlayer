@@ -20,7 +20,6 @@ class _MiniPlayerState extends State<MiniPlayer> {
     _audioController.addOnStateChangedListener(_onStateChanged);
     _audioController.addOnTrackChangedListener(_onTrackChanged);
 
-    // Force a rebuild after a short delay to ensure the mini player shows up
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _audioController.hasTrack) {
         setState(() {});
@@ -76,10 +75,10 @@ class _MiniPlayerState extends State<MiniPlayer> {
         decoration: BoxDecoration(
           color: Colors.black.withOpacity(0.05),
           border: Border(
-            top: BorderSide(color: Colors.purple.shade800, width: 0.9),
-            bottom: BorderSide(color: Colors.purple.shade800, width: 0.9),
-            left: BorderSide(color: Colors.purple.shade800, width: 0.9),
-            right: BorderSide(color: Colors.purple.shade800, width: 0.9),
+            top: BorderSide(color: Colors.purple.shade800, width: 1),
+            bottom: BorderSide(color: Colors.purple.shade800, width: 1),
+            left: BorderSide(color: Colors.purple.shade800, width: 1),
+            right: BorderSide(color: Colors.purple.shade800, width: 1),
           ),
           borderRadius: BorderRadius.all(Radius.circular(20)),
         ),

@@ -133,7 +133,6 @@ class Application {
         base64String,
       );
       if (success) {
-        // Update music file path to point to cache
         music.filePath = await cacheManager.getCacheFilePath(user, music);
         print('File saved to cache: ${music.filePath}');
       }
@@ -515,19 +514,18 @@ class Application {
           return true;
         }
       }
-      // Music is not cached, download and cache it
-      print('Downloading and caching music: ${music.title}');
+      print('Ensuring cached: ${music.title}');
 
       // Show loading indicator
       _showDownloadingSnackBar(context, 'Downloading ${music.title}...');
 
-      // Download and cache the music (WITH cache clearing for playback)
-      final bool downloadSuccess = await cacheManager.downloadAndCacheMusic(
+      // Ensure cached
+      final String? cachedPath = await cacheManager.ensureCached(
         user: user,
         music: music,
       );
 
-      if (downloadSuccess) {
+      if (cachedPath != null) {
         _hideSnackBar(context);
         // Check if the audio controller is already playing the same song
         final audioController = AudioController.instance;
@@ -809,7 +807,6 @@ class Application {
   }
 
   /// Share music functionality
-  /// Downloads the music if not cached, then shares it
   Future<bool> shareMusic({
     required BuildContext context,
     required User user,
