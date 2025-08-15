@@ -19,7 +19,16 @@ import 'PlayPage.dart';
 import 'package:share_plus/share_plus.dart';
 // Applicaation Flow Controller
 
-enum filterOption { dateModified, az, za, duration, favourite }
+enum filterOption {
+  dateModifiedDesc,
+  dateModifiedAsc,
+  titleAsc,
+  titleDesc,
+  durationDesc,
+  durationAsc,
+  likeCountDesc,
+  likeCountAsc,
+}
 
 class Application {
   static final Application _instance = Application._privateConstructor();
@@ -385,31 +394,99 @@ class Application {
 
   List<Music> sortTracks(List<Music> tracks, filterOption option) {
     final sorted = List<Music>.from(tracks);
-    switch (option) {
-      case filterOption.az:
+
+    final baseSort = getBaseSort(option);
+    final isAsc = isAscending(option);
+
+    switch (baseSort) {
+      case filterOption.dateModifiedDesc:
         sorted.sort(
-          (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
+          (a, b) =>
+              isAsc
+                  ? a.addedDate.compareTo(b.addedDate)
+                  : b.addedDate.compareTo(a.addedDate),
         );
         break;
-      case filterOption.za:
+      case filterOption.titleAsc:
         sorted.sort(
-          (a, b) => b.title.toLowerCase().compareTo(a.title.toLowerCase()),
+          (a, b) =>
+              isAsc
+                  ? a.title.toLowerCase().compareTo(b.title.toLowerCase())
+                  : b.title.toLowerCase().compareTo(a.title.toLowerCase()),
         );
         break;
-      case filterOption.duration:
+      case filterOption.durationDesc:
         sorted.sort(
-          (a, b) => b.durationInSeconds.compareTo(a.durationInSeconds),
+          (a, b) =>
+              isAsc
+                  ? a.durationInSeconds.compareTo(b.durationInSeconds)
+                  : b.durationInSeconds.compareTo(a.durationInSeconds),
         );
         break;
-      case filterOption.favourite:
-        sorted.sort((a, b) => b.likeCount.compareTo(a.likeCount));
+      case filterOption.likeCountDesc:
+        sorted.sort(
+          (a, b) =>
+              isAsc
+                  ? a.likeCount.compareTo(b.likeCount)
+                  : b.likeCount.compareTo(a.likeCount),
+        );
         break;
-      case filterOption.dateModified:
       default:
         sorted.sort((a, b) => b.addedDate.compareTo(a.addedDate));
         break;
     }
     return sorted;
+  }
+
+  filterOption getOppositeSort(filterOption currentSort) {
+    switch (currentSort) {
+      case filterOption.dateModifiedDesc:
+        return filterOption.dateModifiedAsc;
+      case filterOption.dateModifiedAsc:
+        return filterOption.dateModifiedDesc;
+      case filterOption.titleAsc:
+        return filterOption.titleDesc;
+      case filterOption.titleDesc:
+        return filterOption.titleAsc;
+      case filterOption.durationDesc:
+        return filterOption.durationAsc;
+      case filterOption.durationAsc:
+        return filterOption.durationDesc;
+      case filterOption.likeCountDesc:
+        return filterOption.likeCountAsc;
+      case filterOption.likeCountAsc:
+        return filterOption.likeCountDesc;
+    }
+  }
+
+  /// for display purposes
+  filterOption getBaseSort(filterOption sort) {
+    switch (sort) {
+      case filterOption.dateModifiedDesc:
+      case filterOption.dateModifiedAsc:
+        return filterOption.dateModifiedDesc;
+      case filterOption.titleAsc:
+      case filterOption.titleDesc:
+        return filterOption.titleAsc;
+      case filterOption.durationDesc:
+      case filterOption.durationAsc:
+        return filterOption.durationDesc;
+      case filterOption.likeCountDesc:
+      case filterOption.likeCountAsc:
+        return filterOption.likeCountDesc;
+    }
+  }
+
+  bool isAscending(filterOption sort) {
+    switch (sort) {
+      case filterOption.dateModifiedAsc:
+      case filterOption.titleAsc:
+      case filterOption.durationAsc:
+      case filterOption.likeCountAsc:
+        return true;
+      default:
+        return false;
+    }
   }
 
   Future<bool> deleteMusic({

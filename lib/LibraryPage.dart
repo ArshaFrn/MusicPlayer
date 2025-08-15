@@ -18,13 +18,13 @@ class LibraryPage extends StatefulWidget {
 
 class _LibraryPageState extends State<LibraryPage> {
   final Application application = Application.instance;
-  filterOption _selectedSort = filterOption.dateModified;
+  filterOption _selectedSort = filterOption.dateModifiedDesc;
   bool _isLoading = true;
 
   @override
   void initState() {
-  super.initState();
-  _fetchTracksFromServer();
+    super.initState();
+    _fetchTracksFromServer();
   }
 
   Future<void> _fetchTracksFromServer() async {
@@ -107,13 +107,20 @@ class _LibraryPageState extends State<LibraryPage> {
               tooltip: "Filter",
               onSelected: (option) {
                 setState(() {
-                  _selectedSort = option;
+                  // If the same base sort is selected, toggle between ascending and descending
+                  if (application.getBaseSort(_selectedSort) ==
+                      application.getBaseSort(option)) {
+                    _selectedSort = application.getOppositeSort(_selectedSort);
+                  } else {
+                    _selectedSort = option;
+                  }
                 });
               },
               itemBuilder:
                   (context) => [
+                    // Date Modified
                     PopupMenuItem(
-                      value: filterOption.dateModified,
+                      value: filterOption.dateModifiedDesc,
                       child: Row(
                         children: [
                           Icon(
@@ -123,13 +130,25 @@ class _LibraryPageState extends State<LibraryPage> {
                           ),
                           SizedBox(width: 10),
                           Expanded(child: Text('Date Modified')),
-                          if (_selectedSort == filterOption.dateModified)
-                            Icon(Icons.check, color: Colors.purple, size: 20),
+                          Icon(
+                            application.isAscending(_selectedSort) &&
+                                    application.getBaseSort(_selectedSort) ==
+                                        filterOption.dateModifiedDesc
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            color:
+                                application.getBaseSort(_selectedSort) ==
+                                        filterOption.dateModifiedDesc
+                                    ? Colors.purple
+                                    : Colors.grey,
+                            size: 20,
+                          ),
                         ],
                       ),
                     ),
+                    // Title
                     PopupMenuItem(
-                      value: filterOption.az,
+                      value: filterOption.titleAsc,
                       child: Row(
                         children: [
                           Icon(
@@ -138,30 +157,26 @@ class _LibraryPageState extends State<LibraryPage> {
                             size: 20,
                           ),
                           SizedBox(width: 10),
-                          Expanded(child: Text('A-Z')),
-                          if (_selectedSort == filterOption.az)
-                            Icon(Icons.check, color: Colors.purple, size: 20),
-                        ],
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: filterOption.za,
-                      child: Row(
-                        children: [
+                          Expanded(child: Text('Title')),
                           Icon(
-                            Icons.sort_by_alpha,
-                            color: Colors.redAccent,
+                            application.isAscending(_selectedSort) &&
+                                    application.getBaseSort(_selectedSort) ==
+                                        filterOption.titleAsc
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            color:
+                                application.getBaseSort(_selectedSort) ==
+                                        filterOption.titleAsc
+                                    ? Colors.blue
+                                    : Colors.grey,
                             size: 20,
                           ),
-                          SizedBox(width: 10),
-                          Expanded(child: Text('Z-A')),
-                          if (_selectedSort == filterOption.za)
-                            Icon(Icons.check, color: Colors.purple, size: 20),
                         ],
                       ),
                     ),
+                    // Duration
                     PopupMenuItem(
-                      value: filterOption.duration,
+                      value: filterOption.durationDesc,
                       child: Row(
                         children: [
                           Icon(
@@ -171,13 +186,25 @@ class _LibraryPageState extends State<LibraryPage> {
                           ),
                           SizedBox(width: 10),
                           Expanded(child: Text('Duration')),
-                          if (_selectedSort == filterOption.duration)
-                            Icon(Icons.check, color: Colors.purple, size: 20),
+                          Icon(
+                            application.isAscending(_selectedSort) &&
+                                    application.getBaseSort(_selectedSort) ==
+                                        filterOption.durationDesc
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            color:
+                                application.getBaseSort(_selectedSort) ==
+                                        filterOption.durationDesc
+                                    ? Colors.green
+                                    : Colors.grey,
+                            size: 20,
+                          ),
                         ],
                       ),
                     ),
+                    // Like Count
                     PopupMenuItem(
-                      value: filterOption.favourite,
+                      value: filterOption.likeCountDesc,
                       child: Row(
                         children: [
                           Icon(
@@ -187,8 +214,19 @@ class _LibraryPageState extends State<LibraryPage> {
                           ),
                           SizedBox(width: 10),
                           Expanded(child: Text('Like Count')),
-                          if (_selectedSort == filterOption.favourite)
-                            Icon(Icons.check, color: Colors.purple, size: 22),
+                          Icon(
+                            application.isAscending(_selectedSort) &&
+                                    application.getBaseSort(_selectedSort) ==
+                                        filterOption.likeCountDesc
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            color:
+                                application.getBaseSort(_selectedSort) ==
+                                        filterOption.likeCountDesc
+                                    ? Colors.red
+                                    : Colors.grey,
+                            size: 20,
+                          ),
                         ],
                       ),
                     ),
