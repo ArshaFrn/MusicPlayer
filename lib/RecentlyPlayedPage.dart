@@ -176,11 +176,6 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: Icon(Icons.play_arrow, color: Colors.blue),
-                  title: Text('Play'),
-                  onTap: () => Navigator.pop(context, 'play'),
-                ),
-                ListTile(
                   leading: Icon(Icons.share, color: Colors.green),
                   title: Text('Share'),
                   onTap: () => Navigator.pop(context, 'share'),
@@ -194,17 +189,7 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> {
             ),
           ),
     );
-
-    if (result == 'play') {
-      final success = await application.handleMusicPlayback(
-        context: context,
-        user: widget.user,
-        music: music,
-      );
-      if (!success) {
-        print("Error Playing The Song");
-      }
-    } else if (result == 'share') {
+    if (result == 'share') {
       await application.shareMusic(
         context: context,
         user: widget.user,

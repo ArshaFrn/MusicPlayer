@@ -98,23 +98,15 @@ class AudioController {
     await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
   }
 
-  // Getters for UI
+  // Exposed getters
   Music? get currentTrack => _currentTrack;
-
   User? get currentUser => _currentUser;
-
   bool get isPlaying => _isPlaying;
-
   bool get isLoading => _isLoading;
-
   Duration get position => _position;
-
   Duration get duration => _duration;
-
   bool get hasTrack => _currentTrack != null;
-
   List<Music> get playlist => _playlist;
-
   int get currentTrackIndex => _currentTrackIndex;
 
   // Add listeners for UI updates
@@ -141,6 +133,23 @@ class AudioController {
     } else {
       _audioPlayer?.play();
     }
+  }
+
+  // Public: Stop playback and reset controller state (used before clearing cache)
+  Future<void> stopAndReset() async {
+    try {
+      await _audioPlayer?.stop();
+    } catch (_) {}
+    _isPlaying = false;
+    _isLoading = false;
+    _position = Duration.zero;
+    _duration = Duration.zero;
+    _currentTrack = null;
+    _currentUser = _currentUser; // keep user reference
+    _playlist = [];
+    _currentTrackIndex = 0;
+    _notifyTrackChanged();
+    _notifyStateChanged();
   }
 
   // Next track

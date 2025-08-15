@@ -686,9 +686,12 @@ class Application {
     _showPlaybackErrorSnackBar(context, message);
   }
 
-  /// Clear cache for a user
+  /// Clear cache for a user (stops playback safely before deleting files)
   Future<void> clearUserCache(User user) async {
     try {
+      // Stop playback and reset the audio controller to avoid deleting a file in use
+      await AudioController.instance.stopAndReset();
+
       final CacheManager cacheManager = CacheManager.instance;
       await cacheManager.clearCache(user);
       print('Cache cleared for user: ${user.username}');

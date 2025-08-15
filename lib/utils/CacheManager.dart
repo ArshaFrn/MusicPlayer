@@ -5,6 +5,22 @@ import '../Model/Music.dart';
 import '../Model/User.dart';
 import '../TcpClient.dart';
 
+/// CacheManager is responsible for persistent on-disk caching of music files.
+///
+/// Design highlights:
+/// - Per-user cache lives under: <app-documents>/<username>/cache/
+/// - File naming: "<music.id>_<sanitizedTitle>.<extension>"
+///   using a sanitized title to avoid filesystem-invalid characters
+/// - Non-destructive policy: downloads do NOT clear earlier cache entries
+/// - Manual cache clearing only via clearCache(user)
+/// - Helpers exposed:
+///   - ensureCached: idempotently returns path (downloads if needed)
+///   - isMusicCached / getCachedMusicPath
+///   - size and info helpers for UI
+///
+/// Caveat: If clearCache is invoked while a track is playing from disk,
+/// the underlying file may be deleted by the time the player streams it,
+/// which can interrupt playback. Coordinate with playback logic if needed.
 class CacheManager {
   static final CacheManager _instance = CacheManager._privateConstructor();
 
@@ -25,7 +41,8 @@ class CacheManager {
     return userCacheDir;
   }
 
-  /// Get the cache file path for a specific music track
+  /// Returns the deterministic on-disk path for a given user's track.
+  /// The title is sanitized to keep the filename filesystem-safe.
   Future<String> getCacheFilePath(User user, Music music) async {
     final Directory cacheDir = await _getCacheDirectory(user);
 
@@ -36,7 +53,7 @@ class CacheManager {
     return '${cacheDir.path}/$fileName';
   }
 
-  /// Check if a music track is cached
+  /// Checks existence and non-zero size to consider a track cached.
   Future<bool> isMusicCached(User user, Music music) async {
     try {
       final String cacheFilePath = await getCacheFilePath(user, music);
@@ -53,7 +70,10 @@ class CacheManager {
     }
   }
 
-  /// Clear all cached music files for a user (manual only)
+  /// Deletes all cached tracks for a user.
+  ///
+  /// WARNING: If a track is currently playing from disk, deleting its file
+  /// may interrupt playback. Consider guarding this call at the UI layer.
   Future<void> clearCache(User user) async {
     try {
       final Directory cacheDir = await _getCacheDirectory(user);
@@ -94,7 +114,8 @@ class CacheManager {
     }
   }
 
-  /// Ensure a track is cached; download and save if missing. Returns the cached path or null on failure
+  /// Idempotently ensures a track is cached and returns the cached file path.
+  /// If the file is missing, it will be downloaded and persisted.
   Future<String?> ensureCached({
     required User user,
     required Music music,
@@ -102,7 +123,7 @@ class CacheManager {
     try {
       if (await isMusicCached(user, music)) {
         final path = await getCacheFilePath(user, music);
-        music.filePath = path;
+        music.filePath = path; // harmless bookkeeping
         return path;
       }
 
@@ -127,7 +148,7 @@ class CacheManager {
       if (!success) return null;
 
       final String newFilePath = await getCacheFilePath(user, music);
-      music.filePath = newFilePath;
+      music.filePath = newFilePath; // keep field in sync for diagnostics
       return newFilePath;
     } catch (e) {
       print('Error ensuring cached: $e');
@@ -135,7 +156,8 @@ class CacheManager {
     }
   }
 
-  /// Download and cache a music track (non-destructive; does NOT clear previous cache)
+  /// Downloads and caches a track without removing older cache entries.
+  /// Returns true on success.
   Future<bool> downloadAndCacheMusic({
     required User user,
     required Music music,
@@ -182,7 +204,7 @@ class CacheManager {
     }
   }
 
-  /// Download and cache a music track for sharing (without clearing existing cache)
+  /// Alias of downloadAndCacheMusic to emphasize non-destructive sharing path.
   Future<bool> downloadAndCacheMusicForSharing({
     required User user,
     required Music music,
@@ -196,7 +218,8 @@ class CacheManager {
     }
   }
 
-  /// Save base64 data to cache file
+  /// Writes the base64 music data to the deterministic cache file path.
+  /// Verifies a non-zero size write before returning success.
   Future<bool> saveToCache(User user, Music music, String base64Data) async {
     try {
       final String cacheFilePath = await getCacheFilePath(user, music);
@@ -228,12 +251,12 @@ class CacheManager {
     }
   }
 
-  /// Save base64 data to cache file (private version)
+  /// Private passthrough retained for backward compatibility.
   Future<bool> _saveToCache(User user, Music music, String base64Data) async {
     return saveToCache(user, music, base64Data);
   }
 
-  /// Get cached music file path
+  /// Returns the cached path (if present) or null.
   Future<String?> getCachedMusicPath(User user, Music music) async {
     try {
       if (await isMusicCached(user, music)) {
@@ -246,7 +269,7 @@ class CacheManager {
     }
   }
 
-  /// Get cache size for a user
+  /// Computes total cache size (bytes) for the given user.
   Future<int> getCacheSize(User user) async {
     try {
       final Directory cacheDir = await _getCacheDirectory(user);
@@ -269,7 +292,7 @@ class CacheManager {
     }
   }
 
-  /// Format cache size for display
+  /// Pretty-prints a byte size for display.
   String formatCacheSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
@@ -278,7 +301,7 @@ class CacheManager {
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
-  /// Get cache info for a user
+  /// Returns cache statistics useful for UI/diagnostics.
   Future<Map<String, dynamic>> getCacheInfo(User user) async {
     try {
       final Directory cacheDir = await _getCacheDirectory(user);

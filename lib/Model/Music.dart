@@ -67,6 +67,20 @@ class Music {
     return cleanExtension;
   }
 
+  /// Parses release date from various formats, with fallback to current date
+  static DateTime _parseReleaseDate(dynamic releaseDate) {
+    if (releaseDate == null || releaseDate.toString().isEmpty) {
+      return DateTime.now();
+    }
+
+    try {
+      return DateTime.parse(releaseDate.toString());
+    } catch (e) {
+      print('Error parsing release date: $releaseDate, error: $e');
+      return DateTime.now();
+    }
+  }
+
   Map<String, dynamic> toMap({bool includeFilePath = true}) {
     if (includeFilePath) {
       return {
@@ -105,7 +119,7 @@ class Music {
       _artist = Artist(name: map['artist']), // Handle artist as string
       _genre = map['genre'],
       _durationInSeconds = map['durationInSeconds'],
-      _releaseDate = DateTime.parse(map['releaseDate']),
+      _releaseDate = _parseReleaseDate(map['releaseDate']),
       _addedDate =
           DateTime.now(), // Use current time since server doesn't provide this
       _album = Album(
