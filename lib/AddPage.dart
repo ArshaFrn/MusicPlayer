@@ -126,174 +126,182 @@ class _AddPage extends State<AddPage> {
           },
         ),
         actions: [
-          IconButton(
-            icon: Icon(
-              _isRefreshing ? Icons.refresh : Icons.refresh_outlined,
-              color: _isRefreshing ? Colors.orange : Colors.white70,
-            ),
-            tooltip: "Refresh Public Music",
-            onPressed: _isRefreshing ? null : _refreshPublicMusics,
-          ),
-          PopupMenuButton<filterOption>(
-            icon: Icon(Icons.filter_list, color: Colors.white70),
-            tooltip: "Filter",
-            onSelected: (option) {
-              print('Sort option selected: $option'); // Debug print
-              setState(() {
-                // If the same base sort is selected, toggle between ascending and descending
-                if (application.getBaseSort(_selectedSort) ==
-                    application.getBaseSort(option)) {
-                  _selectedSort = application.getOppositeSort(_selectedSort);
-                } else {
-                  _selectedSort = option;
-                }
-                _sortMusics();
-              });
+          Consumer<ThemeProvider>(
+            builder: (context, theme, child) {
+              return IconButton(
+                icon: Icon(
+                  _isRefreshing ? Icons.refresh : Icons.refresh_outlined,
+                  color: _isRefreshing ? Colors.orange : (theme.isDarkMode ? Colors.white70 : Colors.black87),
+                ),
+                tooltip: "Refresh Public Music",
+                onPressed: _isRefreshing ? null : _refreshPublicMusics,
+              );
             },
-            itemBuilder: (context) {
-              print('Building sort menu items'); // Debug print
-              return [
-                // Title
-                PopupMenuItem<filterOption>(
-                  value: filterOption.titleAsc,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.sort_by_alpha,
-                        color: Colors.blueAccent,
-                        size: 20,
-                      ),
-                      SizedBox(width: 10),
-                      Expanded(child: Text('Title')),
-                      Icon(
-                        application.isAscending(_selectedSort) &&
+          ),
+          Consumer<ThemeProvider>(
+            builder: (context, theme, child) {
+              return PopupMenuButton<filterOption>(
+                icon: Icon(Icons.filter_list, color: theme.isDarkMode ? Colors.white70 : Colors.black87),
+                tooltip: "Filter",
+                onSelected: (option) {
+                  print('Sort option selected: $option'); // Debug print
+                  setState(() {
+                    // If the same base sort is selected, toggle between ascending and descending
+                    if (application.getBaseSort(_selectedSort) ==
+                        application.getBaseSort(option)) {
+                      _selectedSort = application.getOppositeSort(_selectedSort);
+                    } else {
+                      _selectedSort = option;
+                    }
+                    _sortMusics();
+                  });
+                },
+                itemBuilder: (context) {
+                  print('Building sort menu items'); // Debug print
+                  return [
+                    // Title
+                    PopupMenuItem<filterOption>(
+                      value: filterOption.titleAsc,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.sort_by_alpha,
+                            color: Colors.blueAccent,
+                            size: 20,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(child: Text('Title')),
+                          Icon(
+                            application.isAscending(_selectedSort) &&
+                                    application.getBaseSort(_selectedSort) ==
+                                        filterOption.titleAsc
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            color:
                                 application.getBaseSort(_selectedSort) ==
-                                    filterOption.titleAsc
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        color:
-                            application.getBaseSort(_selectedSort) ==
-                                    filterOption.titleAsc
-                                ? Colors.blue
-                                : Colors.grey,
-                        size: 20,
+                                        filterOption.titleAsc
+                                    ? Colors.blue
+                                    : Colors.grey,
+                            size: 20,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                // Artist
-                PopupMenuItem<filterOption>(
-                  value: filterOption.artistAsc,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.person,
-                        color: Colors.greenAccent,
-                        size: 20,
-                      ),
-                      SizedBox(width: 10),
-                      Expanded(child: Text('Artist')),
-                      Icon(
-                        application.isAscending(_selectedSort) &&
+                    ),
+                    // Artist
+                    PopupMenuItem<filterOption>(
+                      value: filterOption.artistAsc,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.person,
+                            color: Colors.greenAccent,
+                            size: 20,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(child: Text('Artist')),
+                          Icon(
+                            application.isAscending(_selectedSort) &&
+                                    application.getBaseSort(_selectedSort) ==
+                                        filterOption.artistAsc
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            color:
                                 application.getBaseSort(_selectedSort) ==
-                                    filterOption.artistAsc
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        color:
-                            application.getBaseSort(_selectedSort) ==
-                                    filterOption.artistAsc
-                                ? Colors.green
-                                : Colors.grey,
-                        size: 20,
+                                        filterOption.artistAsc
+                                    ? Colors.green
+                                    : Colors.grey,
+                            size: 20,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                // Album
-                PopupMenuItem<filterOption>(
-                  value: filterOption.albumAsc,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.album,
-                        color: Colors.orangeAccent,
-                        size: 20,
-                      ),
-                      SizedBox(width: 10),
-                      Expanded(child: Text('Album')),
-                      Icon(
-                        application.isAscending(_selectedSort) &&
+                    ),
+                    // Album
+                    PopupMenuItem<filterOption>(
+                      value: filterOption.albumAsc,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.album,
+                            color: Colors.orangeAccent,
+                            size: 20,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(child: Text('Album')),
+                          Icon(
+                            application.isAscending(_selectedSort) &&
+                                    application.getBaseSort(_selectedSort) ==
+                                        filterOption.albumAsc
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            color:
                                 application.getBaseSort(_selectedSort) ==
-                                    filterOption.albumAsc
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        color:
-                            application.getBaseSort(_selectedSort) ==
-                                    filterOption.albumAsc
-                                ? Colors.orange
-                                : Colors.grey,
-                        size: 20,
+                                        filterOption.albumAsc
+                                    ? Colors.orange
+                                    : Colors.grey,
+                            size: 20,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                // Duration
-                PopupMenuItem<filterOption>(
-                  value: filterOption.durationDesc,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.timer,
-                        color: Colors.greenAccent,
-                        size: 20,
-                      ),
-                      SizedBox(width: 10),
-                      Expanded(child: Text('Duration')),
-                      Icon(
-                        application.isAscending(_selectedSort) &&
+                    ),
+                    // Duration
+                    PopupMenuItem<filterOption>(
+                      value: filterOption.durationDesc,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.timer,
+                            color: Colors.greenAccent,
+                            size: 20,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(child: Text('Duration')),
+                          Icon(
+                            application.isAscending(_selectedSort) &&
+                                    application.getBaseSort(_selectedSort) ==
+                                        filterOption.durationDesc
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            color:
                                 application.getBaseSort(_selectedSort) ==
-                                    filterOption.durationDesc
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        color:
-                            application.getBaseSort(_selectedSort) ==
-                                    filterOption.durationDesc
-                                ? Colors.green
-                                : Colors.grey,
-                        size: 20,
+                                        filterOption.durationDesc
+                                    ? Colors.green
+                                    : Colors.grey,
+                            size: 20,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                // Like Count
-                PopupMenuItem<filterOption>(
-                  value: filterOption.likeCountDesc,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.favorite,
-                        color: Colors.redAccent,
-                        size: 20,
-                      ),
-                      SizedBox(width: 10),
-                      Expanded(child: Text('Like Count')),
-                      Icon(
-                        application.isAscending(_selectedSort) &&
+                    ),
+                    // Like Count
+                    PopupMenuItem<filterOption>(
+                      value: filterOption.likeCountDesc,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.favorite,
+                            color: Colors.redAccent,
+                            size: 20,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(child: Text('Like Count')),
+                          Icon(
+                            application.isAscending(_selectedSort) &&
+                                    application.getBaseSort(_selectedSort) ==
+                                        filterOption.likeCountDesc
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            color:
                                 application.getBaseSort(_selectedSort) ==
-                                    filterOption.likeCountDesc
-                            ? Icons.arrow_upward
-                            : Icons.arrow_downward,
-                        color:
-                            application.getBaseSort(_selectedSort) ==
-                                    filterOption.likeCountDesc
-                                ? Colors.red
-                                : Colors.grey,
-                        size: 20,
+                                        filterOption.likeCountDesc
+                                    ? Colors.red
+                                    : Colors.grey,
+                            size: 20,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ];
+                    ),
+                  ];
+                },
+              );
             },
           ),
         ],

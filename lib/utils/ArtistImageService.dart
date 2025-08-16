@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'dart:math';
+import 'package:http/http.dart' as http;
 
 class ArtistImageService {
   static final ArtistImageService _instance = ArtistImageService._internal();
@@ -8,11 +11,20 @@ class ArtistImageService {
   // Cache for storing image URLs to avoid repeated API calls
   final Map<String, String> _imageCache = {};
   
+  // Unsplash API credentials
+  static const String _unsplashAccessKey = 'S7BrM36fSWv3puPp_dTc3wIC-6-a8zz9QQynuFYCl0Q';
+  static const String _unsplashApplicationId = '792523';
+  static const String _unsplashSecretKey = 'jTPxpOaSnX_K2VtjO15xba2TESbT97gNAuYWw-F4Reg';
+  
+  // Rate limiting - delay between requests to avoid being banned
+  static const int _requestDelayMs = 2000; // 2 seconds delay
+  DateTime? _lastRequestTime;
+  
   // Multiple image sources for better reliability
   final List<String> _imageSources = [
-    'unsplash', // Unsplash API
-    'picsum',   // Picsum Photos
-    'placeholder', // Placeholder.com
+    'unsplash', // Unsplash API (primary)
+    'picsum',   // Picsum Photos (fallback)
+    'placeholder', // Placeholder.com (final fallback)
   ];
 
   /// Get artist image URL from multiple sources
@@ -46,7 +58,7 @@ class ArtistImageService {
     
     switch (source) {
       case 'unsplash':
-        return 'https://source.unsplash.com/100x100/?$searchQuery';
+        return await _getUnsplashImage(artistName, searchQuery);
       
       case 'picsum':
         // Use artist name hash for consistent but different images
@@ -61,6 +73,81 @@ class ArtistImageService {
       default:
         return null;
     }
+  }
+
+  /// Get image from Unsplash API with rate limiting
+  Future<String?> _getUnsplashImage(String artistName, String searchQuery) async {
+    // Rate limiting - ensure delay between requests
+    await _enforceRateLimit();
+    
+    try {
+      // First try to search for the artist
+      final searchUrl = 'https://api.unsplash.com/search/photos?query=$searchQuery&per_page=1&orientation=portrait';
+      
+      final response = await http.get(
+        Uri.parse(searchUrl),
+        headers: {
+          'Authorization': 'Client-ID $_unsplashAccessKey',
+          'Accept-Version': 'v1',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final results = data['results'] as List;
+        
+        if (results.isNotEmpty) {
+          final photo = results.first;
+          final imageUrl = photo['urls']['regular'] as String;
+          return imageUrl;
+        }
+      }
+      
+      // If search fails, try a random photo with artist-related query
+      return await _getRandomUnsplashImage(searchQuery);
+      
+    } catch (e) {
+      print('Error fetching from Unsplash: $e');
+      return null;
+    }
+  }
+
+  /// Get a random image from Unsplash
+  Future<String?> _getRandomUnsplashImage(String searchQuery) async {
+    try {
+      final randomUrl = 'https://api.unsplash.com/photos/random?query=$searchQuery&orientation=portrait';
+      
+      final response = await http.get(
+        Uri.parse(randomUrl),
+        headers: {
+          'Authorization': 'Client-ID $_unsplashAccessKey',
+          'Accept-Version': 'v1',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final photo = json.decode(response.body);
+        return photo['urls']['regular'] as String;
+      }
+    } catch (e) {
+      print('Error fetching random image from Unsplash: $e');
+    }
+    
+    return null;
+  }
+
+  /// Enforce rate limiting to avoid being banned
+  Future<void> _enforceRateLimit() async {
+    if (_lastRequestTime != null) {
+      final timeSinceLastRequest = DateTime.now().difference(_lastRequestTime!);
+      final remainingDelay = Duration(milliseconds: _requestDelayMs) - timeSinceLastRequest;
+      
+      if (remainingDelay.isNegative == false) {
+        await Future.delayed(remainingDelay);
+      }
+    }
+    
+    _lastRequestTime = DateTime.now();
   }
 
   /// Clear the image cache

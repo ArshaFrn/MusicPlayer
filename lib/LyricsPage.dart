@@ -3,6 +3,8 @@ import 'Model/Music.dart';
 import 'Model/User.dart';
 import 'package:provider/provider.dart';
 import 'utils/ThemeProvider.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class LyricsPage extends StatefulWidget {
   final Music music;
@@ -84,30 +86,51 @@ class _LyricsPageState extends State<LyricsPage> {
   }
 
   Future<String> _fetchLyricsFromAPI() async {
-    // For now, return placeholder lyrics
-    // In a real implementation, you would integrate with Genius, Musixmatch, or another API
-    await Future.delayed(Duration(seconds: 1)); // Simulate API call
+    try {
+      // Clean artist name and title for URL
+      final artistName = Uri.encodeComponent(widget.music.artist.name.trim());
+      final songTitle = Uri.encodeComponent(widget.music.title.trim());
+      
+      // Construct the API URL
+      final apiUrl = 'https://api.lyrics.ovh/v1/$artistName/$songTitle';
+      
+      print('Fetching lyrics from: $apiUrl');
+      
+      final response = await http.get(
+        Uri.parse(apiUrl),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        
+        if (data['lyrics'] != null && data['lyrics'].toString().isNotEmpty) {
+          String lyrics = data['lyrics'].toString();
+          
+          // Clean up the lyrics - remove extra whitespace and format
+          lyrics = lyrics.trim();
+          
+          // Replace common HTML-like entities
+          lyrics = lyrics.replaceAll('&amp;', '&');
+          lyrics = lyrics.replaceAll('&lt;', '<');
+          lyrics = lyrics.replaceAll('&gt;', '>');
+          lyrics = lyrics.replaceAll('&quot;', '"');
+          lyrics = lyrics.replaceAll('&#39;', "'");
+          
+          return lyrics;
+        }
+      } else if (response.statusCode == 404) {
+        print('Lyrics not found for ${widget.music.title} by ${widget.music.artist.name}');
+      } else {
+        print('API error: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('Error fetching lyrics from API: $e');
+    }
     
-    return '''
-[Verse 1]
-This is a placeholder for the lyrics of "${widget.music.title}"
-by ${widget.music.artist.name}
-
-[Chorus]
-The actual lyrics would be fetched from a lyrics API
-such as Genius or Musixmatch
-
-[Verse 2]
-This is just sample text to show the layout
-of how lyrics would appear on this page
-
-[Bridge]
-You can implement the actual lyrics fetching
-by integrating with your preferred lyrics API
-
-[Outro]
-End of sample lyrics
-''';
+    return '';
   }
 
   @override

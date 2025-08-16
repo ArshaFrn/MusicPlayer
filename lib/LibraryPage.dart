@@ -95,15 +95,19 @@ class _LibraryPageState extends State<LibraryPage> {
           },
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search, color: Colors.white70),
-            tooltip: "Search",
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SearchPage(user: widget.user, onNavigateToPage: widget.onNavigateToPage),
-                ),
+          Consumer<ThemeProvider>(
+            builder: (context, theme, child) {
+              return IconButton(
+                icon: Icon(Icons.search, color: theme.isDarkMode ? Colors.white70 : Colors.black87),
+                tooltip: "Search",
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SearchPage(user: widget.user, onNavigateToPage: widget.onNavigateToPage),
+                    ),
+                  );
+                },
               );
             },
           ),
