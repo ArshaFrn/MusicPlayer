@@ -8,6 +8,7 @@ import 'Model/Music.dart';
 import 'Model/User.dart';
 import 'Application.dart';
 import 'utils/AudioController.dart';
+import 'LyricsPage.dart';
 
 class PlayPage extends StatefulWidget {
   final Music music;
@@ -257,42 +258,63 @@ class _PlayPageState extends State<PlayPage> {
       );
     }
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF1A1A1A), Color(0xFF0D0D0D), Colors.black],
+    return GestureDetector(
+      onPanUpdate: (details) {
+        // Swipe right to go to lyrics page
+        if (details.delta.dx > 50) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LyricsPage(
+                music: widget.music,
+                user: widget.user,
+                playlist: widget.playlist,
+              ),
+            ),
+          );
+        }
+        // Swipe down to minimize
+        if (details.delta.dy > 50) {
+          Navigator.pop(context);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF1A1A1A), Color(0xFF0D0D0D), Colors.black],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              // App Bar
-              _buildAppBar(),
+          child: SafeArea(
+            child: Column(
+              children: [
+                // App Bar
+                _buildAppBar(),
 
-              SizedBox(height: 30),
+                SizedBox(height: 30),
 
-              // Album Art
-              _buildAlbumArt(currentTrack),
+                // Album Art
+                _buildAlbumArt(currentTrack),
 
-              SizedBox(height: 37),
+                SizedBox(height: 37),
 
-              // Track Info
-              _buildTrackInfo(currentTrack),
+                // Track Info
+                _buildTrackInfo(currentTrack),
 
-              SizedBox(height: 40),
+                SizedBox(height: 40),
 
-              // Progress Bar
-              _buildProgressBar(),
+                // Progress Bar
+                _buildProgressBar(),
 
-              SizedBox(height: 50),
+                SizedBox(height: 50),
 
-              // Control Buttons
-              _buildControlButtons(),
-            ],
+                // Control Buttons
+                _buildControlButtons(),
+              ],
+            ),
           ),
         ),
       ),
@@ -304,6 +326,7 @@ class _PlayPageState extends State<PlayPage> {
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Row(
         children: [
+          // Down arrow to minimize (can also be triggered by swipe down)
           IconButton(
             onPressed: () {
               Navigator.pop(context);
@@ -325,9 +348,25 @@ class _PlayPageState extends State<PlayPage> {
               textAlign: TextAlign.center,
             ),
           ),
+          // Right arrow to go to lyrics page
           IconButton(
-            onPressed: () => _showMoreOptions(context),
-            icon: Icon(Icons.more_vert, color: Colors.white, size: 30),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LyricsPage(
+                    music: widget.music,
+                    user: widget.user,
+                    playlist: widget.playlist,
+                  ),
+                ),
+              );
+            },
+            icon: Icon(
+              Icons.arrow_forward,
+              color: Colors.white,
+              size: 30,
+            ),
           ),
         ],
       ),
@@ -397,29 +436,45 @@ class _PlayPageState extends State<PlayPage> {
       padding: EdgeInsets.symmetric(horizontal: 30),
       child: Column(
         children: [
-          Text(
-            track.title,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 27,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+          // Song title with responsive font size
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  track.title,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 27,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              );
+            },
           ),
           SizedBox(height: 5),
-          Text(
-            track.artist.name,
-            style: TextStyle(
-              color: Colors.white70,
-              fontSize: 18,
-              fontWeight: FontWeight.w400,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          // Artist name with responsive font size
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  track.artist.name,
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -537,12 +592,12 @@ class _PlayPageState extends State<PlayPage> {
                       ? SizedBox(
                         width: 30,
                         height: 30,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
+                                              child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Color(0xFF8456FF),
                         ),
+                      ),
                       )
                       : Icon(
                         _audioController.isPlaying

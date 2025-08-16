@@ -6,11 +6,18 @@ import 'SearchPage.dart';
 import 'TcpClient.dart';
 import 'utils/AudioController.dart';
 import 'PlayPage.dart';
+import 'package:provider/provider.dart';
+import 'utils/ThemeProvider.dart';
 
 class LibraryPage extends StatefulWidget {
   final User user;
+  final Function(int) onNavigateToPage;
 
-  const LibraryPage({super.key, required this.user});
+  const LibraryPage({
+    super.key, 
+    required this.user, 
+    required this.onNavigateToPage,
+  });
 
   @override
   State<LibraryPage> createState() => _LibraryPageState();
@@ -20,6 +27,10 @@ class _LibraryPageState extends State<LibraryPage> {
   final Application application = Application.instance;
   filterOption _selectedSort = filterOption.dateModifiedDesc;
   bool _isLoading = true;
+  String _selectedCategory = 'Songs'; // New: track selected category
+
+  // New: category options
+  final List<String> _categories = ['Songs', 'Singers', 'Albums', 'Years'];
 
   @override
   void initState() {
@@ -58,21 +69,40 @@ class _LibraryPageState extends State<LibraryPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Row(
-          children: [
-            const Icon(Icons.library_music, color: Colors.white, size: 24),
-            const SizedBox(width: 5),
-            const Text(
-              "Library",
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontStyle: FontStyle.italic,
-                fontSize: 24,
-                color: Colors.white,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ],
+        title: Consumer<ThemeProvider>(
+          builder: (context, theme, child) {
+            return Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.asset(
+                      theme.logoPath,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                const Icon(Icons.library_music, color: Colors.white, size: 24),
+                const SizedBox(width: 5),
+                const Text(
+                  "Library",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontStyle: FontStyle.italic,
+                    fontSize: 24,
+                    color: Colors.white,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
         actions: [
           IconButton(
@@ -82,7 +112,7 @@ class _LibraryPageState extends State<LibraryPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => SearchPage(user: widget.user),
+                  builder: (context) => SearchPage(user: widget.user, onNavigateToPage: widget.onNavigateToPage),
                 ),
               );
             },
@@ -248,82 +278,514 @@ class _LibraryPageState extends State<LibraryPage> {
         elevation: 0.1,
       ),
 
-      body:
-          _isLoading
-              ? Center(child: CircularProgressIndicator())
-              : RefreshIndicator(
-                onRefresh: _fetchTracksFromServer,
-                child:
-                    tracks.isEmpty
-                        ? ListView(
-                          children: [
-                            SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.7,
-                              child: Center(
-                                child: Text(
-                                  "No tracks available :(\nPlease add some music to your library",
-                                  style: TextStyle(
-                                    fontSize: 19,
-                                    color: Colors.blueGrey,
-                                    fontWeight: FontWeight.bold,
-                                    height: 1.9,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                        : ListView.builder(
-                          itemCount: tracks.length,
-                          itemBuilder: (context, index) {
-                            final music = tracks[index];
-                            final isLiked = music.isLiked;
-                            return ListTile(
-                              onTap: () => _onTrackTap(context, music),
-                              onLongPress:
-                                  () => _onTrackLongPress(context, music),
-                              leading: Icon(Icons.music_note),
-                              title: Text(music.title),
-                              subtitle: Text(music.artist.name),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    application.formatDuration(
-                                      music.durationInSeconds,
-                                    ),
-                                    style: TextStyle(fontSize: 11),
-                                  ),
-                                  SizedBox(width: 15),
-                                  AnimatedSwitcher(
-                                    duration: Duration(milliseconds: 400),
-                                    transitionBuilder:
-                                        (child, animation) => ScaleTransition(
-                                          scale: animation,
-                                          child: child,
-                                        ),
-                                    child: GestureDetector(
-                                      key: ValueKey<bool>(isLiked),
-                                      onTap: () => _onLikeTap(music),
-                                      child: Icon(
-                                        isLiked
-                                            ? Icons.favorite
-                                            : Icons.favorite_border,
-                                        color: application.getUniqueColor(
-                                          music.id,
-                                        ),
-                                        size: 25,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              iconColor: application.getUniqueColor(music.id),
-                            );
-                          },
+      body: Column(
+        children: [
+          // Category bar
+          Container(
+            height: 60,
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Consumer<ThemeProvider>(
+              builder: (context, themeProvider, child) {
+                return ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _categories.length,
+                  itemBuilder: (context, index) {
+                    final category = _categories[index];
+                    final isSelected = _selectedCategory == category;
+                    
+                    return Container(
+                      margin: EdgeInsets.only(right: 12),
+                      child: ChoiceChip(
+                        label: Text(
+                          category,
+                          style: TextStyle(
+                            color: isSelected 
+                                ? Colors.white 
+                                : (themeProvider.isDarkMode ? Colors.white70 : Colors.black54),
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
                         ),
+                        selected: isSelected,
+                        selectedColor: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                        backgroundColor: Colors.transparent,
+                        side: BorderSide(
+                          color: isSelected 
+                              ? (themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997))
+                              : (themeProvider.isDarkMode ? Colors.white30 : Colors.black26),
+                          width: 1.5,
+                        ),
+                        onSelected: (selected) {
+                          setState(() {
+                            _selectedCategory = category;
+                          });
+                        },
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+
+          // Content based on selected category
+          Expanded(
+            child: _isLoading
+                ? Center(child: CircularProgressIndicator())
+                : RefreshIndicator(
+                  onRefresh: _fetchTracksFromServer,
+                  child: _buildCategoryContent(tracks),
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryContent(List<Music> tracks) {
+    switch (_selectedCategory) {
+      case 'Songs':
+        return _buildSongsView(tracks);
+      case 'Singers':
+        return _buildSingersView(tracks);
+      case 'Albums':
+        return _buildAlbumsView(tracks);
+      case 'Years':
+        return _buildYearsView(tracks);
+      default:
+        return _buildSongsView(tracks);
+    }
+  }
+
+  Widget _buildSongsView(List<Music> tracks) {
+    if (tracks.isEmpty) {
+      return ListView(
+        children: [
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: Center(
+              child: Consumer<ThemeProvider>(
+                builder: (context, themeProvider, child) {
+                  return Text(
+                    "No tracks available :(\nPlease add some music to your library",
+                    style: TextStyle(
+                      fontSize: 19,
+                      color: themeProvider.isDarkMode ? Colors.blueGrey : Colors.blueGrey[600],
+                      fontWeight: FontWeight.bold,
+                      height: 1.9,
+                    ),
+                    textAlign: TextAlign.center,
+                  );
+                },
               ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    return ListView.builder(
+      itemCount: tracks.length,
+      itemBuilder: (context, index) {
+        final music = tracks[index];
+        final isLiked = music.isLiked;
+        return Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return ListTile(
+              onTap: () => _onTrackTap(context, music),
+              onLongPress: () => _onTrackLongPress(context, music),
+              leading: Icon(
+                Icons.music_note,
+                color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+              ),
+              title: Text(
+                music.title,
+                style: TextStyle(
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
+              subtitle: Text(
+                music.artist.name,
+                style: TextStyle(
+                  color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                ),
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    application.formatDuration(music.durationInSeconds),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
+                  SizedBox(width: 15),
+                  AnimatedSwitcher(
+                    duration: Duration(milliseconds: 400),
+                    transitionBuilder: (child, animation) => ScaleTransition(
+                      scale: animation,
+                      child: child,
+                    ),
+                    child: GestureDetector(
+                      key: ValueKey<bool>(isLiked),
+                      onTap: () => _onLikeTap(music),
+                      child: Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                        size: 25,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSingersView(List<Music> tracks) {
+    // Group tracks by artist
+    Map<String, List<Music>> artistGroups = {};
+    for (var track in tracks) {
+      final artistName = track.artist.name;
+      if (!artistGroups.containsKey(artistName)) {
+        artistGroups[artistName] = [];
+      }
+      artistGroups[artistName]!.add(track);
+    }
+
+    if (artistGroups.isEmpty) {
+      return Center(
+        child: Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return Text(
+              "No artists found",
+              style: TextStyle(
+                fontSize: 18, 
+                color: themeProvider.isDarkMode ? Colors.grey : Colors.grey[600]
+              ),
+            );
+          },
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: artistGroups.length,
+      itemBuilder: (context, index) {
+        final artistName = artistGroups.keys.elementAt(index);
+        final artistTracks = artistGroups[artistName]!;
+        
+        return Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return ExpansionTile(
+              leading: CircleAvatar(
+                radius: 25,
+                backgroundColor: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                child: ClipOval(
+                  child: _getArtistImage(artistName),
+                ),
+              ),
+              title: Text(
+                artistName,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
+              subtitle: Text(
+                "${artistTracks.length} tracks",
+                style: TextStyle(
+                  color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                ),
+              ),
+              children: artistTracks.map((track) => ListTile(
+                leading: Icon(
+                  Icons.music_note,
+                  color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                ),
+                title: Text(
+                  track.title,
+                  style: TextStyle(
+                    color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                ),
+                subtitle: Text(
+                  track.album?.name ?? 'Unknown Album',
+                  style: TextStyle(
+                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+                trailing: Text(
+                  application.formatDuration(track.durationInSeconds),
+                  style: TextStyle(
+                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+                onTap: () => _onTrackTap(context, track),
+              )).toList(),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _getArtistImage(String artistName) {
+    // Map of artist names to their image URLs
+    final Map<String, String> artistImages = {
+      'Ed Sheeran': 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&h=100&fit=crop&crop=face',
+      'Taylor Swift': 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
+      'Drake': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+      'Ariana Grande': 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
+      'Post Malone': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+      'Billie Eilish': 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
+      'The Weeknd': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+      'Dua Lipa': 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
+      'Justin Bieber': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+      'Lady Gaga': 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
+    };
+
+    final imageUrl = artistImages[artistName];
+    
+    if (imageUrl != null) {
+      return Image.network(
+        imageUrl,
+        width: 50,
+        height: 50,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _getDefaultArtistAvatar(artistName);
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            width: 50,
+            height: 50,
+            child: Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                    : null,
+                strokeWidth: 2,
+              ),
+            ),
+          );
+        },
+      );
+    }
+    
+    return _getDefaultArtistAvatar(artistName);
+  }
+
+  Widget _getDefaultArtistAvatar(String artistName) {
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: application.getUniqueColor(artistName.hashCode, context: context),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              artistName[0].toUpperCase(),
+              style: TextStyle(
+                color: Colors.white, 
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAlbumsView(List<Music> tracks) {
+    // Group tracks by album
+    Map<String, List<Music>> albumGroups = {};
+    for (var track in tracks) {
+      final albumName = track.album?.name ?? 'Unknown Album';
+      if (!albumGroups.containsKey(albumName)) {
+        albumGroups[albumName] = [];
+      }
+      albumGroups[albumName]!.add(track);
+    }
+
+    if (albumGroups.isEmpty) {
+      return Center(
+        child: Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return Text(
+              "No albums found",
+              style: TextStyle(
+                fontSize: 18, 
+                color: themeProvider.isDarkMode ? Colors.grey : Colors.grey[600]
+              ),
+            );
+          },
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: albumGroups.length,
+      itemBuilder: (context, index) {
+        final albumName = albumGroups.keys.elementAt(index);
+        final albumTracks = albumGroups[albumName]!;
+        
+        return Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return ExpansionTile(
+              leading: CircleAvatar(
+                backgroundColor: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                child: Icon(
+                  Icons.album, 
+                  color: Colors.white,
+                  size: 30,
+                ),
+              ),
+              title: Text(
+                albumName,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
+              subtitle: Text(
+                "${albumTracks.length} tracks",
+                style: TextStyle(
+                  color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                ),
+              ),
+              children: albumTracks.map((track) => ListTile(
+                leading: Icon(
+                  Icons.music_note,
+                  color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                ),
+                title: Text(
+                  track.title,
+                  style: TextStyle(
+                    color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                ),
+                subtitle: Text(
+                  track.artist.name,
+                  style: TextStyle(
+                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+                trailing: Text(
+                  application.formatDuration(track.durationInSeconds),
+                  style: TextStyle(
+                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+                onTap: () => _onTrackTap(context, track),
+              )).toList(),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildYearsView(List<Music> tracks) {
+    // Group tracks by year using release date
+    Map<int, List<Music>> yearGroups = {};
+    for (var track in tracks) {
+      final year = track.year;
+      if (!yearGroups.containsKey(year)) {
+        yearGroups[year] = [];
+      }
+      yearGroups[year]!.add(track);
+    }
+
+    if (yearGroups.isEmpty) {
+      return Center(
+        child: Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return Text(
+              "No tracks found",
+              style: TextStyle(
+                fontSize: 18, 
+                color: themeProvider.isDarkMode ? Colors.grey : Colors.grey[600]
+              ),
+            );
+          },
+        ),
+      );
+    }
+
+    // Sort years in descending order
+    final sortedYears = yearGroups.keys.toList()..sort((a, b) => b.compareTo(a));
+
+    return ListView.builder(
+      itemCount: sortedYears.length,
+      itemBuilder: (context, index) {
+        final year = sortedYears[index];
+        final yearTracks = yearGroups[year]!;
+        
+        return Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return ExpansionTile(
+              leading: CircleAvatar(
+                backgroundColor: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                child: Text(
+                  year.toString(),
+                  style: TextStyle(
+                    color: Colors.white, 
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              title: Text(
+                year.toString(),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
+              subtitle: Text(
+                "${yearTracks.length} tracks",
+                style: TextStyle(
+                  color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                ),
+              ),
+              children: yearTracks.map((track) => ListTile(
+                leading: Icon(
+                  Icons.music_note,
+                  color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                ),
+                title: Text(
+                  track.title,
+                  style: TextStyle(
+                    color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                ),
+                subtitle: Text(
+                  "${track.artist.name} • ${track.album?.name ?? 'Unknown Album'}",
+                  style: TextStyle(
+                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+                trailing: Text(
+                  application.formatDuration(track.durationInSeconds),
+                  style: TextStyle(
+                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+                onTap: () => _onTrackTap(context, track),
+              )).toList(),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -339,6 +801,16 @@ class _LibraryPageState extends State<LibraryPage> {
                   leading: Icon(Icons.play_arrow, color: Colors.blue),
                   title: Text('Play'),
                   onTap: () => Navigator.pop(context, 'play'),
+                ),
+                ListTile(
+                  leading: Icon(Icons.download, color: Colors.green),
+                  title: Text('Download'),
+                  onTap: () => Navigator.pop(context, 'download'),
+                ),
+                if (!music.isPublic) ListTile(
+                  leading: Icon(Icons.public, color: Colors.orange),
+                  title: Text('Make Public'),
+                  onTap: () => Navigator.pop(context, 'make_public'),
                 ),
                 ListTile(
                   leading: Icon(Icons.share, color: Colors.green),
@@ -368,6 +840,10 @@ class _LibraryPageState extends State<LibraryPage> {
       if (!success) {
         print("Error Playing The Song");
       }
+    } else if (result == 'download') {
+      await _downloadMusic(music);
+    } else if (result == 'make_public') {
+      await _makeMusicPublic(music);
     } else if (result == 'share') {
       await application.shareMusic(
         context: context,
@@ -383,6 +859,94 @@ class _LibraryPageState extends State<LibraryPage> {
       setState(() {});
     } else if (result == 'details') {
       application.showMusicDetailsDialog(context, music);
+    }
+  }
+
+  Future<void> _downloadMusic(Music music) async {
+    try {
+      // Show download progress
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Downloading ${music.title}..."),
+          backgroundColor: Colors.blue,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Implement download logic here
+      // You can use the existing cache system or create a separate download manager
+      final success = await application.downloadMusic(widget.user, music);
+      
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("${music.title} downloaded successfully!"),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed to download ${music.title}"),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error downloading: $e"),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  Future<void> _makeMusicPublic(Music music) async {
+    try {
+      // Show making public progress
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Making ${music.title} public..."),
+          backgroundColor: Colors.orange,
+          duration: Duration(seconds: 2),
+        ),
+      );
+
+      // Implement make public logic here
+      final success = await application.makeMusicPublic(widget.user, music);
+      
+      if (success) {
+        setState(() {
+          music.isPublic = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("${music.title} is now public!"),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Failed to make ${music.title} public"),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Error making public: $e"),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
     }
   }
 

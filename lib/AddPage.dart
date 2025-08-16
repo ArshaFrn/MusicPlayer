@@ -4,11 +4,18 @@ import 'Model/User.dart';
 import 'Application.dart';
 import 'Model/Music.dart';
 import 'TcpClient.dart';
+import 'package:provider/provider.dart';
+import 'utils/ThemeProvider.dart';
 
 class AddPage extends StatefulWidget {
   final User _user;
+  final Function(int) onNavigateToPage;
 
-  const AddPage({super.key, required User user}) : _user = user;
+  const AddPage({
+    super.key, 
+    required User user, 
+    required this.onNavigateToPage,
+  }) : _user = user;
 
   @override
   State<AddPage> createState() => _AddPage();
@@ -17,13 +24,70 @@ class AddPage extends StatefulWidget {
 class _AddPage extends State<AddPage> {
   final Application application = Application.instance;
   List<Music> _publicMusics = [];
+  List<Music> _filteredMusics = [];
   bool _isLoading = true;
   bool _isRefreshing = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _selectedSort = 'Title'; // New: track selected sort option
+
+  // New: sort options
+  final List<String> _sortOptions = ['Title', 'Artist', 'Album', 'Duration', 'Likes'];
 
   @override
   void initState() {
     super.initState();
     _fetchPublicMusics();
+    _searchController.addListener(_filterMusics);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _filterMusics() {
+    final query = _searchController.text.toLowerCase();
+    if (query.isEmpty) {
+      setState(() {
+        _filteredMusics = _publicMusics;
+      });
+    } else {
+      setState(() {
+        _filteredMusics = _publicMusics.where((music) {
+          return music.title.toLowerCase().contains(query) ||
+                 music.artist.name.toLowerCase().contains(query) ||
+                 (music.album?.name.toLowerCase().contains(query) ?? false);
+        }).toList();
+      });
+    }
+    _sortMusics(); // Apply sorting after filtering
+  }
+
+  void _sortMusics() {
+    final List<Music> musicsToSort = List.from(_filteredMusics);
+    
+    switch (_selectedSort) {
+      case 'Title':
+        musicsToSort.sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
+        break;
+      case 'Artist':
+        musicsToSort.sort((a, b) => a.artist.name.toLowerCase().compareTo(b.artist.name.toLowerCase()));
+        break;
+      case 'Album':
+        musicsToSort.sort((a, b) => (a.album?.name ?? '').toLowerCase().compareTo((b.album?.name ?? '').toLowerCase()));
+        break;
+      case 'Duration':
+        musicsToSort.sort((a, b) => a.durationInSeconds.compareTo(b.durationInSeconds));
+        break;
+      case 'Likes':
+        musicsToSort.sort((a, b) => (a.likeCount ?? 0).compareTo(b.likeCount ?? 0));
+        break;
+    }
+    
+    setState(() {
+      _filteredMusics = musicsToSort;
+    });
   }
 
   Future<void> _fetchPublicMusics() async {
@@ -40,6 +104,7 @@ class _AddPage extends State<AddPage> {
 
       setState(() {
         _publicMusics = publicMusics;
+        _filteredMusics = publicMusics; // Initialize filtered list with all public musics
         _isLoading = false;
         _isRefreshing = false;
       });
@@ -60,21 +125,40 @@ class _AddPage extends State<AddPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            const Icon(Icons.add_circle, color: Colors.white, size: 24),
-            const SizedBox(width: 5),
-            const Text(
-              "Add Music",
-              style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontStyle: FontStyle.italic,
-                fontSize: 24,
-                color: Colors.white,
-                letterSpacing: 1.2,
-              ),
-            ),
-          ],
+        title: Consumer<ThemeProvider>(
+          builder: (context, theme, child) {
+            return Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.asset(
+                      theme.logoPath,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                const Icon(Icons.add_circle, color: Colors.white, size: 24),
+                const SizedBox(width: 5),
+                const Text(
+                  "Add Music",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontStyle: FontStyle.italic,
+                    fontSize: 24,
+                    color: Colors.white,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
         actions: [
           IconButton(
@@ -91,6 +175,67 @@ class _AddPage extends State<AddPage> {
       ),
       body: Column(
         children: [
+          // Search bar
+          Container(
+            padding: EdgeInsets.all(16),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search songs, artists, or albums...',
+                hintStyle: TextStyle(color: Colors.grey[400]),
+                prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
+                filled: true,
+                fillColor: Colors.grey[800],
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(25),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              ),
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+
+          // Sort options bar
+          Container(
+            height: 50,
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: _sortOptions.length,
+              itemBuilder: (context, index) {
+                final option = _sortOptions[index];
+                final isSelected = _selectedSort == option;
+                
+                return Container(
+                  margin: EdgeInsets.only(right: 12),
+                  child: ChoiceChip(
+                    label: Text(
+                      option,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.white70,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                    selected: isSelected,
+                    selectedColor: Color(0xFF8456FF),
+                    backgroundColor: Colors.transparent,
+                    side: BorderSide(
+                      color: isSelected ? Color(0xFF8456FF) : Colors.white30,
+                      width: 1.5,
+                    ),
+                    onSelected: (selected) {
+                      setState(() {
+                        _selectedSort = option;
+                        _sortMusics();
+                      });
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+
           // Header section
           Container(
             padding: EdgeInsets.all(16),
@@ -108,7 +253,7 @@ class _AddPage extends State<AddPage> {
                 ),
                 Spacer(),
                 Text(
-                  "${_publicMusics.length} tracks",
+                  "${_filteredMusics.length} tracks",
                   style: TextStyle(fontSize: 14, color: Colors.grey[400]),
                 ),
               ],
@@ -123,7 +268,7 @@ class _AddPage extends State<AddPage> {
                     : RefreshIndicator(
                       onRefresh: _refreshPublicMusics,
                       child:
-                          _publicMusics.isEmpty
+                          _filteredMusics.isEmpty
                               ? ListView(
                                 children: [
                                   SizedBox(
@@ -142,7 +287,9 @@ class _AddPage extends State<AddPage> {
                                           ),
                                           SizedBox(height: 16),
                                           Text(
-                                            "No public music available",
+                                            _searchController.text.isEmpty
+                                                ? "No public music available"
+                                                : "No results found",
                                             style: TextStyle(
                                               fontSize: 18,
                                               color: Colors.grey[400],
@@ -151,7 +298,9 @@ class _AddPage extends State<AddPage> {
                                           ),
                                           SizedBox(height: 8),
                                           Text(
-                                            "Be the first to share music!",
+                                            _searchController.text.isEmpty
+                                                ? "Be the first to share music!"
+                                                : "Try different search terms",
                                             style: TextStyle(
                                               fontSize: 14,
                                               color: Colors.grey[600],
@@ -164,9 +313,9 @@ class _AddPage extends State<AddPage> {
                                 ],
                               )
                               : ListView.builder(
-                                itemCount: _publicMusics.length,
+                                itemCount: _filteredMusics.length,
                                 itemBuilder: (context, index) {
-                                  final music = _publicMusics[index];
+                                  final music = _filteredMusics[index];
                                   final isAlreadyAdded = widget._user.tracks
                                       .any((m) => m.id == music.id);
 
@@ -183,6 +332,7 @@ class _AddPage extends State<AddPage> {
                                         decoration: BoxDecoration(
                                           color: application.getUniqueColor(
                                             music.id,
+                                            context: context,
                                           ),
                                           borderRadius: BorderRadius.circular(
                                             8,
@@ -203,15 +353,64 @@ class _AddPage extends State<AddPage> {
                                         overflow: TextOverflow.ellipsis,
                                         maxLines: 1,
                                       ),
-                                      subtitle: Text(
-                                        music.artist.name,
-                                        style: TextStyle(
-                                          color: Colors.grey[400],
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
+                                      subtitle: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            music.artist.name,
+                                            style: TextStyle(
+                                              color: Colors.grey[400],
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                          if (music.album?.name != null)
+                                            Text(
+                                              music.album!.name,
+                                              style: TextStyle(
+                                                color: Colors.grey[500],
+                                                fontSize: 12,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                              maxLines: 1,
+                                            ),
+                                        ],
                                       ),
-                                      trailing:
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          // Like count
+                                          Container(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red.withOpacity(0.2),
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.favorite,
+                                                  color: Colors.red,
+                                                  size: 16,
+                                                ),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  "${music.likeCount ?? 0}",
+                                                  style: TextStyle(
+                                                    color: Colors.red,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(width: 8),
+                                          // Add button or Added indicator
                                           isAlreadyAdded
                                               ? Container(
                                                 padding: EdgeInsets.symmetric(
@@ -237,7 +436,7 @@ class _AddPage extends State<AddPage> {
                                                 icon: Icon(
                                                   Icons.add_circle_outline,
                                                   color: application
-                                                      .getUniqueColor(music.id),
+                                                      .getUniqueColor(music.id, context: context),
                                                   size: 28,
                                                 ),
                                                 onPressed:
@@ -246,6 +445,8 @@ class _AddPage extends State<AddPage> {
                                                           music,
                                                         ),
                                               ),
+                                        ],
+                                      ),
                                     ),
                                   );
                                 },
@@ -284,6 +485,8 @@ class _AddPage extends State<AddPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
+
+
 
   Future<void> _handlePickMusicFile() async {
     final file = await application.pickMusicFile();

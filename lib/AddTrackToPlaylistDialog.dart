@@ -228,7 +228,7 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
                                 ), // ← Add tap handler to entire tile
                             leading: Icon(
                               Icons.music_note,
-                              color: _application.getUniqueColor(track.id),
+                              color: _application.getUniqueColor(track.id, context: context),
                             ),
                             title: Text(
                               track.title,

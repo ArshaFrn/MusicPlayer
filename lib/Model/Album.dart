@@ -29,8 +29,10 @@ class Album {
   int get id => _id;
 
   String get title => _title;
+  String get name => _title; // Alias for title
 
   Artist get artist => _artist;
+
 
   @override
   bool operator ==(Object other) {

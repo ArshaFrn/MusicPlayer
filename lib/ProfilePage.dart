@@ -10,16 +10,23 @@ import 'ChangePasswordPage.dart';
 import 'Model/Playlist.dart';
 import 'Model/User.dart';
 import 'TcpClient.dart';
-import 'main.dart';
 import 'LibraryPage.dart';
 import 'PlaylistsPage.dart';
 import 'RecentlyPlayedPage.dart';
 import 'FavouritesPage.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
+import 'utils/ThemeProvider.dart';
 
 class ProfilePage extends StatefulWidget {
   final User user;
+  final Function(int) onNavigateToPage;
 
-  const ProfilePage({super.key, required User user}) : user = user;
+  const ProfilePage({
+    super.key, 
+    required User user, 
+    required this.onNavigateToPage,
+  }) : user = user;
 
   @override
   State<ProfilePage> createState() => _ProfilePage();
@@ -274,6 +281,7 @@ class _ProfilePage extends State<ProfilePage> {
   }
 
   void _showMenu() async {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final selected = await showMenu<String>(
       context: context,
       position: RelativeRect.fromLTRB(
@@ -284,12 +292,40 @@ class _ProfilePage extends State<ProfilePage> {
       ),
       items: [
         PopupMenuItem<String>(
+          value: 'contact_us',
+          child: Row(
+            children: [
+              Icon(
+                Icons.email, 
+                color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997), 
+                size: 20
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Contact Us',
+                style: TextStyle(
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
           value: 'refresh_profile',
           child: Row(
             children: [
-              Icon(Icons.refresh, color: Color(0xFF8456FF), size: 20),
+              Icon(
+                Icons.refresh, 
+                color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997), 
+                size: 20
+              ),
               SizedBox(width: 8),
-              Text('Refresh Profile'),
+              Text(
+                'Refresh Profile',
+                style: TextStyle(
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
             ],
           ),
         ),
@@ -297,9 +333,18 @@ class _ProfilePage extends State<ProfilePage> {
           value: 'change_password',
           child: Row(
             children: [
-              Icon(Icons.lock, color: Color(0xFF8456FF), size: 20),
+              Icon(
+                Icons.lock, 
+                color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997), 
+                size: 20
+              ),
               SizedBox(width: 8),
-              Text('Change Password'),
+              Text(
+                'Change Password',
+                style: TextStyle(
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
             ],
           ),
         ),
@@ -309,7 +354,12 @@ class _ProfilePage extends State<ProfilePage> {
             children: [
               Icon(Icons.logout, color: Colors.red, size: 20),
               SizedBox(width: 8),
-              Text('Log out'),
+              Text(
+                'Log out',
+                style: TextStyle(
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                ),
+              ),
             ],
           ),
         ),
@@ -326,6 +376,36 @@ class _ProfilePage extends State<ProfilePage> {
       );
     } else if (selected == 'refresh_profile') {
       _refreshProfileFromServer();
+    } else if (selected == 'contact_us') {
+      _contactUs();
+    }
+  }
+
+  void _contactUs() async {
+    final Uri emailUri = Uri(
+      scheme: 'mailto',
+      path: 'MusicAppShayan@gmail.com',
+      query: 'subject=Music App Support Request',
+    );
+    
+    if (await canLaunchUrl(emailUri)) {
+      await launchUrl(emailUri);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Could not open email app",
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.red.withOpacity(0.65),
+          duration: Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
+        ),
+      );
     }
   }
 
@@ -486,6 +566,7 @@ class _ProfilePage extends State<ProfilePage> {
   }
 
   Widget _buildProfilePicture() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return GestureDetector(
       onTap: _pickImage,
       child: Container(
@@ -493,10 +574,13 @@ class _ProfilePage extends State<ProfilePage> {
         height: MediaQuery.of(context).size.width * 0.22,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: Color(0xFF8456FF), width: 3),
+          border: Border.all(
+            color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997), 
+            width: 3
+          ),
           boxShadow: [
             BoxShadow(
-              color: Color(0xFF8456FF).withOpacity(0.3),
+              color: (themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997)).withOpacity(0.3),
               blurRadius: 15,
               spreadRadius: 2,
             ),
@@ -515,21 +599,21 @@ class _ProfilePage extends State<ProfilePage> {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            color: Colors.grey[800],
+                            color: themeProvider.isDarkMode ? Colors.grey[800] : Colors.grey[300],
                             child: Icon(
                               Icons.person,
                               size: 50,
-                              color: Colors.white70,
+                              color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
                             ),
                           );
                         },
                       )
                       : Container(
-                        color: Colors.grey[800],
+                        color: themeProvider.isDarkMode ? Colors.grey[800] : Colors.grey[300],
                         child: Icon(
                           Icons.person,
                           size: 85,
-                          color: Colors.white70,
+                          color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
                         ),
                       ),
             ),
@@ -541,7 +625,9 @@ class _ProfilePage extends State<ProfilePage> {
                     shape: BoxShape.circle,
                   ),
                   child: Center(
-                    child: CircularProgressIndicator(color: Color(0xFF8456FF)),
+                    child: CircularProgressIndicator(
+                      color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997)
+                    ),
                   ),
                 ),
               ),
@@ -583,6 +669,7 @@ class _ProfilePage extends State<ProfilePage> {
   }
 
   Widget _buildUserInfo() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -598,19 +685,85 @@ class _ProfilePage extends State<ProfilePage> {
                   Text(
                     "Username",
                     style: TextStyle(
-                      color: Colors.white70,
+                      color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   SizedBox(height: 8),
-                  Text(
-                    widget.user.username,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.user.profileImageUrl != null &&
+                                  widget.user.profileImageUrl!.isNotEmpty
+                              ? widget.user.username
+                              : widget.user.username,
+                          style: TextStyle(
+                            color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      // Theme toggle button
+                      Consumer<ThemeProvider>(
+                        builder: (context, theme, child) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: theme.isDarkMode 
+                                    ? Color(0xFF8456FF)
+                                    : Color(0xFFfc6997),
+                                width: 2,
+                              ),
+                            ),
+                            child: IconButton(
+                              onPressed: () => theme.toggleTheme(),
+                              icon: Icon(
+                                theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                                color: theme.isDarkMode 
+                                    ? Color(0xFF8456FF)
+                                    : Color(0xFFfc6997),
+                                size: 20,
+                              ),
+                              tooltip: 'Toggle Theme',
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(width: 10),
+                      // Logo toggle button
+                      Consumer<ThemeProvider>(
+                        builder: (context, theme, child) {
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: theme.isDarkMode 
+                                    ? Color(0xFF8456FF)
+                                    : Color(0xFFfc6997),
+                                width: 2,
+                              ),
+                            ),
+                            child: IconButton(
+                              onPressed: () => theme.toggleLogo(),
+                              icon: Image.asset(
+                                theme.logoPath,
+                                width: 20,
+                                height: 20,
+                                fit: BoxFit.contain,
+                              ),
+                              tooltip: 'Toggle Logo',
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -623,7 +776,7 @@ class _ProfilePage extends State<ProfilePage> {
         Text(
           "Email",
           style: TextStyle(
-            color: Colors.white70,
+            color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
@@ -631,21 +784,30 @@ class _ProfilePage extends State<ProfilePage> {
         SizedBox(height: 8),
         TextField(
           controller: _emailController,
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black87),
           decoration: InputDecoration(
             filled: true,
-            fillColor: Colors.white.withOpacity(0.1),
+            fillColor: themeProvider.isDarkMode 
+                ? Colors.white.withOpacity(0.1) 
+                : Colors.black.withOpacity(0.05),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.white24),
+              borderSide: BorderSide(
+                color: themeProvider.isDarkMode ? Colors.white24 : Colors.black12
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Color(0xFF8456FF), width: 2),
+              borderSide: BorderSide(
+                color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997), 
+                width: 2
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.white24),
+              borderSide: BorderSide(
+                color: themeProvider.isDarkMode ? Colors.white24 : Colors.black12
+              ),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
@@ -656,7 +818,7 @@ class _ProfilePage extends State<ProfilePage> {
         Text(
           "Full Name",
           style: TextStyle(
-            color: Colors.white70,
+            color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
             fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
@@ -664,21 +826,30 @@ class _ProfilePage extends State<ProfilePage> {
         SizedBox(height: 8),
         TextField(
           controller: _fullnameController,
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black87),
           decoration: InputDecoration(
             filled: true,
-            fillColor: Colors.white.withOpacity(0.1),
+            fillColor: themeProvider.isDarkMode 
+                ? Colors.white.withOpacity(0.1) 
+                : Colors.black.withOpacity(0.05),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.white24),
+              borderSide: BorderSide(
+                color: themeProvider.isDarkMode ? Colors.white24 : Colors.black12
+              ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Color(0xFF8456FF), width: 2),
+              borderSide: BorderSide(
+                color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997), 
+                width: 2
+              ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.white24),
+              borderSide: BorderSide(
+                color: themeProvider.isDarkMode ? Colors.white24 : Colors.black12
+              ),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
@@ -691,7 +862,7 @@ class _ProfilePage extends State<ProfilePage> {
           child: ElevatedButton(
             onPressed: _updateUserInfo,
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF8456FF),
+              backgroundColor: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 12),
               textStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
@@ -699,7 +870,7 @@ class _ProfilePage extends State<ProfilePage> {
                 borderRadius: BorderRadius.circular(12),
               ),
               elevation: 8,
-              shadowColor: Color(0xFF8456FF).withOpacity(0.3),
+              shadowColor: (themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997)).withOpacity(0.3),
             ),
             child: Text("Update Information"),
           ),
@@ -709,18 +880,24 @@ class _ProfilePage extends State<ProfilePage> {
   }
 
   Widget _buildActionSquare(String title, IconData icon, VoidCallback onTap) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: MediaQuery.of(context).size.width * 0.22,
         height: MediaQuery.of(context).size.width * 0.22,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
+          color: themeProvider.isDarkMode 
+              ? Colors.white.withOpacity(0.1) 
+              : Colors.black.withOpacity(0.05),
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Color(0xFF8456FF), width: 2),
+          border: Border.all(
+            color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997), 
+            width: 2
+          ),
           boxShadow: [
             BoxShadow(
-              color: Color(0xFF8456FF).withOpacity(0.2),
+              color: (themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997)).withOpacity(0.2),
               blurRadius: 10,
               spreadRadius: 1,
             ),
@@ -729,13 +906,17 @@ class _ProfilePage extends State<ProfilePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 32, color: Color(0xFF8456FF)),
+            Icon(
+              icon, 
+              size: 32, 
+              color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997)
+            ),
             SizedBox(height: 8),
             Text(
               title,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white,
+                color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
@@ -887,19 +1068,26 @@ class _ProfilePage extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    
     if (_isLoadingProfile) {
       return Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFf8f5f0),
         body: SafeArea(
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(color: Color(0xFF8456FF)),
+                CircularProgressIndicator(
+                  color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997)
+                ),
                 SizedBox(height: 20),
                 Text(
                   "Loading profile...",
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  style: TextStyle(
+                    color: themeProvider.isDarkMode ? Colors.white : Colors.black87, 
+                    fontSize: 16
+                  ),
                 ),
               ],
             ),
@@ -909,31 +1097,50 @@ class _ProfilePage extends State<ProfilePage> {
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFf8f5f0),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.all(20),
             child: Column(
               children: [
-                // Header with logout button
+                // Header with logo and logout button
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Profile",
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 1.2,
-                      ),
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.asset(
+                              themeProvider.logoPath,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Text(
+                          "Profile",
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ],
                     ),
                     IconButton(
                       onPressed: _showMenu,
                       icon: Icon(
                         Icons.more_vert,
-                        color: Color(0xFF8456FF),
+                        color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
                         size: 28,
                       ),
                     ),
@@ -952,31 +1159,17 @@ class _ProfilePage extends State<ProfilePage> {
                   children: [
                     _buildActionSquare("All Songs", Icons.music_note, () {
                       // Navigate to library page with all songs
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => LibraryPage(user: widget.user),
-                        ),
-                      );
+                      widget.onNavigateToPage(0); // Library page index
                     }),
                     _buildActionSquare("Favorites", Icons.favorite, () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => FavouritesPage(user: widget.user),
-                        ),
-                      );
+                      // Navigate to library and show favorites
+                      widget.onNavigateToPage(0);
+                      // You can add a parameter to show favorites filter
                     }),
                     _buildActionSquare("Recently\nPlayed", Icons.history, () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) =>
-                                  RecentlyPlayedPage(user: widget.user),
-                        ),
-                      );
+                      // Navigate to library and show recently played
+                      widget.onNavigateToPage(0);
+                      // You can add a parameter to show recently played filter
                     }),
                   ],
                 ),

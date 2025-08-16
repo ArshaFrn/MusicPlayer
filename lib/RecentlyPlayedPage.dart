@@ -3,6 +3,10 @@ import 'Model/Music.dart';
 import 'Model/User.dart';
 import 'Application.dart';
 import 'TcpClient.dart';
+import 'utils/AudioController.dart';
+import 'PlayPage.dart';
+import 'package:provider/provider.dart';
+import 'utils/ThemeProvider.dart';
 
 class RecentlyPlayedPage extends StatefulWidget {
   final User user;
@@ -144,6 +148,7 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> {
                                             : Icons.favorite_border,
                                         color: application.getUniqueColor(
                                           music.id,
+                                          context: context,
                                         ),
                                         size: 25,
                                       ),
@@ -151,7 +156,7 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> {
                                   ),
                                 ],
                               ),
-                              iconColor: application.getUniqueColor(music.id),
+                              iconColor: application.getUniqueColor(music.id, context: context),
                             );
                           },
                         ),

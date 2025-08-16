@@ -4,17 +4,24 @@ import 'Model/Playlist.dart';
 import 'TcpClient.dart';
 import 'Application.dart';
 import 'PlaylistTracksPage.dart';
+import 'package:provider/provider.dart';
+import 'utils/ThemeProvider.dart';
 
 class PlaylistsPage extends StatefulWidget {
-  final User _user;
+  final User user;
+  final Function(int) onNavigateToPage;
 
-  const PlaylistsPage({super.key, required User user}) : _user = user;
+  const PlaylistsPage({
+    super.key, 
+    required this.user, 
+    required this.onNavigateToPage,
+  });
 
   @override
-  State<PlaylistsPage> createState() => _PlaylistsPage();
+  State<PlaylistsPage> createState() => _PlaylistsPageState();
 }
 
-class _PlaylistsPage extends State<PlaylistsPage> {
+class _PlaylistsPageState extends State<PlaylistsPage> {
   late TcpClient _tcpClient;
   List<Playlist> _playlists = [];
   final TextEditingController _nameController = TextEditingController();
@@ -32,10 +39,10 @@ class _PlaylistsPage extends State<PlaylistsPage> {
     setState(() {
       _isLoading = true;
     });
-    final playlists = await _tcpClient.getUserPlaylists(widget._user);
+    final playlists = await _tcpClient.getUserPlaylists(widget.user);
     setState(() {
       _playlists = playlists;
-      widget._user.playlists
+      widget.user.playlists
         ..clear()
         ..addAll(playlists);
       _isLoading = false;
@@ -59,7 +66,7 @@ class _PlaylistsPage extends State<PlaylistsPage> {
 
     final newPlaylist = Playlist(name: name, description: description);
 
-    final response = await _tcpClient.uploadPlaylist(widget._user, newPlaylist);
+    final response = await _tcpClient.uploadPlaylist(widget.user, newPlaylist);
 
     if (response['status'] == 'uploadPlaylistSuccess') {
       _nameController.clear();
@@ -239,7 +246,7 @@ class _PlaylistsPage extends State<PlaylistsPage> {
         MaterialPageRoute(
           builder:
               (context) =>
-                  PlaylistTracksPage(user: widget._user, playlist: playlist),
+                  PlaylistTracksPage(user: widget.user, playlist: playlist),
         ),
       );
     } else if (result == 'delete') {
@@ -252,14 +259,14 @@ class _PlaylistsPage extends State<PlaylistsPage> {
   Future<void> _deletePlaylist(Playlist playlist) async {
     try {
       final response = await _tcpClient.removePlaylist(
-        user: widget._user,
+        user: widget.user,
         playlist: playlist,
       );
 
       if (response['status'] == 'removePlaylistSuccess') {
         setState(() {
           _playlists.remove(playlist);
-          widget._user.playlists.remove(playlist);
+          widget.user.playlists.remove(playlist);
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -386,12 +393,31 @@ class _PlaylistsPage extends State<PlaylistsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
-          children: [
-            Icon(Icons.queue_music, size: 28),
-            SizedBox(width: 10),
-            Text('Your Playlists'),
-          ],
+        title: Consumer<ThemeProvider>(
+          builder: (context, theme, child) {
+            return Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Image.asset(
+                      theme.logoPath,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Icon(Icons.queue_music, size: 28),
+                SizedBox(width: 10),
+                Text('Your Playlists'),
+              ],
+            );
+          },
         ),
         automaticallyImplyLeading: false,
         actions: [
@@ -496,7 +522,7 @@ class _PlaylistsPage extends State<PlaylistsPage> {
                                     MaterialPageRoute(
                                       builder:
                                           (context) => PlaylistTracksPage(
-                                            user: widget._user,
+                                            user: widget.user,
                                             playlist: playlist,
                                           ),
                                     ),

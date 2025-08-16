@@ -7,15 +7,20 @@ import 'utils/AudioController.dart';
 import 'PlayPage.dart';
 
 class SearchPage extends StatefulWidget {
-  final User _user;
+  final User user;
+  final Function(int) onNavigateToPage;
 
-  const SearchPage({super.key, required User user}) : _user = user;
+  const SearchPage({
+    super.key, 
+    required this.user, 
+    required this.onNavigateToPage,
+  });
 
   @override
-  State<SearchPage> createState() => _SearchPage();
+  State<SearchPage> createState() => _SearchPageState();
 }
 
-class _SearchPage extends State<SearchPage> {
+class _SearchPageState extends State<SearchPage> {
   final Application application = Application.instance;
   String _searchQuery = '';
   List<Music> _searchResults = [];
@@ -24,10 +29,10 @@ class _SearchPage extends State<SearchPage> {
     setState(() {
       _searchQuery = value;
       _searchResults =
-          value.isEmpty ? [] : application.searchTracks(widget._user, value);
+          value.isEmpty ? [] : application.searchTracks(widget.user, value);
       // Sync like states for search results
       if (_searchResults.isNotEmpty) {
-        application.syncLikeState(widget._user, _searchResults);
+        application.syncLikeState(widget.user, _searchResults);
       }
     });
   }
@@ -117,12 +122,12 @@ class _SearchPage extends State<SearchPage> {
                           onTap: () => _onLikeTap(music),
                           child: Icon(
                             isLiked ? Icons.favorite : Icons.favorite_border,
-                            color: application.getUniqueColor(music.id),
+                            color: application.getUniqueColor(music.id, context: context),
                             size: 25,
                           ),
                         ),
                       ),
-                      iconColor: application.getUniqueColor(music.id),
+                      iconColor: application.getUniqueColor(music.id, context: context),
                     );
                   },
                 ),
@@ -165,7 +170,7 @@ class _SearchPage extends State<SearchPage> {
     if (result == 'play') {
       final success = await application.handleMusicPlayback(
         context: context,
-        user: widget._user,
+        user: widget.user,
         music: music,
       );
       if (!success) {
@@ -174,13 +179,13 @@ class _SearchPage extends State<SearchPage> {
     } else if (result == 'share') {
       await application.shareMusic(
         context: context,
-        user: widget._user,
+        user: widget.user,
         music: music,
       );
     } else if (result == 'delete') {
       await application.deleteMusic(
         context: context,
-        user: widget._user,
+        user: widget.user,
         music: music,
       );
       setState(() {}); //Refresh UI
@@ -190,7 +195,7 @@ class _SearchPage extends State<SearchPage> {
   }
 
   Future<void> _onLikeTap(Music music) async {
-    final success = await application.toggleLike(widget._user, music);
+    final success = await application.toggleLike(widget.user, music);
     if (success) {
       setState(() {});
     }
@@ -210,8 +215,8 @@ class _SearchPage extends State<SearchPage> {
             builder:
                 (context) => PlayPage(
                   music: music,
-                  user: widget._user,
-                  playlist: widget._user.tracks,
+                  user: widget.user,
+                  playlist: widget.user.tracks,
                 ),
           ),
         );
@@ -221,7 +226,7 @@ class _SearchPage extends State<SearchPage> {
       // Handle music playback logic
       final success = await application.handleMusicPlayback(
         context: context,
-        user: widget._user,
+        user: widget.user,
         music: music,
       );
 

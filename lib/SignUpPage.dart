@@ -199,7 +199,7 @@ class _SignUpPageState extends State<SignUpPage> {
               fontSize: 14,
             ),
           ),
-          backgroundColor: Colors.red.withValues(alpha: 0.5),
+          backgroundColor: Colors.red.withOpacity(0.5),
           duration: Duration(seconds: 3),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -281,7 +281,7 @@ class _SignUpPageState extends State<SignUpPage> {
               "Email already exists!",
               style: TextStyle(color: Colors.white),
             ),
-            backgroundColor: Colors.deepOrange.withValues(alpha: 0.75),
+            backgroundColor: Colors.deepOrange.withOpacity(0.75),
             duration: Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -298,7 +298,7 @@ class _SignUpPageState extends State<SignUpPage> {
               "Username already exists!",
               style: TextStyle(color: Colors.white),
             ),
-            backgroundColor: Colors.deepOrange.withValues(alpha: 0.75),
+            backgroundColor: Colors.deepOrange.withOpacity(0.75),
             duration: Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -315,7 +315,7 @@ class _SignUpPageState extends State<SignUpPage> {
               "Sign-up failed!",
               style: TextStyle(color: Colors.white),
             ),
-            backgroundColor: Colors.red.withValues(alpha: 0.65),
+            backgroundColor: Colors.red.withOpacity(0.65),
             duration: Duration(seconds: 4),
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -333,7 +333,7 @@ class _SignUpPageState extends State<SignUpPage> {
             "An error occurred: $e",
             style: TextStyle(color: Colors.white),
           ),
-          backgroundColor: Colors.red.withValues(alpha: 0.65),
+          backgroundColor: Colors.red.withOpacity(0.65),
           duration: Duration(seconds: 4),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -514,11 +514,11 @@ class _SignUpPageState extends State<SignUpPage> {
                       width: 350,
                       height: 480,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
+                        color: Colors.white.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.5),
+                            color: Colors.black.withOpacity(0.5),
                             blurRadius: 20,
                             offset: Offset(0, 10),
                           ),
@@ -547,9 +547,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                         color: Colors.white70,
                                       ),
                                       filled: true,
-                                      fillColor: Colors.white.withValues(
-                                        alpha: 0.15,
-                                      ),
+                                      fillColor: Colors.white.withOpacity(0.15),
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 18,
                                       ),
@@ -589,11 +587,9 @@ class _SignUpPageState extends State<SignUpPage> {
                                       hintText: 'Username',
                                       hintStyle: TextStyle(
                                         color: Colors.white70,
-                                      ),
+                                        ),
                                       filled: true,
-                                      fillColor: Colors.white.withValues(
-                                        alpha: 0.15,
-                                      ),
+                                      fillColor: Colors.white.withOpacity(0.15),
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 18,
                                       ),
@@ -632,9 +628,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                         color: Colors.white70,
                                       ),
                                       filled: true,
-                                      fillColor: Colors.white.withValues(
-                                        alpha: 0.15,
-                                      ),
+                                      fillColor: Colors.white.withOpacity(0.15),
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 18,
                                       ),
@@ -677,9 +671,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                         color: Colors.white70,
                                       ),
                                       filled: true,
-                                      fillColor: Colors.white.withValues(
-                                        alpha: 0.15,
-                                      ),
+                                      fillColor: Colors.white.withOpacity(0.15),
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 18,
                                       ),

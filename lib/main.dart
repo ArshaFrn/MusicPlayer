@@ -10,6 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'ForgotPasswordPage.dart';
 import 'package:second/AdminLoginPage.dart';
 import 'package:second/widgets/FingerprintLoginButton.dart';
+import 'package:second/utils/ThemeProvider.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,18 +33,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Hertz',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.deepPurple,
-          brightness: Brightness.dark,
-        ),
-        brightness: Brightness.dark,
+    return ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'Hertz',
+            theme: themeProvider.getLightTheme(),
+            darkTheme: themeProvider.getDarkTheme(),
+            themeMode: themeProvider.themeMode,
+            debugShowCheckedModeBanner: false,
+            home: isLoggedIn ? const HomePage() : const LogInPage(title: 'Hertz'),
+          );
+        },
       ),
-      themeMode: ThemeMode.dark,
-      debugShowCheckedModeBanner: false,
-      home: isLoggedIn ? const HomePage() : const LogInPage(title: 'Hertz'),
     );
   }
 }
@@ -130,7 +134,7 @@ class _LogInPage extends State<LogInPage> {
               fontSize: 16,
             ),
           ),
-          backgroundColor: Colors.red.withValues(alpha: 0.65),
+          backgroundColor: Colors.red.withOpacity(0.65),
           duration: Duration(seconds: 3),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -291,11 +295,46 @@ class _LogInPage extends State<LogInPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    
     return Scaffold(
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset('assets/images/LogInBG.jpg', fit: BoxFit.cover),
+            child: Image.asset(themeProvider.backgroundPath, fit: BoxFit.cover),
+          ),
+          // Theme toggle button in upper right corner
+          Positioned(
+            top: 50,
+            right: 20,
+            child: Consumer<ThemeProvider>(
+              builder: (context, theme, child) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode 
+                        ? Colors.black.withOpacity(0.3)
+                        : Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(
+                      color: theme.isDarkMode 
+                          ? Color(0xFF8456FF)
+                          : Color(0xFFfc6997),
+                      width: 2,
+                    ),
+                  ),
+                  child: IconButton(
+                    onPressed: () => theme.toggleTheme(),
+                    icon: Icon(
+                      theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                      color: theme.isDarkMode 
+                          ? Color(0xFF8456FF)
+                          : Color(0xFFfc6997),
+                      size: 24,
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
           Center(
             child: SingleChildScrollView(
@@ -305,55 +344,51 @@ class _LogInPage extends State<LogInPage> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     SizedBox(height: 0),
-                    ShaderMask(
-                      shaderCallback: (Rect bounds) {
-                        return const LinearGradient(
-                          colors: [
-                            Color(0xFFFF5AF7),
-                            Color(0xFF8456FF),
-                          ], // ! Pink to Purple
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ).createShader(bounds);
+                    // Logo with theme-aware colors
+                    Consumer<ThemeProvider>(
+                      builder: (context, theme, child) {
+                        return Container(
+                          width: 200,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 24,
+                                color: theme.isDarkMode
+                                    ? Color(0xFFFF5AF7)
+                                    : Color(0xFFfc6997),
+                                offset: Offset(0, 0),
+                              ),
+                              BoxShadow(
+                                blurRadius: 48,
+                                color: theme.isDarkMode
+                                    ? Color(0xFF8456FF)
+                                    : Color(0xFFfc6997),
+                                offset: Offset(0, 0),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(15),
+                            child: Image.asset(
+                              theme.logoPath,
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        );
                       },
-                      child: Text(
-                        'Hertz',
-                        style: TextStyle(
-                          fontSize: 52,
-                          fontWeight: FontWeight.w300,
-                          fontFamily: 'Orbitron',
-                          color: Colors.white,
-                          letterSpacing: 5,
-                          shadows: [
-                            Shadow(
-                              blurRadius: 24,
-                              color: Color(0xFFFF5AF7), // ! Neon pink glow
-                              offset: Offset(0, 0),
-                            ),
-                            Shadow(
-                              blurRadius: 48,
-                              color: Color(0xFF8456FF), // ! Neon purple glow
-                              offset: Offset(0, 0),
-                            ),
-                            Shadow(
-                              blurRadius: 2,
-                              color: Colors.white,
-                              offset: Offset(0, 0),
-                            ),
-                          ],
-                        ),
-                      ),
                     ),
                     SizedBox(height: 40),
                     Container(
                       width: 350,
                       height: 470,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
+                        color: Colors.white.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.5),
+                            color: Colors.black.withOpacity(0.5),
                             blurRadius: 20,
                             offset: Offset(0, 10),
                           ),
@@ -366,40 +401,51 @@ class _LogInPage extends State<LogInPage> {
                             left: 0,
                             right: 0,
                             child: Center(
-                              child: ShaderMask(
-                                shaderCallback: (Rect bounds) {
-                                  return const LinearGradient(
-                                    colors: [
-                                      Color(0xFF8456FF), // Neon purple
-                                      Color(0xFFB388FF), // Lighter purple
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ).createShader(bounds);
+                              child: Consumer<ThemeProvider>(
+                                builder: (context, theme, child) {
+                                  return ShaderMask(
+                                    shaderCallback: (Rect bounds) {
+                                      return LinearGradient(
+                                        colors: theme.isDarkMode
+                                            ? [
+                                                Color(0xFF8456FF),
+                                                Color(0xFFB388FF),
+                                              ]
+                                            : [
+                                                Color(0xFFfc6997),
+                                                Color(0xFFf8f5f0),
+                                              ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ).createShader(bounds);
+                                    },
+                                    child: Text(
+                                      'LOG IN',
+                                      style: TextStyle(
+                                        fontSize: 40,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white,
+                                        letterSpacing: 3,
+                                        shadows: [
+                                          Shadow(
+                                            blurRadius: 15,
+                                            color: theme.isDarkMode
+                                                ? Color(0xFF8456FF)
+                                                : Color(0xFFfc6997),
+                                            offset: Offset(1, 3),
+                                          ),
+                                          Shadow(
+                                            blurRadius: 15,
+                                            color: theme.isDarkMode
+                                                ? Color(0xFFB388FF)
+                                                : Color(0xFFfc6997),
+                                            offset: Offset(0, 0),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
                                 },
-                                child: Text(
-                                  'LOG IN',
-                                  style: TextStyle(
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white,
-                                    letterSpacing: 3,
-                                    shadows: [
-                                      Shadow(
-                                        blurRadius: 15,
-                                        color: Color(0xFF8456FF),
-                                        // Neon purple glow
-                                        offset: Offset(1, 3),
-                                      ),
-                                      Shadow(
-                                        blurRadius: 15,
-                                        color: Color(0xFFB388FF),
-                                        // Lighter purple glow
-                                        offset: Offset(0, 0),
-                                      ),
-                                    ],
-                                  ),
-                                ),
                               ),
                             ),
                           ),
@@ -424,9 +470,7 @@ class _LogInPage extends State<LogInPage> {
                                         color: Colors.white70,
                                       ),
                                       filled: true,
-                                      fillColor: Colors.white.withValues(
-                                        alpha: 0.15,
-                                      ),
+                                      fillColor: Colors.white.withOpacity(0.15),
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 18,
                                       ),
@@ -461,9 +505,7 @@ class _LogInPage extends State<LogInPage> {
                                         color: Colors.white70,
                                       ),
                                       filled: true,
-                                      fillColor: Colors.white.withValues(
-                                        alpha: 0.15,
-                                      ),
+                                      fillColor: Colors.white.withOpacity(0.15),
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 18,
                                       ),

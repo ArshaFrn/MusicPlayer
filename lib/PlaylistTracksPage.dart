@@ -395,6 +395,7 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                                       Icons.music_note,
                                       color: _application.getUniqueColor(
                                         music.id,
+                                        context: context,
                                       ),
                                     ),
                                     title: Text(
@@ -446,7 +447,7 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                                                   ? Icons.favorite
                                                   : Icons.favorite_border,
                                               color: _application
-                                                  .getUniqueColor(music.id),
+                                                  .getUniqueColor(music.id, context: context),
                                               size: 25,
                                             ),
                                           ),

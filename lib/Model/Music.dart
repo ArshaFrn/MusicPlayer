@@ -19,6 +19,7 @@ class Music {
   String _filePath;
   int _likeCount = 0;
   bool _isLiked = false;
+  bool _isPublic = false;
 
   Music({
     required String title,
@@ -29,6 +30,7 @@ class Music {
     required Album album,
     required String filePath,
     required String extension,
+    required bool isPublic,
   }) : _title = title,
        _artist = artist,
        _genre = genre,
@@ -40,7 +42,8 @@ class Music {
        _id = _generateId(title, artist, releaseDate),
        _filePath = filePath,
        _likeCount = 0,
-       _isLiked = false;
+       _isLiked = false,
+       _isPublic = false;
 
   static int _generateId(String title, Artist artist, DateTime releaseDate) {
     return (title + artist.name + releaseDate.toString()).hashCode;
@@ -95,6 +98,8 @@ class Music {
         'isLiked': _isLiked,
         'filePath': _filePath,
         'extension': _extension,
+        'isPublic': _isPublic,
+        'addedDate': _addedDate.toIso8601String(),
       };
     } else {
       return {
@@ -109,6 +114,8 @@ class Music {
         'isLiked': _isLiked,
         'filePath': '',
         'extension': _extension,
+        'isPublic': _isPublic,
+        'addedDate': _addedDate.toIso8601String(),
       };
     }
   }
@@ -116,12 +123,13 @@ class Music {
   Music.fromMap(Map<String, dynamic> map)
     : _id = map['id'],
       _title = _cleanTitle(map['title']),
-      _artist = Artist(name: map['artist']), // Handle artist as string
+      _artist = Artist(name: map['artist']),
+      // Handle artist as string
       _genre = map['genre'],
       _durationInSeconds = map['durationInSeconds'],
       _releaseDate = _parseReleaseDate(map['releaseDate']),
-      _addedDate =
-          DateTime.now(), // Use current time since server doesn't provide this
+      _addedDate = DateTime.now(),
+      // Use current time since server doesn't provide this
       _album = Album(
         title: _cleanTitle(map['album']?['title'] ?? 'Unknown Album'),
         artist: Artist(
@@ -130,11 +138,13 @@ class Music {
               map['artist'] ??
               'Unknown Artist',
         ),
-      ), // Create album with proper title and artist
+      ),
+      // Create album with proper title and artist
       _likeCount = map['likeCount'] ?? 0,
       _isLiked = map['isLiked'] ?? false,
       _extension = _cleanExtension(map['extension'] ?? 'mp3'),
-      _filePath = map['filePath'] ?? '';
+      _filePath = map['filePath'] ?? '',
+      _isPublic = map['isPublic'] ?? false;
 
   // * Getters
   int get id => _id;
@@ -168,6 +178,8 @@ class Music {
 
   set filePath(String value) => _filePath = value;
 
+  set isPublic(bool value) => _isPublic = value;
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -176,6 +188,10 @@ class Music {
 
   @override
   int get hashCode => _id.hashCode;
+
+  get year => _releaseDate.year;
+
+  bool get isPublic => _isPublic;
 
   @override
   String toString() {

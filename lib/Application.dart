@@ -17,6 +17,8 @@ import 'utils/CacheManager.dart';
 import 'utils/AudioController.dart';
 import 'PlayPage.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:provider/provider.dart';
+import 'utils/ThemeProvider.dart';
 // Applicaation Flow Controller
 
 enum filterOption {
@@ -209,6 +211,7 @@ class Application {
       album: album,
       filePath: '', // File path will be set later by decodeFile
       extension: extension,
+      isPublic: false, // Default to public
     );
   }
 
@@ -280,11 +283,32 @@ class Application {
     }).toList();
   }
 
-  Color getUniqueColor(int id) {
+  Color getUniqueColor(int id, {BuildContext? context}) {
+    if (context != null) {
+      try {
+        final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+        if (themeProvider.isLightMode) {
+          // Use pink shades for light theme
+          final List<Color> lightColors = [
+            Color(0xFFfc6997), // Main pink
+            Color(0xFFff6b9d), // Lighter pink
+            Color(0xFFff8fab), // Soft pink
+            Color(0xFFff6b8a), // Coral pink
+            Color(0xFFff7eb3), // Rose pink
+            Color(0xFFff6b95), // Deep pink
+            Color(0xFFff8fa3), // Light rose
+            Color(0xFFff6b8f), // Medium pink
+          ];
+          return lightColors[id.abs() % lightColors.length];
+        }
+      } catch (e) {
+        // Fallback to default colors if Provider is not available
+      }
+    }
     return _colorList[id.abs() % _colorList.length];
   }
 
-  Color getPlaylistColor(int id) => getUniqueColor(id);
+  Color getPlaylistColor(int id, {BuildContext? context}) => getUniqueColor(id, context: context);
 
   void showMusicDetailsDialog(BuildContext context, Music music) {
     showDialog(
@@ -943,6 +967,33 @@ class Application {
       print('Error sharing music: $e');
       _hideSnackBar(context);
       _showPlaybackErrorSnackBar(context, 'Failed to share music: $e');
+      return false;
+    }
+  }
+
+  Future<bool> downloadMusic(User user, Music music) async {
+    try {
+      // Use the existing cache system to download and cache the music
+      final cachedPath = await cacheManager.ensureCached(user: user, music: music);
+      return cachedPath != null;
+    } catch (e) {
+      print('Error downloading music: $e');
+      return false;
+    }
+  }
+
+  Future<bool> makeMusicPublic(User user, Music music) async {
+    try {
+      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final response = await tcpClient.makeMusicPublic(user.username, music.id);
+      
+      if (response['status'] == 'makeMusicPublicSuccess' || response['status'] == 'success') {
+        music.isPublic = true;
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Error making music public: $e');
       return false;
     }
   }

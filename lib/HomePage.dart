@@ -11,15 +11,19 @@ import 'SearchPage.dart';
 import 'AddPage.dart';
 import 'ProfilePage.dart';
 import 'widgets/MiniPlayer.dart';
+import 'FavouritesPage.dart';
+import 'RecentlyPlayedPage.dart';
+import 'package:provider/provider.dart';
+import 'utils/ThemeProvider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePage();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePage extends State<HomePage> {
+class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
   late User _user;
   late List<Widget> _pages;
@@ -57,11 +61,10 @@ class _HomePage extends State<HomePage> {
       _user.setProfileImageUrl(profileImageUrl);
 
       _pages = [
-        LibraryPage(user: _user),
-        PlaylistsPage(user: _user),
-        SearchPage(user: _user),
-        AddPage(user: _user),
-        ProfilePage(user: _user),
+        LibraryPage(user: _user, onNavigateToPage: navigateToPage),
+        PlaylistsPage(user: _user, onNavigateToPage: navigateToPage),
+        AddPage(user: _user, onNavigateToPage: navigateToPage),
+        ProfilePage(user: _user, onNavigateToPage: navigateToPage),
       ];
       _isUserLoaded = true;
     });
@@ -75,6 +78,13 @@ class _HomePage extends State<HomePage> {
     });
   }
 
+  // Method to navigate to specific pages while keeping navigation bar
+  void navigateToPage(int pageIndex) {
+    setState(() {
+      _selectedIndex = pageIndex;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_isUserLoaded) {
@@ -82,40 +92,83 @@ class _HomePage extends State<HomePage> {
     }
 
     return Scaffold(
-      body: _pages[_selectedIndex],
+      appBar: AppBar(
+        title: Consumer<ThemeProvider>(
+          builder: (context, theme, child) {
+            return Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.asset(
+                      theme.logoPath,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12),
+                Text(
+                  'Hertz',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: theme.isDarkMode ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
+      ),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           MiniPlayer(),
 
-          BottomNavigationBar(
-            selectedItemColor: Colors.white,
-            unselectedItemColor: Colors.white60,
-            currentIndex: _selectedIndex,
-            onTap: _onItemTapped,
-            type: BottomNavigationBarType.shifting,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.library_music),
-                label: "Library",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.playlist_play),
-                label: "Playlists",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.search),
-                label: "Search",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.add_circle),
-                label: "Add",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person),
-                label: "Profile",
-              ),
-            ],
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return BottomNavigationBar(
+                selectedItemColor: themeProvider.isDarkMode ? Colors.white : Colors.white,
+                unselectedItemColor: themeProvider.isDarkMode ? Colors.white60 : Colors.white60,
+                backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                currentIndex: _selectedIndex,
+                onTap: _onItemTapped,
+                type: BottomNavigationBarType.shifting,
+                items: [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.library_music),
+                    label: "Library",
+                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.playlist_play),
+                    label: "Playlists",
+                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.add_circle),
+                    label: "Add",
+                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person),
+                    label: "Profile",
+                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
