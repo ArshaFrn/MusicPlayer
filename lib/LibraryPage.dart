@@ -8,6 +8,7 @@ import 'utils/AudioController.dart';
 import 'PlayPage.dart';
 import 'package:provider/provider.dart';
 import 'utils/ThemeProvider.dart';
+import 'utils/ArtistImageService.dart';
 
 class LibraryPage extends StatefulWidget {
   final User user;
@@ -579,50 +580,12 @@ class _LibraryPageState extends State<LibraryPage> {
   }
 
   Widget _getArtistImage(String artistName) {
-    // Map of artist names to their image URLs
-    final Map<String, String> artistImages = {
-      'Ed Sheeran': 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&h=100&fit=crop&crop=face',
-      'Taylor Swift': 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
-      'Drake': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-      'Ariana Grande': 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
-      'Post Malone': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-      'Billie Eilish': 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
-      'The Weeknd': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-      'Dua Lipa': 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
-      'Justin Bieber': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-      'Lady Gaga': 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
-    };
-
-    final imageUrl = artistImages[artistName];
-    
-    if (imageUrl != null) {
-      return Image.network(
-        imageUrl,
-        width: 50,
-        height: 50,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return _getDefaultArtistAvatar(artistName);
-        },
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Container(
-            width: 50,
-            height: 50,
-            child: Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                    : null,
-                strokeWidth: 2,
-              ),
-            ),
-          );
-        },
-      );
-    }
-    
-    return _getDefaultArtistAvatar(artistName);
+    // Use the new ArtistImageWidget for dynamic artist images
+    return ArtistImageWidget(
+      artistName: artistName,
+      size: 50,
+      errorBuilder: (context, artistName) => _getDefaultArtistAvatar(artistName),
+    );
   }
 
   Widget _getDefaultArtistAvatar(String artistName) {

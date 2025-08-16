@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
 import 'Model/User.dart';
 import 'Application.dart';
 import 'Model/Music.dart';
@@ -135,37 +134,25 @@ class _AddPage extends State<AddPage> {
             tooltip: "Refresh Public Music",
             onPressed: _isRefreshing ? null : _refreshPublicMusics,
           ),
-          Theme(
-            data: Theme.of(context).copyWith(
-              popupMenuTheme: PopupMenuThemeData(
-                color: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                elevation: 17,
-                textStyle: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 17,
-                ),
-              ),
-            ),
-            child: PopupMenuButton<filterOption>(
-              icon: Icon(Icons.filter_list, color: Colors.white70),
-              tooltip: "Filter",
-              onSelected: (option) {
-                setState(() {
-                  // If the same base sort is selected, toggle between ascending and descending
-                  if (application.getBaseSort(_selectedSort) ==
-                      application.getBaseSort(option)) {
-                    _selectedSort = application.getOppositeSort(_selectedSort);
-                  } else {
-                    _selectedSort = option;
-                  }
-                  _sortMusics();
-                });
-              },
-              itemBuilder: (context) => [
+          PopupMenuButton<filterOption>(
+            icon: Icon(Icons.filter_list, color: Colors.white70),
+            tooltip: "Filter",
+            onSelected: (option) {
+              print('Sort option selected: $option'); // Debug print
+              setState(() {
+                // If the same base sort is selected, toggle between ascending and descending
+                if (application.getBaseSort(_selectedSort) ==
+                    application.getBaseSort(option)) {
+                  _selectedSort = application.getOppositeSort(_selectedSort);
+                } else {
+                  _selectedSort = option;
+                }
+                _sortMusics();
+              });
+            },
+            itemBuilder: (context) {
+              print('Building sort menu items'); // Debug print
+              return [
                 // Title
                 PopupMenuItem<filterOption>(
                   value: filterOption.titleAsc,
@@ -306,11 +293,8 @@ class _AddPage extends State<AddPage> {
                     ],
                   ),
                 ),
-              ],
-              offset: Offset(0, 46),
-              elevation: 17,
-              padding: EdgeInsets.symmetric(vertical: 6),
-            ),
+              ];
+            },
           ),
         ],
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
