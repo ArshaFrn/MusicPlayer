@@ -393,31 +393,12 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Consumer<ThemeProvider>(
-          builder: (context, theme, child) {
-            return Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: Image.asset(
-                      theme.logoPath,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-                SizedBox(width: 8),
-                Icon(Icons.queue_music, size: 28),
-                SizedBox(width: 10),
-                Text('Your Playlists'),
-              ],
-            );
-          },
+        title: const Row(
+          children: [
+            Icon(Icons.queue_music, size: 28),
+            SizedBox(width: 10),
+            Text('Your Playlists'),
+          ],
         ),
         automaticallyImplyLeading: false,
         actions: [

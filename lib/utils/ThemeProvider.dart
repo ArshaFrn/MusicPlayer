@@ -53,6 +53,15 @@ class ThemeProvider extends ChangeNotifier {
     if (_themeMode == themeMode) return;
     
     _themeMode = themeMode;
+    _isDarkMode = themeMode == ThemeMode.dark;
+    
+    // Automatically change logo based on theme
+    if (_isDarkMode) {
+      _logoPath = darkLogoPath;
+    } else {
+      _logoPath = lightLogoPath;
+    }
+    
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_themeKey, themeMode == ThemeMode.light ? 'light' : 'dark');
     

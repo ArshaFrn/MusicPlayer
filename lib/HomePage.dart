@@ -91,43 +91,8 @@ class _HomePageState extends State<HomePage> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Consumer<ThemeProvider>(
-          builder: (context, theme, child) {
-            return Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.asset(
-                      theme.logoPath,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Text(
-                  'Hertz',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: theme.isDarkMode ? Colors.white : Colors.black87,
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: IndexedStack(
+          return Scaffold(
+        body: IndexedStack(
         index: _selectedIndex,
         children: _pages,
       ),

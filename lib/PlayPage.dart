@@ -9,6 +9,8 @@ import 'Model/User.dart';
 import 'Application.dart';
 import 'utils/AudioController.dart';
 import 'LyricsPage.dart';
+import 'utils/ThemeProvider.dart';
+import 'package:provider/provider.dart';
 
 class PlayPage extends StatefulWidget {
   final Music music;
@@ -245,83 +247,95 @@ class _PlayPageState extends State<PlayPage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentTrack = _audioController.currentTrack;
-    if (currentTrack == null) {
-      return Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(
-          child: Text(
-            'No track selected',
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      );
-    }
-
-    return GestureDetector(
-      onPanUpdate: (details) {
-        // Swipe right to go to lyrics page
-        if (details.delta.dx > 50) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => LyricsPage(
-                music: widget.music,
-                user: widget.user,
-                playlist: widget.playlist,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        final currentTrack = _audioController.currentTrack;
+        if (currentTrack == null) {
+          return Scaffold(
+            backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.white,
+            body: Center(
+              child: Text(
+                'No track selected',
+                style: TextStyle(
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87
+                ),
               ),
             ),
           );
         }
-        // Swipe down to minimize
-        if (details.delta.dy > 50) {
-          Navigator.pop(context);
-        }
+
+        return GestureDetector(
+          onPanUpdate: (details) {
+            // Swipe right to go to lyrics page
+            if (details.delta.dx > 50) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => LyricsPage(
+                    music: widget.music,
+                    user: widget.user,
+                    playlist: widget.playlist,
+                  ),
+                ),
+              );
+            }
+            // Swipe down to minimize
+            if (details.delta.dy > 50) {
+              Navigator.pop(context);
+            }
+          },
+          child: Scaffold(
+            backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.white,
+            body: Container(
+              decoration: BoxDecoration(
+                gradient: themeProvider.isDarkMode
+                    ? LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0xFF1A1A1A), Color(0xFF0D0D0D), Colors.black],
+                      )
+                    : LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.white, Colors.grey[50]!, Colors.grey[100]!],
+                      ),
+              ),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // App Bar
+                    _buildAppBar(themeProvider),
+
+                    SizedBox(height: 30),
+
+                    // Album Art
+                    _buildAlbumArt(currentTrack),
+
+                    SizedBox(height: 37),
+
+                    // Track Info
+                    _buildTrackInfo(currentTrack, themeProvider),
+
+                    SizedBox(height: 40),
+
+                    // Progress Bar
+                    _buildProgressBar(themeProvider),
+
+                    SizedBox(height: 50),
+
+                    // Control Buttons
+                    _buildControlButtons(themeProvider),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
       },
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF1A1A1A), Color(0xFF0D0D0D), Colors.black],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                // App Bar
-                _buildAppBar(),
-
-                SizedBox(height: 30),
-
-                // Album Art
-                _buildAlbumArt(currentTrack),
-
-                SizedBox(height: 37),
-
-                // Track Info
-                _buildTrackInfo(currentTrack),
-
-                SizedBox(height: 40),
-
-                // Progress Bar
-                _buildProgressBar(),
-
-                SizedBox(height: 50),
-
-                // Control Buttons
-                _buildControlButtons(),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar(ThemeProvider themeProvider) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Row(
@@ -333,7 +347,7 @@ class _PlayPageState extends State<PlayPage> {
             },
             icon: Icon(
               Icons.keyboard_arrow_down,
-              color: Colors.white,
+              color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
               size: 30,
             ),
           ),
@@ -341,7 +355,7 @@ class _PlayPageState extends State<PlayPage> {
             child: Text(
               'Now Playing',
               style: TextStyle(
-                color: Colors.white,
+                color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -364,7 +378,7 @@ class _PlayPageState extends State<PlayPage> {
             },
             icon: Icon(
               Icons.arrow_forward,
-              color: Colors.white,
+              color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
               size: 30,
             ),
           ),
@@ -431,7 +445,7 @@ class _PlayPageState extends State<PlayPage> {
     );
   }
 
-  Widget _buildTrackInfo(Music track) {
+  Widget _buildTrackInfo(Music track, ThemeProvider themeProvider) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 30),
       child: Column(
@@ -444,7 +458,7 @@ class _PlayPageState extends State<PlayPage> {
                 child: Text(
                   track.title,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
                     fontSize: 27,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
@@ -465,7 +479,7 @@ class _PlayPageState extends State<PlayPage> {
                 child: Text(
                   track.artist.name,
                   style: TextStyle(
-                    color: Colors.white70,
+                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
                     fontSize: 18,
                     fontWeight: FontWeight.w400,
                   ),
@@ -481,7 +495,7 @@ class _PlayPageState extends State<PlayPage> {
     );
   }
 
-  Widget _buildProgressBar() {
+  Widget _buildProgressBar(ThemeProvider themeProvider) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 30),
       child: Column(
@@ -489,9 +503,9 @@ class _PlayPageState extends State<PlayPage> {
           // Progress Bar
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: Color(0xFFC300C3),
-              inactiveTrackColor: Colors.white24,
-              thumbColor: Color(0xFF6E00B8),
+              activeTrackColor: themeProvider.isDarkMode ? Color(0xFFC300C3) : Color(0xFFfc6997),
+              inactiveTrackColor: themeProvider.isDarkMode ? Colors.white24 : Colors.black12,
+              thumbColor: themeProvider.isDarkMode ? Color(0xFF6E00B8) : Color(0xFFfc6997),
               thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8),
               overlayShape: RoundSliderOverlayShape(overlayRadius: 16),
               trackHeight: 4,
@@ -520,11 +534,17 @@ class _PlayPageState extends State<PlayPage> {
               children: [
                 Text(
                   _formatDuration(_audioController.position),
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  style: TextStyle(
+                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54, 
+                    fontSize: 14
+                  ),
                 ),
                 Text(
                   _formatDuration(_audioController.duration),
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                  style: TextStyle(
+                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54, 
+                    fontSize: 14
+                  ),
                 ),
               ],
             ),
@@ -534,7 +554,7 @@ class _PlayPageState extends State<PlayPage> {
     );
   }
 
-  Widget _buildControlButtons() {
+  Widget _buildControlButtons(ThemeProvider themeProvider) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 40),
       child: Row(
@@ -545,10 +565,15 @@ class _PlayPageState extends State<PlayPage> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [
-                  Color(0xFF4B0082).withOpacity(0.75),
-                  Color(0xFF8B008B).withOpacity(0.95),
-                ],
+                colors: themeProvider.isDarkMode
+                    ? [
+                        Color(0xFF4B0082).withOpacity(0.75),
+                        Color(0xFF8B008B).withOpacity(0.95),
+                      ]
+                    : [
+                        Color(0xFFfc6997).withOpacity(0.75),
+                        Color(0xFFfc6997).withOpacity(0.95),
+                      ],
               ),
             ),
             child: IconButton(
@@ -572,11 +597,13 @@ class _PlayPageState extends State<PlayPage> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [Color(0xFF8B008B), Color(0xFF4B0082)],
+                colors: themeProvider.isDarkMode
+                    ? [Color(0xFF8B008B), Color(0xFF4B0082)]
+                    : [Color(0xFFfc6997), Color(0xFFfc6997)],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Color(0xFF8B008B).withOpacity(0.4),
+                  color: (themeProvider.isDarkMode ? Color(0xFF8B008B) : Color(0xFFfc6997)).withOpacity(0.4),
                   blurRadius: 20,
                   spreadRadius: 3,
                 ),
@@ -592,12 +619,12 @@ class _PlayPageState extends State<PlayPage> {
                       ? SizedBox(
                         width: 30,
                         height: 30,
-                                              child: CircularProgressIndicator(
-                        strokeWidth: 3,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Color(0xFF8456FF),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                          ),
                         ),
-                      ),
                       )
                       : Icon(
                         _audioController.isPlaying
@@ -614,10 +641,15 @@ class _PlayPageState extends State<PlayPage> {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                colors: [
-                  Color(0xFF4B0082).withOpacity(0.75),
-                  Color(0xFF8B008B).withOpacity(0.95),
-                ],
+                colors: themeProvider.isDarkMode
+                    ? [
+                        Color(0xFF4B0082).withOpacity(0.75),
+                        Color(0xFF8B008B).withOpacity(0.95),
+                      ]
+                    : [
+                        Color(0xFFfc6997).withOpacity(0.75),
+                        Color(0xFFfc6997).withOpacity(0.95),
+                      ],
               ),
             ),
             child: IconButton(

@@ -73,30 +73,19 @@ class _LibraryPageState extends State<LibraryPage> {
           builder: (context, theme, child) {
             return Row(
               children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: Image.asset(
-                      theme.logoPath,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
+                Icon(
+                  Icons.library_music, 
+                  color: theme.isDarkMode ? Colors.white : Colors.black87, 
+                  size: 24
                 ),
-                SizedBox(width: 8),
-                const Icon(Icons.library_music, color: Colors.white, size: 24),
                 const SizedBox(width: 5),
-                const Text(
+                Text(
                   "Library",
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
                     fontStyle: FontStyle.italic,
                     fontSize: 24,
-                    color: Colors.white,
+                    color: theme.isDarkMode ? Colors.white : Colors.black87,
                     letterSpacing: 1.2,
                   ),
                 ),

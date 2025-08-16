@@ -129,30 +129,19 @@ class _AddPage extends State<AddPage> {
           builder: (context, theme, child) {
             return Row(
               children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: Image.asset(
-                      theme.logoPath,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
+                Icon(
+                  Icons.add_circle, 
+                  color: theme.isDarkMode ? Colors.white : Colors.black87, 
+                  size: 24
                 ),
-                SizedBox(width: 8),
-                const Icon(Icons.add_circle, color: Colors.white, size: 24),
                 const SizedBox(width: 5),
-                const Text(
+                Text(
                   "Add Music",
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
                     fontStyle: FontStyle.italic,
                     fontSize: 24,
-                    color: Colors.white,
+                    color: theme.isDarkMode ? Colors.white : Colors.black87,
                     letterSpacing: 1.2,
                   ),
                 ),
@@ -176,24 +165,28 @@ class _AddPage extends State<AddPage> {
       body: Column(
         children: [
           // Search bar
-          Container(
-            padding: EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search songs, artists, or albums...',
-                hintStyle: TextStyle(color: Colors.grey[400]),
-                prefixIcon: Icon(Icons.search, color: Colors.grey[400]),
-                filled: true,
-                fillColor: Colors.grey[800],
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25),
-                  borderSide: BorderSide.none,
+          Consumer<ThemeProvider>(
+            builder: (context, theme, child) {
+              return Container(
+                padding: EdgeInsets.all(16),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Search songs, artists, or albums...',
+                    hintStyle: TextStyle(color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+                    prefixIcon: Icon(Icons.search, color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+                    filled: true,
+                    fillColor: theme.isDarkMode ? Colors.grey[800] : Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  ),
+                  style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black87),
                 ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              ),
-              style: TextStyle(color: Colors.white),
-            ),
+              );
+            },
           ),
 
           // Sort options bar
@@ -209,26 +202,32 @@ class _AddPage extends State<AddPage> {
                 
                 return Container(
                   margin: EdgeInsets.only(right: 12),
-                  child: ChoiceChip(
-                    label: Text(
-                      option,
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : Colors.white70,
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                      ),
-                    ),
-                    selected: isSelected,
-                    selectedColor: Color(0xFF8456FF),
-                    backgroundColor: Colors.transparent,
-                    side: BorderSide(
-                      color: isSelected ? Color(0xFF8456FF) : Colors.white30,
-                      width: 1.5,
-                    ),
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedSort = option;
-                        _sortMusics();
-                      });
+                  child: Consumer<ThemeProvider>(
+                    builder: (context, theme, child) {
+                      return ChoiceChip(
+                        label: Text(
+                          option,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : (theme.isDarkMode ? Colors.white70 : Colors.black54),
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                        selected: isSelected,
+                        selectedColor: theme.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                        backgroundColor: Colors.transparent,
+                        side: BorderSide(
+                          color: isSelected 
+                              ? (theme.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997))
+                              : (theme.isDarkMode ? Colors.white30 : Colors.black26),
+                          width: 1.5,
+                        ),
+                        onSelected: (selected) {
+                          setState(() {
+                            _selectedSort = option;
+                            _sortMusics();
+                          });
+                        },
+                      );
                     },
                   ),
                 );
@@ -237,27 +236,38 @@ class _AddPage extends State<AddPage> {
           ),
 
           // Header section
-          Container(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Icon(Icons.public, color: Colors.purpleAccent, size: 24),
-                SizedBox(width: 8),
-                Text(
-                  "Public Music Library",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+          Consumer<ThemeProvider>(
+            builder: (context, theme, child) {
+              return Container(
+                padding: EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.public, 
+                      color: theme.isDarkMode ? Colors.purpleAccent : Color(0xFFfc6997), 
+                      size: 24
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      "Public Music Library",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: theme.isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    Spacer(),
+                    Text(
+                      "${_filteredMusics.length} tracks",
+                      style: TextStyle(
+                        fontSize: 14, 
+                        color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600]
+                      ),
+                    ),
+                  ],
                 ),
-                Spacer(),
-                Text(
-                  "${_filteredMusics.length} tracks",
-                  style: TextStyle(fontSize: 14, color: Colors.grey[400]),
-                ),
-              ],
-            ),
+              );
+            },
           ),
 
           // Public music list

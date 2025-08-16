@@ -707,62 +707,37 @@ class _ProfilePage extends State<ProfilePage> {
                         ),
                       ),
                       SizedBox(width: 10),
-                      // Theme toggle button
+                      // Theme toggle button (expanded)
                       Consumer<ThemeProvider>(
                         builder: (context, theme, child) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: theme.isDarkMode 
-                                    ? Color(0xFF8456FF)
-                                    : Color(0xFFfc6997),
-                                width: 2,
+                          return Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                  color: theme.isDarkMode 
+                                      ? Color(0xFF8456FF)
+                                      : Color(0xFFfc6997),
+                                  width: 2,
+                                ),
                               ),
-                            ),
-                            child: IconButton(
-                              onPressed: () => theme.toggleTheme(),
-                              icon: Icon(
-                                theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                                color: theme.isDarkMode 
-                                    ? Color(0xFF8456FF)
-                                    : Color(0xFFfc6997),
-                                size: 20,
+                              child: IconButton(
+                                onPressed: () => theme.toggleTheme(),
+                                icon: Icon(
+                                  theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                                  color: theme.isDarkMode 
+                                      ? Color(0xFF8456FF)
+                                      : Color(0xFFfc6997),
+                                  size: 20,
+                                ),
+                                tooltip: 'Toggle Theme',
                               ),
-                              tooltip: 'Toggle Theme',
                             ),
                           );
                         },
                       ),
-                      SizedBox(width: 10),
-                      // Logo toggle button
-                      Consumer<ThemeProvider>(
-                        builder: (context, theme, child) {
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: theme.isDarkMode 
-                                    ? Color(0xFF8456FF)
-                                    : Color(0xFFfc6997),
-                                width: 2,
-                              ),
-                            ),
-                            child: IconButton(
-                              onPressed: () => theme.toggleLogo(),
-                              icon: Image.asset(
-                                theme.logoPath,
-                                width: 20,
-                                height: 20,
-                                fit: BoxFit.contain,
-                              ),
-                              tooltip: 'Toggle Logo',
-                            ),
-                          );
-                        },
-                      ),
+
                     ],
                   ),
                 ],
