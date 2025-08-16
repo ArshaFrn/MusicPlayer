@@ -5,9 +5,10 @@ class ThemeProvider extends ChangeNotifier {
   static const String _themeKey = 'app_theme';
   static const String _logoKey = 'app_logo';
   
-  late ThemeMode _themeMode;
-  late String _logoPath;
-  late bool _isDarkMode;
+  // Initialize with default values to avoid late initialization errors
+  ThemeMode _themeMode = ThemeMode.dark;
+  String _logoPath = darkLogoPath;
+  bool _isDarkMode = true;
   
   // Theme colors
   static const Color darkPrimaryColor = Color(0xFF8456FF);
@@ -40,15 +41,20 @@ class ThemeProvider extends ChangeNotifier {
   String get backgroundPath => isDarkMode ? darkBackgroundPath : lightBackgroundPath;
 
   Future<void> _loadTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    final themeString = prefs.getString(_themeKey) ?? 'dark';
-    final logoString = prefs.getString(_logoKey) ?? 'dark';
-    
-    _themeMode = themeString == 'light' ? ThemeMode.light : ThemeMode.dark;
-    _isDarkMode = _themeMode == ThemeMode.dark;
-    _logoPath = logoString == 'light' ? lightLogoPath : darkLogoPath;
-    
-    notifyListeners();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final themeString = prefs.getString(_themeKey) ?? 'dark';
+      final logoString = prefs.getString(_logoKey) ?? 'dark';
+      
+      _themeMode = themeString == 'light' ? ThemeMode.light : ThemeMode.dark;
+      _isDarkMode = _themeMode == ThemeMode.dark;
+      _logoPath = logoString == 'light' ? lightLogoPath : darkLogoPath;
+      
+      notifyListeners();
+    } catch (e) {
+      // If there's an error loading preferences, keep default values
+      print('Error loading theme preferences: $e');
+    }
   }
 
   Future<void> setTheme(ThemeMode themeMode) async {
@@ -64,8 +70,12 @@ class ThemeProvider extends ChangeNotifier {
       _logoPath = lightLogoPath;
     }
     
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_themeKey, themeMode == ThemeMode.light ? 'light' : 'dark');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_themeKey, themeMode == ThemeMode.light ? 'light' : 'dark');
+    } catch (e) {
+      print('Error saving theme preference: $e');
+    }
     
     notifyListeners();
   }
@@ -75,8 +85,13 @@ class ThemeProvider extends ChangeNotifier {
     if (_logoPath == newLogoPath) return;
     
     _logoPath = newLogoPath;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_logoKey, logoType);
+    
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_logoKey, logoType);
+    } catch (e) {
+      print('Error saving logo preference: $e');
+    }
     
     notifyListeners();
   }

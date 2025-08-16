@@ -54,11 +54,9 @@ class ArtistImageService {
 
   /// Get image URL from a specific source
   Future<String?> _getImageFromSource(String artistName, String source) async {
-    final String searchQuery = Uri.encodeComponent('$artistName musician artist portrait');
-    
     switch (source) {
       case 'unsplash':
-        return await _getUnsplashImage(artistName, searchQuery);
+        return await _getUnsplashImage(artistName);
       
       case 'picsum':
         // Use artist name hash for consistent but different images
@@ -76,13 +74,51 @@ class ArtistImageService {
   }
 
   /// Get image from Unsplash API with rate limiting
-  Future<String?> _getUnsplashImage(String artistName, String searchQuery) async {
+  Future<String?> _getUnsplashImage(String artistName) async {
     // Rate limiting - ensure delay between requests
     await _enforceRateLimit();
     
     try {
-      // First try to search for the artist
-      final searchUrl = 'https://api.unsplash.com/search/photos?query=$searchQuery&per_page=1&orientation=portrait';
+      // Clean the artist name for better search results
+      String cleanArtistName = artistName.trim();
+      
+      // Remove common prefixes/suffixes that might interfere with search
+      cleanArtistName = cleanArtistName.replaceAll(RegExp(r'^@'), ''); // Remove @ prefix
+      cleanArtistName = cleanArtistName.replaceAll(RegExp(r'[^\w\s]'), ' '); // Remove special characters
+      cleanArtistName = cleanArtistName.trim();
+      
+      // Create multiple search strategies for better results
+      final List<String> searchQueries = [
+        cleanArtistName, // Direct artist name
+        '$cleanArtistName musician', // Artist + musician
+        '$cleanArtistName singer', // Artist + singer
+        '$cleanArtistName artist', // Artist + artist
+        '$cleanArtistName portrait', // Artist + portrait
+      ];
+      
+      // Try each search query until we find a result
+      for (String query in searchQueries) {
+        final encodedQuery = Uri.encodeComponent(query);
+        final result = await _tryUnsplashSearch(encodedQuery);
+        if (result != null) {
+          print('Found image for "$artistName" using query: "$query"');
+          return result;
+        }
+      }
+      
+      // If all searches fail, try a random image with the artist name
+      return await _getRandomUnsplashImage(cleanArtistName);
+      
+    } catch (e) {
+      print('Error fetching from Unsplash for $artistName: $e');
+      return null;
+    }
+  }
+
+  /// Try a specific search query on Unsplash
+  Future<String?> _tryUnsplashSearch(String encodedQuery) async {
+    try {
+      final searchUrl = 'https://api.unsplash.com/search/photos?query=$encodedQuery&per_page=3&orientation=portrait';
       
       final response = await http.get(
         Uri.parse(searchUrl),
@@ -97,25 +133,24 @@ class ArtistImageService {
         final results = data['results'] as List;
         
         if (results.isNotEmpty) {
+          // Return the first result (most relevant)
           final photo = results.first;
           final imageUrl = photo['urls']['regular'] as String;
           return imageUrl;
         }
       }
-      
-      // If search fails, try a random photo with artist-related query
-      return await _getRandomUnsplashImage(searchQuery);
-      
     } catch (e) {
-      print('Error fetching from Unsplash: $e');
-      return null;
+      print('Error in Unsplash search with query $encodedQuery: $e');
     }
+    
+    return null;
   }
 
   /// Get a random image from Unsplash
-  Future<String?> _getRandomUnsplashImage(String searchQuery) async {
+  Future<String?> _getRandomUnsplashImage(String artistName) async {
     try {
-      final randomUrl = 'https://api.unsplash.com/photos/random?query=$searchQuery&orientation=portrait';
+      final encodedQuery = Uri.encodeComponent(artistName);
+      final randomUrl = 'https://api.unsplash.com/photos/random?query=$encodedQuery&orientation=portrait';
       
       final response = await http.get(
         Uri.parse(randomUrl),
@@ -130,7 +165,7 @@ class ArtistImageService {
         return photo['urls']['regular'] as String;
       }
     } catch (e) {
-      print('Error fetching random image from Unsplash: $e');
+      print('Error fetching random image from Unsplash for $artistName: $e');
     }
     
     return null;

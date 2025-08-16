@@ -106,6 +106,7 @@ class _LyricsPageState extends State<LyricsPage> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         
+        // Check if lyrics field exists and is not empty
         if (data['lyrics'] != null && data['lyrics'].toString().isNotEmpty) {
           String lyrics = data['lyrics'].toString();
           
@@ -122,6 +123,15 @@ class _LyricsPageState extends State<LyricsPage> {
           return lyrics;
         }
       } else if (response.statusCode == 404) {
+        // Handle 404 response with error message
+        try {
+          final errorData = json.decode(response.body);
+          if (errorData['error'] != null) {
+            print('Lyrics API error: ${errorData['error']}');
+          }
+        } catch (e) {
+          print('Error parsing 404 response: $e');
+        }
         print('Lyrics not found for ${widget.music.title} by ${widget.music.artist.name}');
       } else {
         print('API error: ${response.statusCode} - ${response.body}');
