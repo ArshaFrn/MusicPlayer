@@ -322,67 +322,36 @@ class _LogInPage extends State<LogInPage> {
                       width: 2,
                     ),
                   ),
-                  child: IconButton(
-                    onPressed: () => theme.toggleTheme(),
-                    icon: Icon(
-                      theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                      color: theme.isDarkMode 
-                          ? Color(0xFF8456FF)
-                          : Color(0xFFfc6997),
-                      size: 24,
-                    ),
-                  ),
+                                     child: Material(
+                     color: Colors.transparent,
+                     child: InkWell(
+                       borderRadius: BorderRadius.circular(25),
+                       onTap: () => theme.toggleTheme(),
+                       child: Padding(
+                         padding: EdgeInsets.all(12),
+                         child: Icon(
+                           theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                           color: theme.isDarkMode 
+                               ? Color(0xFF8456FF)
+                               : Color(0xFFfc6997),
+                           size: 24,
+                         ),
+                       ),
+                     ),
+                   ),
                 );
               },
             ),
           ),
           Center(
             child: SingleChildScrollView(
-              child: SizedBox(
-                height: 670,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 0),
-                    // Logo with theme-aware colors
-                    Consumer<ThemeProvider>(
-                      builder: (context, theme, child) {
-                        return Container(
-                          width: 200,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(15),
-                            boxShadow: [
-                              BoxShadow(
-                                blurRadius: 24,
-                                color: theme.isDarkMode
-                                    ? Color(0xFFFF5AF7)
-                                    : Color(0xFFfc6997),
-                                offset: Offset(0, 0),
-                              ),
-                              BoxShadow(
-                                blurRadius: 48,
-                                color: theme.isDarkMode
-                                    ? Color(0xFF8456FF)
-                                    : Color(0xFFfc6997),
-                                offset: Offset(0, 0),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(15),
-                            child: Image.asset(
-                              theme.logoPath,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    SizedBox(height: 40),
-                    Container(
-                      width: 350,
-                      height: 470,
+                             child: Column(
+                 mainAxisAlignment: MainAxisAlignment.center,
+                 children: [
+                   SizedBox(height: 20),
+                   Container(
+                     width: 350,
+                     height: 450,
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
@@ -456,8 +425,8 @@ class _LogInPage extends State<LogInPage> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  SizedBox(height: 35),
-                                  TextField(
+                                                                     SizedBox(height: 25),
+                                   TextField(
                                     controller: _usernameController,
                                     style: TextStyle(color: Colors.white),
                                     decoration: InputDecoration(
@@ -525,8 +494,8 @@ class _LogInPage extends State<LogInPage> {
                                       ),
                                     ),
                                   ),
-                                  SizedBox(height: 25),
-                                  ElevatedButton(
+                                                                     SizedBox(height: 20),
+                                   ElevatedButton(
                                     onPressed: () {
                                       if (isLogInValid(context)) {
                                         logInProcess(context);
@@ -561,8 +530,8 @@ class _LogInPage extends State<LogInPage> {
                                       ),
                                     ),
                                   ),
-                                  SizedBox(height: 10),
-                                  Row(
+                                                                     SizedBox(height: 8),
+                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
@@ -652,13 +621,12 @@ class _LogInPage extends State<LogInPage> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 25),
+                    SizedBox(height: 15),
                     FingerprintLoginButton(),
                   ],
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
