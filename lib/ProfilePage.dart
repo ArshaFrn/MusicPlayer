@@ -281,15 +281,10 @@ class _ProfilePage extends State<ProfilePage> {
   }
 
   void _showMenu() async {
-    final themeProvider = Provider.of<ThemeProvider>(context);
+    print('_showMenu called'); // Debug print
+    
     final selected = await showMenu<String>(
       context: context,
-      position: RelativeRect.fromLTRB(
-        MediaQuery.of(context).size.width,
-        80,
-        0,
-        0,
-      ),
       items: [
         PopupMenuItem<String>(
           value: 'contact_us',
@@ -297,14 +292,14 @@ class _ProfilePage extends State<ProfilePage> {
             children: [
               Icon(
                 Icons.email, 
-                color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997), 
+                color: Colors.blue, 
                 size: 20
               ),
               SizedBox(width: 8),
               Text(
                 'Contact Us',
                 style: TextStyle(
-                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                  color: Colors.black87,
                 ),
               ),
             ],
@@ -316,14 +311,14 @@ class _ProfilePage extends State<ProfilePage> {
             children: [
               Icon(
                 Icons.refresh, 
-                color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997), 
+                color: Colors.green, 
                 size: 20
               ),
               SizedBox(width: 8),
               Text(
                 'Refresh Profile',
                 style: TextStyle(
-                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                  color: Colors.black87,
                 ),
               ),
             ],
@@ -335,14 +330,14 @@ class _ProfilePage extends State<ProfilePage> {
             children: [
               Icon(
                 Icons.lock, 
-                color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997), 
+                color: Colors.orange, 
                 size: 20
               ),
               SizedBox(width: 8),
               Text(
                 'Change Password',
                 style: TextStyle(
-                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                  color: Colors.black87,
                 ),
               ),
             ],
@@ -357,7 +352,7 @@ class _ProfilePage extends State<ProfilePage> {
               Text(
                 'Log out',
                 style: TextStyle(
-                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                  color: Colors.black87,
                 ),
               ),
             ],
@@ -379,6 +374,7 @@ class _ProfilePage extends State<ProfilePage> {
     } else if (selected == 'contact_us') {
       _contactUs();
     }
+    print('Menu selection: $selected'); // Debug print
   }
 
   void _contactUs() async {
@@ -1111,8 +1107,66 @@ class _ProfilePage extends State<ProfilePage> {
                         ),
                       ],
                     ),
-                    IconButton(
-                      onPressed: _showMenu,
+                                         PopupMenuButton<String>(
+                       itemBuilder: (context) => [
+                         PopupMenuItem<String>(
+                           value: 'contact_us',
+                           child: Row(
+                             children: [
+                               Icon(Icons.email, color: Colors.blue, size: 20),
+                               SizedBox(width: 8),
+                               Text('Contact Us', style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black87)),
+                             ],
+                           ),
+                         ),
+                         PopupMenuItem<String>(
+                           value: 'refresh_profile',
+                           child: Row(
+                             children: [
+                               Icon(Icons.refresh, color: Colors.green, size: 20),
+                               SizedBox(width: 8),
+                               Text('Refresh Profile', style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black87)),
+                             ],
+                           ),
+                         ),
+                         PopupMenuItem<String>(
+                           value: 'change_password',
+                           child: Row(
+                             children: [
+                               Icon(Icons.lock, color: Colors.orange, size: 20),
+                               SizedBox(width: 8),
+                               Text('Change Password', style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black87)),
+                             ],
+                           ),
+                         ),
+                         PopupMenuItem<String>(
+                           value: 'logout',
+                           child: Row(
+                             children: [
+                               Icon(Icons.logout, color: Colors.red, size: 20),
+                               SizedBox(width: 8),
+                               Text('Log out', style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black87)),
+                             ],
+                           ),
+                         ),
+                       ],
+                      onSelected: (value) {
+                        print('Menu selection: $value'); // Debug print
+                        if (value == 'logout') {
+                          _logout();
+                        } else if (value == 'change_password') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChangePasswordPage(user: widget.user),
+                            ),
+                          );
+                        } else if (value == 'refresh_profile') {
+                          _refreshProfileFromServer();
+                        } else if (value == 'contact_us') {
+                          _contactUs();
+                        }
+                      },
                       icon: Icon(
                         Icons.more_vert,
                         color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),

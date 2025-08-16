@@ -7,6 +7,7 @@ class ThemeProvider extends ChangeNotifier {
   
   late ThemeMode _themeMode;
   late String _logoPath;
+  late bool _isDarkMode;
   
   // Theme colors
   static const Color darkPrimaryColor = Color(0xFF8456FF);
@@ -33,7 +34,7 @@ class ThemeProvider extends ChangeNotifier {
 
   ThemeMode get themeMode => _themeMode;
   String get logoPath => _logoPath;
-  bool get isDarkMode => _themeMode == ThemeMode.dark;
+  bool get isDarkMode => _isDarkMode;
   bool get isLightMode => _themeMode == ThemeMode.light;
 
   String get backgroundPath => isDarkMode ? darkBackgroundPath : lightBackgroundPath;
@@ -44,6 +45,7 @@ class ThemeProvider extends ChangeNotifier {
     final logoString = prefs.getString(_logoKey) ?? 'dark';
     
     _themeMode = themeString == 'light' ? ThemeMode.light : ThemeMode.dark;
+    _isDarkMode = _themeMode == ThemeMode.dark;
     _logoPath = logoString == 'light' ? lightLogoPath : darkLogoPath;
     
     notifyListeners();

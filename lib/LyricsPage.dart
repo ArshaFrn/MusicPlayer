@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'Model/Music.dart';
 import 'Model/User.dart';
-import 'utils/AudioController.dart';
+import 'package:provider/provider.dart';
+import 'utils/ThemeProvider.dart';
 
 class LyricsPage extends StatefulWidget {
   final Music music;
@@ -111,44 +112,50 @@ End of sample lyrics
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: GestureDetector(
-        onPanUpdate: (details) {
-          // Swipe left to go back to music player
-          if (details.delta.dx < -50) {
-            Navigator.pop(context);
-          }
-        },
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF1A1A1A), Color(0xFF0D0D0D), Colors.black],
-            ),
-          ),
-          child: SafeArea(
-            child: Column(
-              children: [
-                // App Bar with navigation arrows
-                _buildAppBar(),
-                
-                SizedBox(height: 30),
-                
-                // Lyrics content
-                Expanded(
-                  child: _buildLyricsContent(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return Scaffold(
+          backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.white,
+          body: GestureDetector(
+            onPanUpdate: (details) {
+              // Swipe left to go back to music player
+              if (details.delta.dx < -50) {
+                Navigator.pop(context);
+              }
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: themeProvider.isDarkMode 
+                    ? [Color(0xFF1A1A1A), Color(0xFF0D0D0D), Colors.black]
+                    : [Colors.white, Color(0xFFf8f9fa), Color(0xFFf1f3f4)],
                 ),
-              ],
+              ),
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // App Bar with navigation arrows
+                    _buildAppBar(themeProvider),
+                    
+                    SizedBox(height: 30),
+                    
+                    // Lyrics content
+                    Expanded(
+                      child: _buildLyricsContent(themeProvider),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildAppBar() {
+  Widget _buildAppBar(ThemeProvider themeProvider) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Row(
@@ -160,7 +167,7 @@ End of sample lyrics
             },
             icon: Icon(
               Icons.arrow_back,
-              color: Colors.white,
+              color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
               size: 30,
             ),
           ),
@@ -169,7 +176,7 @@ End of sample lyrics
             child: Text(
               'Lyrics',
               style: TextStyle(
-                color: Colors.white,
+                color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -184,7 +191,7 @@ End of sample lyrics
             },
             icon: Icon(
               Icons.arrow_forward,
-              color: Colors.white,
+              color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
               size: 30,
             ),
           ),
@@ -193,17 +200,22 @@ End of sample lyrics
     );
   }
 
-  Widget _buildLyricsContent() {
+  Widget _buildLyricsContent(ThemeProvider themeProvider) {
     if (_isLoadingLyrics) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: Color(0xFF8456FF)),
+            CircularProgressIndicator(
+              color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+            ),
             SizedBox(height: 20),
             Text(
               "Loading lyrics...",
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              style: TextStyle(
+                color: themeProvider.isDarkMode ? Colors.white : Colors.black87, 
+                fontSize: 16
+              ),
             ),
           ],
         ),
@@ -218,14 +230,14 @@ End of sample lyrics
             Icon(
               Icons.music_note,
               size: 64,
-              color: Colors.grey[600],
+              color: themeProvider.isDarkMode ? Colors.grey[600] : Colors.grey[400],
             ),
             SizedBox(height: 16),
             Text(
               "Lyrics not available",
               style: TextStyle(
                 fontSize: 18,
-                color: Colors.grey[400],
+                color: themeProvider.isDarkMode ? Colors.grey[400] : Colors.grey[600],
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -234,14 +246,14 @@ End of sample lyrics
               "We couldn't find lyrics for this song",
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey[600],
+                color: themeProvider.isDarkMode ? Colors.grey[600] : Colors.grey[500],
               ),
             ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _fetchLyrics,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF8456FF),
+                backgroundColor: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
                 foregroundColor: Colors.white,
               ),
               child: Text("Try Again"),
@@ -261,10 +273,12 @@ End of sample lyrics
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: themeProvider.isDarkMode 
+                  ? Colors.white.withOpacity(0.1)
+                  : Colors.black.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(15),
                 border: Border.all(
-                  color: Color(0xFF8456FF).withOpacity(0.3),
+                  color: (themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997)).withOpacity(0.3),
                   width: 1,
                 ),
               ),
@@ -273,7 +287,7 @@ End of sample lyrics
                   Text(
                     widget.music.title,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
@@ -283,7 +297,7 @@ End of sample lyrics
                   Text(
                     widget.music.artist.name,
                     style: TextStyle(
-                      color: Colors.white70,
+                      color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
                       fontSize: 16,
                     ),
                     textAlign: TextAlign.center,
@@ -293,7 +307,7 @@ End of sample lyrics
                     Text(
                       widget.music.album!.name,
                       style: TextStyle(
-                        color: Colors.white60,
+                        color: themeProvider.isDarkMode ? Colors.white60 : Colors.black45,
                         fontSize: 14,
                         fontStyle: FontStyle.italic,
                       ),
@@ -310,7 +324,7 @@ End of sample lyrics
             Text(
               _lyrics,
               style: TextStyle(
-                color: Colors.white,
+                color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
                 fontSize: 16,
                 height: 1.6,
                 letterSpacing: 0.5,

@@ -193,6 +193,62 @@ class _LibraryPageState extends State<LibraryPage> {
                         ],
                       ),
                     ),
+                    // Artist
+                    PopupMenuItem(
+                      value: filterOption.artistAsc,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.person,
+                            color: Colors.greenAccent,
+                            size: 20,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(child: Text('Artist')),
+                          Icon(
+                            application.isAscending(_selectedSort) &&
+                                    application.getBaseSort(_selectedSort) ==
+                                        filterOption.artistAsc
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            color:
+                                application.getBaseSort(_selectedSort) ==
+                                        filterOption.artistAsc
+                                    ? Colors.green
+                                    : Colors.grey,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Album
+                    PopupMenuItem(
+                      value: filterOption.albumAsc,
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.album,
+                            color: Colors.orangeAccent,
+                            size: 20,
+                          ),
+                          SizedBox(width: 10),
+                          Expanded(child: Text('Album')),
+                          Icon(
+                            application.isAscending(_selectedSort) &&
+                                    application.getBaseSort(_selectedSort) ==
+                                        filterOption.albumAsc
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            color:
+                                application.getBaseSort(_selectedSort) ==
+                                        filterOption.albumAsc
+                                    ? Colors.orange
+                                    : Colors.grey,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    ),
                     // Duration
                     PopupMenuItem(
                       value: filterOption.durationDesc,

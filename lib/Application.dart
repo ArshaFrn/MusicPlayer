@@ -26,6 +26,10 @@ enum filterOption {
   dateModifiedAsc,
   titleAsc,
   titleDesc,
+  artistAsc,
+  artistDesc,
+  albumAsc,
+  albumDesc,
   durationDesc,
   durationAsc,
   likeCountDesc,
@@ -439,6 +443,22 @@ class Application {
                   : b.title.toLowerCase().compareTo(a.title.toLowerCase()),
         );
         break;
+      case filterOption.artistAsc:
+        sorted.sort(
+          (a, b) =>
+              isAsc
+                  ? a.artist.name.toLowerCase().compareTo(b.artist.name.toLowerCase())
+                  : b.artist.name.toLowerCase().compareTo(a.artist.name.toLowerCase()),
+        );
+        break;
+      case filterOption.albumAsc:
+        sorted.sort(
+          (a, b) =>
+              isAsc
+                  ? (a.album?.name ?? '').toLowerCase().compareTo((b.album?.name ?? '').toLowerCase())
+                  : (b.album?.name ?? '').toLowerCase().compareTo((a.album?.name ?? '').toLowerCase()),
+        );
+        break;
       case filterOption.durationDesc:
         sorted.sort(
           (a, b) =>
@@ -472,6 +492,14 @@ class Application {
         return filterOption.titleDesc;
       case filterOption.titleDesc:
         return filterOption.titleAsc;
+      case filterOption.artistAsc:
+        return filterOption.artistDesc;
+      case filterOption.artistDesc:
+        return filterOption.artistAsc;
+      case filterOption.albumAsc:
+        return filterOption.albumDesc;
+      case filterOption.albumDesc:
+        return filterOption.albumAsc;
       case filterOption.durationDesc:
         return filterOption.durationAsc;
       case filterOption.durationAsc:
@@ -480,6 +508,8 @@ class Application {
         return filterOption.likeCountAsc;
       case filterOption.likeCountAsc:
         return filterOption.likeCountDesc;
+      default:
+        return filterOption.dateModifiedDesc; // Default fallback
     }
   }
 
@@ -492,12 +522,20 @@ class Application {
       case filterOption.titleAsc:
       case filterOption.titleDesc:
         return filterOption.titleAsc;
+      case filterOption.artistAsc:
+      case filterOption.artistDesc:
+        return filterOption.artistAsc;
+      case filterOption.albumAsc:
+      case filterOption.albumDesc:
+        return filterOption.albumAsc;
       case filterOption.durationDesc:
       case filterOption.durationAsc:
         return filterOption.durationDesc;
       case filterOption.likeCountDesc:
       case filterOption.likeCountAsc:
         return filterOption.likeCountDesc;
+      default:
+        return filterOption.dateModifiedDesc; // Default fallback
     }
   }
 
@@ -505,6 +543,8 @@ class Application {
     switch (sort) {
       case filterOption.dateModifiedAsc:
       case filterOption.titleAsc:
+      case filterOption.artistAsc:
+      case filterOption.albumAsc:
       case filterOption.durationAsc:
       case filterOption.likeCountAsc:
         return true;
