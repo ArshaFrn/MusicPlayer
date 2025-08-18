@@ -8,6 +8,7 @@ import 'utils/AudioController.dart';
 import 'PlayPage.dart';
 import 'package:provider/provider.dart';
 import 'utils/ThemeProvider.dart';
+import 'utils/SnackBarUtils.dart';
 
 
 class LibraryPage extends StatefulWidget {
@@ -918,56 +919,26 @@ class _LibraryPageState extends State<LibraryPage> {
   Future<void> _downloadMusic(Music music) async {
     try {
       // Show download progress
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Downloading ${music.title}..."),
-          backgroundColor: Colors.blue,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      SnackBarUtils.showInfoSnackBar(context, "Downloading ${music.title}...");
 
       // Implement download logic here
       // You can use the existing cache system or create a separate download manager
       final success = await application.downloadMusic(widget.user, music);
 
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("${music.title} downloaded successfully!"),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
-          ),
-        );
+        SnackBarUtils.showSuccessSnackBar(context, "${music.title} downloaded successfully!");
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Failed to download ${music.title}"),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 3),
-          ),
-        );
+        SnackBarUtils.showErrorSnackBar(context, "Failed to download ${music.title}");
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error downloading: $e"),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 3),
-        ),
-      );
+      SnackBarUtils.showErrorSnackBar(context, "Error downloading: $e");
     }
   }
 
   Future<void> _makeMusicPublic(Music music) async {
     try {
       // Show making public progress
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Making ${music.title} public..."),
-          backgroundColor: Colors.orange,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      SnackBarUtils.showWarningSnackBar(context, "Making ${music.title} public...");
 
       // Implement make public logic here
       final success = await application.makeMusicPublic(widget.user, music);
@@ -976,30 +947,12 @@ class _LibraryPageState extends State<LibraryPage> {
         setState(() {
           music.isPublic = true;
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("${music.title} is now public!"),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
-          ),
-        );
+        SnackBarUtils.showSuccessSnackBar(context, "${music.title} is now public!");
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Failed to make ${music.title} public"),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 3),
-          ),
-        );
+        SnackBarUtils.showErrorSnackBar(context, "Failed to make ${music.title} public");
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text("Error making public: $e"),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 3),
-        ),
-      );
+      SnackBarUtils.showErrorSnackBar(context, "Error making public: $e");
     }
   }
 
@@ -1045,13 +998,7 @@ class _LibraryPageState extends State<LibraryPage> {
       }
     } catch (e) {
       print('Error handling track tap: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error playing music'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      SnackBarUtils.showErrorSnackBar(context, 'Error playing music');
     }
   }
 }

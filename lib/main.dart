@@ -12,6 +12,7 @@ import 'package:second/AdminLoginPage.dart';
 import 'package:second/widgets/FingerprintLoginButton.dart';
 import 'package:second/utils/ThemeProvider.dart';
 import 'package:provider/provider.dart';
+import 'utils/SnackBarUtils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -124,26 +125,7 @@ class _LogInPage extends State<LogInPage> {
 
     // ! Show errors in a snack-bar
     if (errors.isNotEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            errors.join("\n"),
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w500,
-              fontSize: 16,
-            ),
-          ),
-          backgroundColor: Colors.red.withOpacity(0.65),
-          duration: Duration(seconds: 3),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(23),
-          ),
-          margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
-          padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-        ),
-      );
+      SnackBarUtils.showErrorSnackBar(context, errors.join("\n"));
       return false;
     }
     return true;
@@ -202,94 +184,24 @@ class _LogInPage extends State<LogInPage> {
         await prefs.setString('profileImageUrl', user.profileImageUrl ?? '');
 
         print("User logged in: ${user.username}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Login successful!",
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 4),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
-          ),
-        );
+        SnackBarUtils.showSuccessSnackBar(context, "Login successful!");
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => HomePage()),
         );
       } else if (response['status'] == "incorrectPassword") {
         print('Incorrect password!');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Incorrect password or username!",
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.red.withOpacity(0.65),
-            duration: Duration(seconds: 4),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
-          ),
-        );
+        SnackBarUtils.showErrorSnackBar(context, "Incorrect password or username!");
       } else if (response['status'] == "userNotFound") {
         print('User not found!');
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "Incorrect password or username!",
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.red.withOpacity(0.65),
-            duration: Duration(seconds: 4),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
-          ),
-        );
+        SnackBarUtils.showErrorSnackBar(context, "Incorrect password or username!");
       } else {
         print("Login failed: ${response['message'] ?? 'Unknown error'}");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              response['message'] ?? "Login failed!",
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: Colors.red.withOpacity(0.65),
-            duration: Duration(seconds: 4),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-            margin: EdgeInsets.only(left: 20, right: 20, bottom: 45),
-          ),
-        );
+        SnackBarUtils.showErrorSnackBar(context, response['message'] ?? "Login failed!");
       }
     } catch (e) {
       print("An error occurred during login: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "An error occurred: $e",
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.red.withOpacity(0.65),
-          duration: Duration(seconds: 4),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          margin: EdgeInsets.only(left: 20, right: 20, bottom: 35),
-        ),
-      );
+      SnackBarUtils.showErrorSnackBar(context, "An error occurred: $e");
     }
   }
 
@@ -502,8 +414,8 @@ class _LogInPage extends State<LogInPage> {
                                       }
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xFF671BAF),
-                                      // Deep dark purple
+                                      backgroundColor: Color(0xFFfc6997),
+                                      // Pink color for light theme
                                       foregroundColor: Colors.white,
                                       padding: EdgeInsets.symmetric(
                                         horizontal: 30,

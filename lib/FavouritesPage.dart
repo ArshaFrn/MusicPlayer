@@ -2,12 +2,20 @@ import 'package:flutter/material.dart';
 import 'Model/Music.dart';
 import 'Model/User.dart';
 import 'Application.dart';
+import 'package:provider/provider.dart';
+import 'utils/ThemeProvider.dart';
+import 'widgets/MiniPlayer.dart';
 
 
 class FavouritesPage extends StatefulWidget {
   final User user;
+  final VoidCallback? onBackPressed;
 
-  const FavouritesPage({super.key, required this.user});
+  const FavouritesPage({
+    super.key, 
+    required this.user,
+    this.onBackPressed,
+  });
 
   @override
   State<FavouritesPage> createState() => _FavouritesPageState();
@@ -56,25 +64,40 @@ class _FavouritesPageState extends State<FavouritesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+    final primaryColor = isDark ? Color(0xFF8456FF) : Color(0xFFfc6997);
+    
     return Scaffold(
+      backgroundColor: isDark ? Colors.black : Color(0xFFf8f5f0),
       appBar: AppBar(
+        backgroundColor: isDark ? Colors.black : Color(0xFFf8f5f0),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: primaryColor),
+          onPressed: () {
+            if (widget.onBackPressed != null) {
+              widget.onBackPressed!();
+            } else {
+              Navigator.of(context).pop();
+            }
+          },
+        ),
         title: Row(
           children: [
-            const Icon(Icons.favorite, color: Colors.white, size: 24),
+            Icon(Icons.favorite, color: primaryColor, size: 24),
             const SizedBox(width: 5),
-            const Text(
+            Text(
               "Favourites",
               style: TextStyle(
                 fontWeight: FontWeight.w500,
                 fontStyle: FontStyle.italic,
                 fontSize: 24,
-                color: Colors.white,
+                color: primaryColor,
                 letterSpacing: 1.2,
               ),
             ),
           ],
         ),
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0.1,
       ),
       body:
@@ -151,8 +174,52 @@ class _FavouritesPageState extends State<FavouritesPage> {
                               iconColor: application.getUniqueColor(music.id, context: context),
                             );
                           },
-                        ),
-              ),
+                                                 ),
+               ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          MiniPlayer(),
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return BottomNavigationBar(
+                selectedItemColor: themeProvider.isDarkMode ? Colors.white : Colors.white,
+                unselectedItemColor: themeProvider.isDarkMode ? Colors.white60 : Colors.white60,
+                backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                currentIndex: 3, // Profile index
+                onTap: (index) {
+                  if (widget.onBackPressed != null) {
+                    widget.onBackPressed!();
+                  }
+                },
+                type: BottomNavigationBarType.shifting,
+                items: [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.library_music),
+                    label: "Library",
+                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.playlist_play),
+                    label: "Playlists",
+                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.add_circle),
+                    label: "Add",
+                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person),
+                    label: "Profile",
+                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 

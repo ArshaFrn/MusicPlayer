@@ -6,6 +6,7 @@ import 'Application.dart';
 import 'PlaylistTracksPage.dart';
 import 'package:provider/provider.dart';
 import 'utils/ThemeProvider.dart';
+import 'utils/SnackBarUtils.dart';
 
 class PlaylistsPage extends StatefulWidget {
   final User user;
@@ -58,9 +59,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
     final description = _descriptionController.text.trim();
 
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a playlist name')),
-      );
+      SnackBarUtils.showErrorSnackBar(context, 'Please enter a playlist name');
       return;
     }
 
@@ -72,35 +71,35 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
       _nameController.clear();
       _descriptionController.clear();
       await _fetchPlaylistsFromServer();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Playlist created successfully')),
-      );
+      SnackBarUtils.showSuccessSnackBar(context, 'Playlist created successfully');
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response['message'] ?? 'Failed to create playlist'),
-        ),
-      );
+      SnackBarUtils.showErrorSnackBar(context, response['message'] ?? 'Failed to create playlist');
     }
   }
 
   Future<void> _showCreatePlaylistDialog() async {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDark = themeProvider.isDarkMode;
+    final primaryColor = isDark ? Color(0xFF8456FF) : Color(0xFFfc6997);
+    
     return showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
-            backgroundColor: Colors.grey.shade900.withOpacity(0.95),
+            backgroundColor: isDark 
+                ? Colors.grey.shade900.withOpacity(0.95)
+                : Colors.white.withOpacity(0.95),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
             ),
             title: Column(
               children: [
-                const Icon(Icons.playlist_add, size: 48, color: Colors.purple),
+                Icon(Icons.playlist_add, size: 48, color: primaryColor),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Create New Playlist',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: isDark ? Colors.white : Colors.black87,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
@@ -111,7 +110,9 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                   margin: const EdgeInsets.symmetric(vertical: 10),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.purple[300]!, Colors.pink[300]!],
+                      colors: isDark 
+                          ? [Colors.purple[300]!, Colors.pink[300]!]
+                          : [primaryColor, primaryColor.withOpacity(0.7)],
                     ),
                     borderRadius: BorderRadius.circular(1),
                   ),
@@ -119,27 +120,26 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
               ],
             ),
             content: Container(
-              //color
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   TextField(
                     controller: _nameController,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: isDark ? Colors.white : Colors.black87),
                     decoration: InputDecoration(
                       labelText: 'Playlist Name',
-                      labelStyle: const TextStyle(color: Color(0xFFEE00DA)),
+                      labelStyle: TextStyle(color: primaryColor),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                         borderSide: BorderSide(
-                          color: Colors.purple[200]!,
+                          color: isDark ? Colors.purple[200]! : primaryColor.withOpacity(0.6),
                           width: 1.4,
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: const BorderSide(
-                          color: Colors.purple,
+                        borderSide: BorderSide(
+                          color: primaryColor,
                           width: 1.6,
                         ),
                       ),
@@ -148,21 +148,21 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                   const SizedBox(height: 20),
                   TextField(
                     controller: _descriptionController,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: isDark ? Colors.white : Colors.black87),
                     decoration: InputDecoration(
                       labelText: 'Playlist Description',
-                      labelStyle: const TextStyle(color: Color(0xFFEE00DA)),
+                      labelStyle: TextStyle(color: primaryColor),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
                         borderSide: BorderSide(
-                          color: Colors.purple[200]!,
+                          color: isDark ? Colors.purple[200]! : primaryColor.withOpacity(0.6),
                           width: 1.4,
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
-                        borderSide: const BorderSide(
-                          color: Colors.purple,
+                        borderSide: BorderSide(
+                          color: primaryColor,
                           width: 1.6,
                         ),
                       ),
@@ -182,7 +182,9 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
               Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.purple[400]!, Colors.pink[300]!],
+                    colors: isDark 
+                        ? [Colors.purple[400]!, Colors.pink[300]!]
+                        : [primaryColor, primaryColor.withOpacity(0.8)],
                   ),
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -213,8 +215,12 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
     BuildContext context,
     Playlist playlist,
   ) async {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDark = themeProvider.isDarkMode;
+    
     final result = await showModalBottomSheet<String>(
       context: context,
+      backgroundColor: isDark ? Colors.grey[900] : Colors.white,
       builder:
           (context) => SafeArea(
             child: Column(
@@ -222,17 +228,20 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
               children: [
                 ListTile(
                   leading: Icon(Icons.playlist_play, color: Colors.blue),
-                  title: Text('Open Playlist'),
+                  title: Text('Open Playlist', 
+                    style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
                   onTap: () => Navigator.pop(context, 'open'),
                 ),
                 ListTile(
                   leading: Icon(Icons.delete, color: Colors.red),
-                  title: Text('Delete Playlist'),
+                  title: Text('Delete Playlist', 
+                    style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
                   onTap: () => Navigator.pop(context, 'delete'),
                 ),
                 ListTile(
                   leading: Icon(Icons.info_outline, color: Colors.grey),
-                  title: Text('Playlist Info'),
+                  title: Text('Playlist Info', 
+                    style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
                   onTap: () => Navigator.pop(context, 'info'),
                 ),
               ],
@@ -268,40 +277,29 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
           _playlists.remove(playlist);
           widget.user.playlists.remove(playlist);
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Playlist "${playlist.name}" deleted'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        SnackBarUtils.showSuccessSnackBar(context, 'Playlist "${playlist.name}" deleted');
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(response['message'] ?? 'Failed to delete playlist'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackBarUtils.showErrorSnackBar(context, response['message'] ?? 'Failed to delete playlist');
       }
     } catch (e) {
       print('Error deleting playlist: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error deleting playlist'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      SnackBarUtils.showErrorSnackBar(context, 'Error deleting playlist');
     }
   }
 
   void _showPlaylistInfo(BuildContext context, Playlist playlist) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDark = themeProvider.isDarkMode;
+    final primaryColor = isDark ? Color(0xFF8456FF) : Color(0xFFfc6997);
+    
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.75),
       builder:
           (context) => Dialog(
-            backgroundColor: Theme.of(
-              context,
-            ).colorScheme.surface.withOpacity(0.85),
+            backgroundColor: isDark 
+                ? Theme.of(context).colorScheme.surface.withOpacity(0.85)
+                : Colors.white.withOpacity(0.95),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(18),
             ),
@@ -325,7 +323,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                         'Playlist Details',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: isDark ? Colors.white : Colors.black87,
                           fontSize: 24,
                           letterSpacing: 1.1,
                         ),
@@ -333,16 +331,16 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                     ],
                   ),
                   SizedBox(height: 16),
-                  _detailsRow('Name', playlist.name),
-                  _detailsRow('Description', playlist.description),
-                  _detailsRow('Tracks', '${playlist.tracks.length} songs'),
+                  _detailsRow('Name', playlist.name, isDark),
+                  _detailsRow('Description', playlist.description, isDark),
+                  _detailsRow('Tracks', '${playlist.tracks.length} songs', isDark),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () => Navigator.pop(context),
                       child: Text(
                         'Close',
-                        style: TextStyle(color: Colors.purpleAccent),
+                        style: TextStyle(color: primaryColor),
                       ),
                     ),
                   ),
@@ -353,7 +351,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
     );
   }
 
-  Widget _detailsRow(String label, String value) {
+  Widget _detailsRow(String label, String value, bool isDark) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
@@ -364,7 +362,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
             style: TextStyle(
               fontWeight: FontWeight.w600,
               fontSize: 16,
-              color: Colors.white,
+              color: isDark ? Colors.white : Colors.black87,
             ),
           ),
           Expanded(
@@ -373,7 +371,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
               style: TextStyle(
                 fontWeight: FontWeight.w400,
                 fontSize: 16.5,
-                color: Colors.white,
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
           ),
@@ -391,32 +389,38 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+    final primaryColor = isDark ? Color(0xFF8456FF) : Color(0xFFfc6997);
+    
     return Scaffold(
+      backgroundColor: isDark ? Colors.black : Color(0xFFf8f5f0),
       appBar: AppBar(
-        title: const Row(
+        backgroundColor: isDark ? Colors.black : Color(0xFFf8f5f0),
+        title: Row(
           children: [
-            Icon(Icons.queue_music, size: 28),
+            Icon(Icons.queue_music, size: 28, color: primaryColor),
             SizedBox(width: 10),
-            Text('Your Playlists'),
+            Text('Your Playlists', 
+              style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
           ],
         ),
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: Icon(Icons.add, color: primaryColor),
             onPressed: _showCreatePlaylistDialog,
-            color: Colors.pinkAccent,
             iconSize: 30,
           ),
         ],
       ),
       body:
           _isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? Center(child: CircularProgressIndicator(color: primaryColor))
               : RefreshIndicator(
                 onRefresh: _refreshPlaylists,
-                color: Colors.purple,
-                backgroundColor: Colors.grey[900],
+                color: primaryColor,
+                backgroundColor: isDark ? Colors.grey[900] : Colors.white,
                 strokeWidth: 3,
                 child:
                     _playlists.isEmpty
@@ -428,23 +432,23 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.playlist_play,
                                       size: 64,
-                                      color: Colors.grey,
+                                      color: isDark ? Colors.grey : Colors.grey[600],
                                     ),
-                                    const SizedBox(height: 16),
-                                    const Text(
+                                    SizedBox(height: 16),
+                                    Text(
                                       'No playlists yet',
                                       style: TextStyle(
                                         fontSize: 18,
-                                        color: Colors.grey,
+                                        color: isDark ? Colors.grey : Colors.grey[600],
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
-                                    const Text(
+                                    SizedBox(height: 8),
+                                    Text(
                                       'Create a playlist to start organizing your music',
-                                      style: TextStyle(color: Colors.grey),
+                                      style: TextStyle(color: isDark ? Colors.grey : Colors.grey[600]),
                                     ),
                                   ],
                                 ),
@@ -459,43 +463,58 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
                             final color = Application.instance.getPlaylistColor(
                               playlist.id,
                             );
-                            return Container(
-                              margin: const EdgeInsets.fromLTRB(5, 10, 5, 2),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade900.withOpacity(0.4),
-                                borderRadius: BorderRadius.circular(18),
-                                border: Border.all(color: color, width: 2.2),
-                              ),
+                                                         return Container(
+                               margin: const EdgeInsets.fromLTRB(5, 10, 5, 2),
+                               decoration: BoxDecoration(
+                                 color: isDark 
+                                     ? Colors.grey.shade900.withOpacity(0.4)
+                                     : Colors.white.withOpacity(0.8),
+                                 borderRadius: BorderRadius.circular(18),
+                                 border: Border.all(
+                                   color: isDark ? color : primaryColor, 
+                                   width: 2.2
+                                 ),
+                                 boxShadow: isDark ? null : [
+                                   BoxShadow(
+                                     color: Colors.black.withOpacity(0.1),
+                                     blurRadius: 8,
+                                     offset: Offset(0, 2),
+                                   ),
+                                 ],
+                               ),
                               child: ListTile(
-                                leading: Icon(
-                                  Icons.playlist_play,
-                                  size: 26,
-                                  color: color,
-                                ),
-                                title: Text(
-                                  playlist.name,
-                                  style: TextStyle(
-                                    color: color,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 20,
-                                  ),
-                                ),
+                                                                 leading: Icon(
+                                   Icons.playlist_play,
+                                   size: 26,
+                                   color: isDark ? color : primaryColor,
+                                 ),
+                                                                 title: Text(
+                                   playlist.name,
+                                   style: TextStyle(
+                                     color: isDark ? color : primaryColor,
+                                     fontWeight: FontWeight.w600,
+                                     fontSize: 20,
+                                   ),
+                                 ),
                                 subtitle: Row(
                                   children: [
-                                    const SizedBox(width: 5),
+                                    SizedBox(width: 5),
                                     Text(
                                       playlist.description,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: Colors.white70,
+                                      style: TextStyle(
+                                        color: isDark ? Colors.white70 : Colors.black54,
                                       ),
                                     ),
                                   ],
                                 ),
                                 trailing: Text(
                                   '${playlist.tracks.length} tracks',
-                                  style: const TextStyle(fontSize: 15),
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: isDark ? Colors.white70 : Colors.black54,
+                                  ),
                                 ),
                                 onTap: () {
                                   Navigator.push(

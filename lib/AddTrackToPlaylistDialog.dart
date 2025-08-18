@@ -4,6 +4,8 @@ import 'Model/Playlist.dart';
 import 'Model/Music.dart';
 import 'TcpClient.dart';
 import 'Application.dart';
+import 'package:provider/provider.dart';
+import 'utils/ThemeProvider.dart';
 
 class AddTrackToPlaylistDialog extends StatefulWidget {
   final User user;
@@ -124,8 +126,15 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+    final primaryColor = isDark ? Color(0xFF8456FF) : Color(0xFFfc6997);
+    final playlistColor = isDark ? _application.getPlaylistColor(widget.playlist.id) : primaryColor;
+    
     return Dialog(
-      backgroundColor: Colors.grey.shade900.withOpacity(0.95),
+      backgroundColor: isDark 
+          ? Colors.grey.shade900.withOpacity(0.95)
+          : Colors.white.withOpacity(0.95),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         width: MediaQuery.of(context).size.width * 0.9,
@@ -136,7 +145,9 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.grey.shade800.withOpacity(0.5),
+                color: isDark 
+                    ? Colors.grey.shade800.withOpacity(0.5)
+                    : Colors.grey.shade100.withOpacity(0.5),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
@@ -146,7 +157,7 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
                 children: [
                   Icon(
                     Icons.add_circle,
-                    color: _application.getPlaylistColor(widget.playlist.id),
+                    color: playlistColor,
                     size: 28,
                   ),
                   SizedBox(width: 12),
@@ -160,22 +171,26 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
                           overflow: TextOverflow.ellipsis,
                           maxLines: 1,
                           style: TextStyle(
-                            color: _application.getPlaylistColor(
-                              widget.playlist.id,
-                            ),
+                            color: playlistColor,
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
                           'Select tracks from your library',
-                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                          style: TextStyle(
+                            color: isDark ? Colors.white70 : Colors.black54, 
+                            fontSize: 14
+                          ),
                         ),
                       ],
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.close, color: Colors.white70),
+                    icon: Icon(
+                      Icons.close, 
+                      color: isDark ? Colors.white70 : Colors.black54
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -195,21 +210,21 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
                             Icon(
                               Icons.music_note,
                               size: 64,
-                              color: Colors.grey,
+                              color: isDark ? Colors.grey : Colors.grey[600],
                             ),
                             SizedBox(height: 16),
                             Text(
                               'No tracks available to add',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: Colors.grey,
+                                color: isDark ? Colors.grey : Colors.grey[600],
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             Text(
                               'All your tracks are already in this playlist',
                               style: TextStyle(
-                                color: Colors.grey,
+                                color: isDark ? Colors.grey : Colors.grey[600],
                                 fontSize: 14,
                               ),
                               textAlign: TextAlign.center,
@@ -233,13 +248,15 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
                             title: Text(
                               track.title,
                               style: TextStyle(
-                                color: Colors.white,
+                                color: isDark ? Colors.white : Colors.black87,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                             subtitle: Text(
                               track.artist.name,
-                              style: TextStyle(color: Colors.white70),
+                              style: TextStyle(
+                                color: isDark ? Colors.white70 : Colors.black54
+                              ),
                             ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -250,16 +267,14 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
                                   ),
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.white70,
+                                    color: isDark ? Colors.white70 : Colors.black54,
                                   ),
                                 ),
                                 SizedBox(width: 8),
                                 IconButton(
                                   icon: Icon(
                                     Icons.add_circle_outline,
-                                    color: _application.getPlaylistColor(
-                                      widget.playlist.id,
-                                    ),
+                                    color: playlistColor,
                                   ),
                                   onPressed: () => _addTrackToPlaylist(track),
                                   tooltip: 'Add to playlist',

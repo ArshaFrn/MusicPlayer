@@ -5,6 +5,8 @@ import 'LibraryPage.dart';
 import 'PlaylistsPage.dart';
 import 'AddPage.dart';
 import 'ProfilePage.dart';
+import 'FavouritesPage.dart';
+import 'RecentlyPlayedPage.dart';
 import 'package:provider/provider.dart';
 import 'utils/ThemeProvider.dart';
 import 'widgets/MiniPlayer.dart';
@@ -21,6 +23,8 @@ class _HomePageState extends State<HomePage> {
   late User _user;
   late List<Widget> _pages;
   bool _isUserLoaded = false;
+  bool _showFavourites = false;
+  bool _showRecentlyPlayed = false;
 
   @override
   void initState() {
@@ -57,7 +61,22 @@ class _HomePageState extends State<HomePage> {
         LibraryPage(user: _user, onNavigateToPage: navigateToPage),
         PlaylistsPage(user: _user, onNavigateToPage: navigateToPage),
         AddPage(user: _user, onNavigateToPage: navigateToPage),
-        ProfilePage(user: _user, onNavigateToPage: navigateToPage),
+        ProfilePage(
+          user: _user, 
+          onNavigateToPage: navigateToPage,
+          onNavigateToFavourites: () {
+            setState(() {
+              _showFavourites = true;
+              _showRecentlyPlayed = false;
+            });
+          },
+          onNavigateToRecentlyPlayed: () {
+            setState(() {
+              _showRecentlyPlayed = true;
+              _showFavourites = false;
+            });
+          },
+        ),
       ];
       _isUserLoaded = true;
     });
@@ -75,8 +94,19 @@ class _HomePageState extends State<HomePage> {
   void navigateToPage(int pageIndex) {
     setState(() {
       _selectedIndex = pageIndex;
+      _showFavourites = false;
+      _showRecentlyPlayed = false;
     });
   }
+
+  void goBackToMainNavigation() {
+    setState(() {
+      _showFavourites = false;
+      _showRecentlyPlayed = false;
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -84,52 +114,69 @@ class _HomePageState extends State<HomePage> {
       return const Center(child: CircularProgressIndicator());
     }
 
-          return Scaffold(
-        body: IndexedStack(
+    // Determine which page to show
+    Widget currentPage;
+    if (_showFavourites) {
+      currentPage = FavouritesPage(
+        user: _user,
+        onBackPressed: () => goBackToMainNavigation(),
+      );
+    } else if (_showRecentlyPlayed) {
+      currentPage = RecentlyPlayedPage(
+        user: _user,
+        onBackPressed: () => goBackToMainNavigation(),
+      );
+    } else {
+      currentPage = IndexedStack(
         index: _selectedIndex,
         children: _pages,
-      ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          MiniPlayer(),
+      );
+    }
 
-          Consumer<ThemeProvider>(
-            builder: (context, themeProvider, child) {
-              return BottomNavigationBar(
-                selectedItemColor: themeProvider.isDarkMode ? Colors.white : Colors.white,
-                unselectedItemColor: themeProvider.isDarkMode ? Colors.white60 : Colors.white60,
-                backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
-                currentIndex: _selectedIndex,
-                onTap: _onItemTapped,
-                type: BottomNavigationBarType.shifting,
-                items: [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.library_music),
-                    label: "Library",
+    return Scaffold(
+      body: currentPage,
+      bottomNavigationBar: _showFavourites || _showRecentlyPlayed 
+        ? null 
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              MiniPlayer(),
+              Consumer<ThemeProvider>(
+                builder: (context, themeProvider, child) {
+                  return BottomNavigationBar(
+                    selectedItemColor: themeProvider.isDarkMode ? Colors.white : Colors.white,
+                    unselectedItemColor: themeProvider.isDarkMode ? Colors.white60 : Colors.white60,
                     backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.playlist_play),
-                    label: "Playlists",
-                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.add_circle),
-                    label: "Add",
-                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person),
-                    label: "Profile",
-                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
-                  ),
-                ],
-              );
-            },
+                    currentIndex: _selectedIndex,
+                    onTap: _onItemTapped,
+                    type: BottomNavigationBarType.shifting,
+                    items: [
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.library_music),
+                        label: "Library",
+                        backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.playlist_play),
+                        label: "Playlists",
+                        backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.add_circle),
+                        label: "Add",
+                        backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                      ),
+                      BottomNavigationBarItem(
+                        icon: Icon(Icons.person),
+                        label: "Profile",
+                        backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 }

@@ -18,15 +18,20 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'utils/ThemeProvider.dart';
 import 'controllers/ProfilePageController.dart';
+import 'utils/SnackBarUtils.dart';
 
 class ProfilePage extends StatefulWidget {
   final User user;
   final Function(int) onNavigateToPage;
+  final Function()? onNavigateToFavourites;
+  final Function()? onNavigateToRecentlyPlayed;
 
   const ProfilePage({
     super.key, 
     required User user, 
     required this.onNavigateToPage,
+    this.onNavigateToFavourites,
+    this.onNavigateToRecentlyPlayed,
   }) : user = user;
 
   @override
@@ -64,37 +69,13 @@ class _ProfilePage extends State<ProfilePage> {
         try {
           await _controller.pickImage();
           setState(() {});
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                "Profile picture updated!",
-                style: TextStyle(color: Colors.white),
-              ),
-              backgroundColor: Color(0xFF8456FF),
-              duration: Duration(seconds: 2),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
-            ),
-          );
+          SnackBarUtils.showSuccessSnackBar(context, "Profile picture updated!");
         } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                "Error updating profile picture: $e",
-                style: TextStyle(color: Colors.white),
-              ),
-              backgroundColor: Colors.red.withOpacity(0.65),
-              duration: Duration(seconds: 3),
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
-            ),
-          );
+          if (e.toString().contains("No new picture selected")) {
+            SnackBarUtils.showWarningSnackBar(context, "No new picture selected");
+          } else {
+            SnackBarUtils.showErrorSnackBar(context, "Error updating profile picture: $e");
+          }
         }
       },
       child: Container(
@@ -434,37 +415,9 @@ class _ProfilePage extends State<ProfilePage> {
     try {
       await _controller.updateUserInfo();
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Information updated successfully!",
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Color(0xFF8456FF),
-          duration: Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
-        ),
-      );
+      SnackBarUtils.showSuccessSnackBar(context, "Information updated successfully!");
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Error updating information: $e",
-            style: TextStyle(color: Colors.white),
-          ),
-          backgroundColor: Colors.red.withOpacity(0.65),
-          duration: Duration(seconds: 3),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
-        ),
-      );
+      SnackBarUtils.showErrorSnackBar(context, "Error updating information: $e");
     }
   }
 
@@ -596,57 +549,16 @@ class _ProfilePage extends State<ProfilePage> {
                           try {
                             await _controller.refreshProfileFromServer();
                             setState(() {});
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  "Profile refreshed successfully!",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                backgroundColor: Color(0xFF8456FF),
-                                duration: Duration(seconds: 2),
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
-                              ),
-                            );
+                            SnackBarUtils.showSuccessSnackBar(context, "Profile refreshed successfully!");
                           } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  "Error refreshing profile: $e",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                backgroundColor: Colors.red.withOpacity(0.65),
-                                duration: Duration(seconds: 3),
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
-                              ),
-                            );
+                            SnackBarUtils.showErrorSnackBar(context, "Error refreshing profile: $e");
                           }
                         } else if (value == 'contact_us') {
                           try {
                             _controller.contactUs();
+                            SnackBarUtils.showSuccessSnackBar(context, "Email app opened successfully! Please send your message to MusicAppShayan@gmail.com");
                           } catch (e) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  "Could not open email app",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                                backgroundColor: Colors.red.withOpacity(0.65),
-                                duration: Duration(seconds: 2),
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                margin: EdgeInsets.only(left: 20, right: 20, bottom: 20),
-                              ),
-                            );
+                            SnackBarUtils.showErrorSnackBar(context, "Could not open email app. Please contact us at: MusicAppShayan@gmail.com");
                           }
                         }
                       },
@@ -673,16 +585,32 @@ class _ProfilePage extends State<ProfilePage> {
                       // Navigate to library page with all songs
                       widget.onNavigateToPage(0); // Library page index
                     }),
-                    _buildActionSquare("Favorites", Icons.favorite, () {
-                      // Navigate to library and show favorites
-                      widget.onNavigateToPage(0);
-                      // You can add a parameter to show favorites filter
-                    }),
-                    _buildActionSquare("Recently\nPlayed", Icons.history, () {
-                      // Navigate to library and show recently played
-                      widget.onNavigateToPage(0);
-                      // You can add a parameter to show recently played filter
-                    }),
+                                         _buildActionSquare("Favorites", Icons.favorite, () {
+                       // Navigate to FavouritesPage with bottom navigation
+                       if (widget.onNavigateToFavourites != null) {
+                         widget.onNavigateToFavourites!();
+                       } else {
+                         Navigator.push(
+                           context,
+                           MaterialPageRoute(
+                             builder: (context) => FavouritesPage(user: widget.user),
+                           ),
+                         );
+                       }
+                     }),
+                     _buildActionSquare("Recently\nPlayed", Icons.history, () {
+                       // Navigate to RecentlyPlayedPage with bottom navigation
+                       if (widget.onNavigateToRecentlyPlayed != null) {
+                         widget.onNavigateToRecentlyPlayed!();
+                       } else {
+                         Navigator.push(
+                           context,
+                           MaterialPageRoute(
+                             builder: (context) => RecentlyPlayedPage(user: widget.user),
+                           ),
+                         );
+                       }
+                     }),
                   ],
                 ),
               ],

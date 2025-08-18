@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../utils/AudioController.dart';
 import '../Application.dart';
 import '../PlayPage.dart';
+import 'package:provider/provider.dart';
+import '../utils/ThemeProvider.dart';
 
 class MiniPlayer extends StatefulWidget {
   const MiniPlayer({super.key});
@@ -70,18 +72,34 @@ class _MiniPlayerState extends State<MiniPlayer> {
           ),
         );
       },
-      child: Container(
-        height: 70,
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.05),
-          border: Border(
-            top: BorderSide(color: Colors.purple.shade800, width: 1),
-            bottom: BorderSide(color: Colors.purple.shade800, width: 1),
-            left: BorderSide(color: Colors.purple.shade800, width: 1),
-            right: BorderSide(color: Colors.purple.shade800, width: 1),
-          ),
-          borderRadius: BorderRadius.all(Radius.circular(20)),
-        ),
+             child: Consumer<ThemeProvider>(
+         builder: (context, theme, child) {
+           return Container(
+             height: 70,
+             decoration: BoxDecoration(
+               color: theme.isDarkMode 
+                   ? Colors.black.withOpacity(0.05)
+                   : Color(0xFFfc6997).withOpacity(0.1),
+               border: Border(
+                 top: BorderSide(
+                   color: theme.isDarkMode ? Colors.purple.shade800 : Color(0xFFfc6997), 
+                   width: 1
+                 ),
+                 bottom: BorderSide(
+                   color: theme.isDarkMode ? Colors.purple.shade800 : Color(0xFFfc6997), 
+                   width: 1
+                 ),
+                 left: BorderSide(
+                   color: theme.isDarkMode ? Colors.purple.shade800 : Color(0xFFfc6997), 
+                   width: 1
+                 ),
+                 right: BorderSide(
+                   color: theme.isDarkMode ? Colors.purple.shade800 : Color(0xFFfc6997), 
+                   width: 1
+                 ),
+               ),
+               borderRadius: BorderRadius.all(Radius.circular(20)),
+             ),
         child: Row(
           children: [
             // Music Icon
@@ -98,16 +116,20 @@ class _MiniPlayerState extends State<MiniPlayer> {
             Expanded(
               child: Container(
                 margin: EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  currentTrack.title,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                                 child: Consumer<ThemeProvider>(
+                   builder: (context, theme, child) {
+                     return Text(
+                       currentTrack.title,
+                       style: TextStyle(
+                         color: theme.isDarkMode ? Colors.white : Colors.black87,
+                         fontSize: 17,
+                         fontWeight: FontWeight.w500,
+                       ),
+                       maxLines: 1,
+                       overflow: TextOverflow.ellipsis,
+                     );
+                   },
+                 ),
               ),
             ),
 
@@ -174,10 +196,12 @@ class _MiniPlayerState extends State<MiniPlayer> {
               constraints: BoxConstraints(),
             ),
 
-            SizedBox(width: 8),
-          ],
-        ),
-      ),
-    );
-  }
-}
+                         SizedBox(width: 8),
+           ],
+         ),
+           );
+         },
+       ),
+     );
+   }
+ }

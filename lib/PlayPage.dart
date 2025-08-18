@@ -9,6 +9,7 @@ import 'utils/AudioController.dart';
 
 import 'utils/ThemeProvider.dart';
 import 'package:provider/provider.dart';
+import 'utils/SnackBarUtils.dart';
 
 class PlayPage extends StatefulWidget {
   final Music music;
@@ -66,12 +67,7 @@ class _PlayPageState extends State<PlayPage> {
     } catch (e) {
       print('Error initializing playback: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error loading track: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        SnackBarUtils.showErrorSnackBar(context, 'Error loading track: $e');
       }
     }
   }
@@ -114,8 +110,6 @@ class _PlayPageState extends State<PlayPage> {
     }
   }
 
-
-
   Future<void> _extractAlbumArt() async {
     // Prevent multiple simultaneous extraction attempts
     if (_isExtractingAlbumArt) return;
@@ -147,10 +141,10 @@ class _PlayPageState extends State<PlayPage> {
           final imageData = picture.bytes;
 
           if (imageData != null && imageData.isNotEmpty) {
-                         setState(() {
-               _albumArtBytes = imageData;
-               _lastExtractedTrackId = currentTrackId;
-             });
+            setState(() {
+              _albumArtBytes = imageData;
+              _lastExtractedTrackId = currentTrackId;
+            });
 
             print(
               'Album art extracted and stored in memory for track: $currentTrackId',
@@ -158,18 +152,18 @@ class _PlayPageState extends State<PlayPage> {
           }
         } else {
           print('No album art found in metadata');
-                     setState(() {
-             _albumArtBytes = null;
-             _lastExtractedTrackId = currentTrackId;
-           });
+          setState(() {
+            _albumArtBytes = null;
+            _lastExtractedTrackId = currentTrackId;
+          });
         }
       }
     } catch (e) {
       print('Error extracting album art: $e');
-             setState(() {
-         _albumArtBytes = null;
-         _lastExtractedTrackId = _audioController.currentTrack?.id;
-       });
+      setState(() {
+        _albumArtBytes = null;
+        _lastExtractedTrackId = _audioController.currentTrack?.id;
+      });
     } finally {
       _isExtractingAlbumArt = false;
     }
@@ -190,12 +184,14 @@ class _PlayPageState extends State<PlayPage> {
         final currentTrack = _audioController.currentTrack;
         if (currentTrack == null) {
           return Scaffold(
-            backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.white,
+            backgroundColor:
+                themeProvider.isDarkMode ? Colors.black : Colors.white,
             body: Center(
               child: Text(
                 'No track selected',
                 style: TextStyle(
-                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87
+                  color:
+                      themeProvider.isDarkMode ? Colors.white : Colors.black87,
                 ),
               ),
             ),
@@ -210,46 +206,62 @@ class _PlayPageState extends State<PlayPage> {
             }
           },
           child: Scaffold(
-            backgroundColor: themeProvider.isDarkMode ? Colors.black : Colors.white,
+            backgroundColor:
+                themeProvider.isDarkMode ? Colors.black : Colors.white,
             body: Container(
               decoration: BoxDecoration(
-                gradient: themeProvider.isDarkMode
-                    ? LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Color(0xFF1A1A1A), Color(0xFF0D0D0D), Colors.black],
-                      )
-                    : LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.white, Colors.grey[50]!, Colors.grey[100]!],
-                      ),
+                gradient:
+                    themeProvider.isDarkMode
+                        ? LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Color(0xFF1A1A1A),
+                            Color(0xFF0D0D0D),
+                            Colors.black,
+                          ],
+                        )
+                        : LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.white,
+                            Colors.grey[50]!,
+                            Colors.grey[100]!,
+                          ],
+                        ),
               ),
               child: SafeArea(
                 child: Column(
                   children: [
-                    // App Bar
-                    _buildAppBar(themeProvider),
+                    // App Bar - Fixed at top
+                    Container(height: 80, child: _buildAppBar(themeProvider)),
 
-                    SizedBox(height: 30),
+                    // Album Art - Fixed size at top
+                    Container(height: 280, child: _buildAlbumArt(currentTrack)),
 
-                    // Album Art
-                    _buildAlbumArt(currentTrack),
+                    // Track Info - Flexible but with max height
+                    Container(
+                      height: 120,
+                      child: _buildTrackInfo(currentTrack, themeProvider),
+                    ),
 
-                    SizedBox(height: 37),
+                    // Spacer to push controls to bottom
+                    Expanded(child: SizedBox()),
 
-                    // Track Info
-                    _buildTrackInfo(currentTrack, themeProvider),
+                    // Progress Bar - Fixed at bottom
+                    Container(
+                      height: 80,
+                      child: _buildProgressBar(themeProvider),
+                    ),
 
-                    SizedBox(height: 40),
+                    // Control Buttons - Fixed at bottom
+                    Container(
+                      height: 120,
+                      child: _buildControlButtons(themeProvider),
+                    ),
 
-                    // Progress Bar
-                    _buildProgressBar(themeProvider),
-
-                    SizedBox(height: 50),
-
-                    // Control Buttons
-                    _buildControlButtons(themeProvider),
+                    SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -287,7 +299,6 @@ class _PlayPageState extends State<PlayPage> {
               textAlign: TextAlign.center,
             ),
           ),
-
         ],
       ),
     );
@@ -355,46 +366,61 @@ class _PlayPageState extends State<PlayPage> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 30),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Song title with responsive font size
-          LayoutBuilder(
-            builder: (context, constraints) {
-              return FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
+          Flexible(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                double fontSize = 27;
+                if (track.title.length > 30) fontSize = 22;
+                if (track.title.length > 50) fontSize = 18;
+                if (track.title.length > 70) fontSize = 16;
+
+                return Text(
                   track.title,
                   style: TextStyle(
-                    color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
-                    fontSize: 27,
+                    color:
+                        themeProvider.isDarkMode
+                            ? Colors.white
+                            : Colors.black87,
+                    fontSize: fontSize,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
-          SizedBox(height: 5),
+          SizedBox(height: 8),
           // Artist name with responsive font size
-          LayoutBuilder(
-            builder: (context, constraints) {
-              return FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
+          Flexible(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                double fontSize = 18;
+                if (track.artist.name.length > 25) fontSize = 16;
+                if (track.artist.name.length > 40) fontSize = 14;
+                if (track.artist.name.length > 60) fontSize = 12;
+
+                return Text(
                   track.artist.name,
                   style: TextStyle(
-                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
-                    fontSize: 18,
+                    color:
+                        themeProvider.isDarkMode
+                            ? Colors.white70
+                            : Colors.black54,
+                    fontSize: fontSize,
                     fontWeight: FontWeight.w400,
                   ),
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -405,13 +431,21 @@ class _PlayPageState extends State<PlayPage> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 30),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Progress Bar
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              activeTrackColor: themeProvider.isDarkMode ? Color(0xFFC300C3) : Color(0xFFfc6997),
-              inactiveTrackColor: themeProvider.isDarkMode ? Colors.white24 : Colors.black12,
-              thumbColor: themeProvider.isDarkMode ? Color(0xFF6E00B8) : Color(0xFFfc6997),
+              activeTrackColor:
+                  themeProvider.isDarkMode
+                      ? Color(0xFFC300C3)
+                      : Color(0xFFfc6997),
+              inactiveTrackColor:
+                  themeProvider.isDarkMode ? Colors.white24 : Colors.black12,
+              thumbColor:
+                  themeProvider.isDarkMode
+                      ? Color(0xFF6E00B8)
+                      : Color(0xFFfc6997),
               thumbShape: RoundSliderThumbShape(enabledThumbRadius: 8),
               overlayShape: RoundSliderOverlayShape(overlayRadius: 16),
               trackHeight: 4,
@@ -441,15 +475,21 @@ class _PlayPageState extends State<PlayPage> {
                 Text(
                   _formatDuration(_audioController.position),
                   style: TextStyle(
-                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54, 
-                    fontSize: 14
+                    color:
+                        themeProvider.isDarkMode
+                            ? Colors.white70
+                            : Colors.black54,
+                    fontSize: 14,
                   ),
                 ),
                 Text(
                   _formatDuration(_audioController.duration),
                   style: TextStyle(
-                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54, 
-                    fontSize: 14
+                    color:
+                        themeProvider.isDarkMode
+                            ? Colors.white70
+                            : Colors.black54,
+                    fontSize: 14,
                   ),
                 ),
               ],
@@ -463,122 +503,134 @@ class _PlayPageState extends State<PlayPage> {
   Widget _buildControlButtons(ThemeProvider themeProvider) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 40),
-      height: 80, // Fixed height for consistent positioning
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Previous Button
-          Container(
-            width: 60, // Fixed width
-            height: 60, // Fixed height
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: themeProvider.isDarkMode
-                    ? [
-                        Color(0xFF4B0082).withOpacity(0.75),
-                        Color(0xFF8B008B).withOpacity(0.95),
-                      ]
-                    : [
-                        Color(0xFFfc6997).withOpacity(0.75),
-                        Color(0xFFfc6997).withOpacity(0.95),
-                      ],
-              ),
-            ),
-            child: IconButton(
-              onPressed:
-                  _audioController.playlist.length > 1
-                      ? _audioController.previousTrack
-                      : null,
-              icon: Icon(
-                Icons.skip_previous,
-                color:
-                    _audioController.playlist.length > 1
-                        ? Colors.white
-                        : Colors.white38,
-                size: 35,
-              ),
-            ),
-          ),
-
-          // Play/Pause Button
-          Container(
-            width: 80, // Fixed width
-            height: 80, // Fixed height
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: themeProvider.isDarkMode
-                    ? [Color(0xFF8B008B), Color(0xFF4B0082)]
-                    : [Color(0xFFfc6997), Color(0xFFfc6997)],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: (themeProvider.isDarkMode ? Color(0xFF8B008B) : Color(0xFFfc6997)).withOpacity(0.4),
-                  blurRadius: 20,
-                  spreadRadius: 3,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              // Previous Button
+              Container(
+                width: 60, // Fixed width
+                height: 60, // Fixed height
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors:
+                        themeProvider.isDarkMode
+                            ? [
+                              Color(0xFF4B0082).withOpacity(0.75),
+                              Color(0xFF8B008B).withOpacity(0.95),
+                            ]
+                            : [
+                              Color(0xFFfc6997).withOpacity(0.75),
+                              Color(0xFFfc6997).withOpacity(0.95),
+                            ],
+                  ),
                 ),
-              ],
-            ),
-            child: IconButton(
-              onPressed:
-                  _audioController.isLoading
-                      ? null
-                      : _audioController.playPause,
-              icon:
-                  _audioController.isLoading
-                      ? SizedBox(
-                        width: 30,
-                        height: 30,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
-                          ),
-                        ),
-                      )
-                      : Icon(
-                        _audioController.isPlaying
-                            ? Icons.pause
-                            : Icons.play_arrow,
-                        color: Colors.white,
-                        size: 45,
-                      ),
-            ),
-          ),
+                child: IconButton(
+                  onPressed:
+                      _audioController.playlist.length > 1
+                          ? _audioController.previousTrack
+                          : null,
+                  icon: Icon(
+                    Icons.skip_previous,
+                    color:
+                        _audioController.playlist.length > 1
+                            ? Colors.white
+                            : Colors.white38,
+                    size: 35,
+                  ),
+                ),
+              ),
 
-          // Next Button
-          Container(
-            width: 60, // Fixed width
-            height: 60, // Fixed height
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: themeProvider.isDarkMode
-                    ? [
-                        Color(0xFF4B0082).withOpacity(0.75),
-                        Color(0xFF8B008B).withOpacity(0.95),
-                      ]
-                    : [
-                        Color(0xFFfc6997).withOpacity(0.75),
-                        Color(0xFFfc6997).withOpacity(0.95),
-                      ],
+              // Play/Pause Button
+              Container(
+                width: 80, // Fixed width
+                height: 80, // Fixed height
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors:
+                        themeProvider.isDarkMode
+                            ? [Color(0xFF8B008B), Color(0xFF4B0082)]
+                            : [Color(0xFFfc6997), Color(0xFFfc6997)],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (themeProvider.isDarkMode
+                              ? Color(0xFF8B008B)
+                              : Color(0xFFfc6997))
+                          .withOpacity(0.4),
+                      blurRadius: 20,
+                      spreadRadius: 3,
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  onPressed:
+                      _audioController.isLoading
+                          ? null
+                          : _audioController.playPause,
+                  icon:
+                      _audioController.isLoading
+                          ? SizedBox(
+                            width: 30,
+                            height: 30,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                themeProvider.isDarkMode
+                                    ? Color(0xFF8456FF)
+                                    : Color(0xFFfc6997),
+                              ),
+                            ),
+                          )
+                          : Icon(
+                            _audioController.isPlaying
+                                ? Icons.pause
+                                : Icons.play_arrow,
+                            color: Colors.white,
+                            size: 45,
+                          ),
+                ),
               ),
-            ),
-            child: IconButton(
-              onPressed:
-                  _audioController.playlist.length > 1
-                      ? _audioController.nextTrack
-                      : null,
-              icon: Icon(
-                Icons.skip_next,
-                color:
-                    _audioController.playlist.length > 1
-                        ? Colors.white
-                        : Colors.white38,
-                size: 35,
+
+              // Next Button
+              Container(
+                width: 60, // Fixed width
+                height: 60, // Fixed height
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors:
+                        themeProvider.isDarkMode
+                            ? [
+                              Color(0xFF4B0082).withOpacity(0.75),
+                              Color(0xFF8B008B).withOpacity(0.95),
+                            ]
+                            : [
+                              Color(0xFFfc6997).withOpacity(0.75),
+                              Color(0xFFfc6997).withOpacity(0.95),
+                            ],
+                  ),
+                ),
+                child: IconButton(
+                  onPressed:
+                      _audioController.playlist.length > 1
+                          ? _audioController.nextTrack
+                          : null,
+                  icon: Icon(
+                    Icons.skip_next,
+                    color:
+                        _audioController.playlist.length > 1
+                            ? Colors.white
+                            : Colors.white38,
+                    size: 35,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),

@@ -9,6 +9,8 @@ import 'utils/AudioController.dart';
 import 'utils/CacheManager.dart';
 import 'AddTrackToPlaylistDialog.dart';
 import 'widgets/MiniPlayer.dart';
+import 'package:provider/provider.dart';
+import 'utils/ThemeProvider.dart';
 
 class PlaylistTracksPage extends StatefulWidget {
   final User user;
@@ -290,10 +292,15 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
 
   @override
   Widget build(BuildContext context) {
-    final playlistColor = _application.getPlaylistColor(widget.playlist.id);
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDark = themeProvider.isDarkMode;
+    final primaryColor = isDark ? Color(0xFF8456FF) : Color(0xFFfc6997);
+    final playlistColor = isDark ? _application.getPlaylistColor(widget.playlist.id) : primaryColor;
 
     return Scaffold(
+      backgroundColor: isDark ? Colors.black : Color(0xFFf8f5f0),
       appBar: AppBar(
+        backgroundColor: isDark ? Colors.black : Color(0xFFf8f5f0),
         title: Row(
           children: [
             Icon(Icons.playlist_play, color: playlistColor, size: 28),
@@ -305,7 +312,7 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                   Text(
                     widget.playlist.name,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: isDark ? Colors.white : Colors.black87,
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
                     ),
@@ -313,7 +320,10 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                   ),
                   Text(
                     '${_tracks.length} tracks',
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                    style: TextStyle(
+                      color: isDark ? Colors.white70 : Colors.black54, 
+                      fontSize: 14
+                    ),
                   ),
                 ],
               ),
@@ -327,7 +337,6 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
             tooltip: 'Add Track to Playlist',
           ),
         ],
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         elevation: 0.1,
       ),
       body: Column(
@@ -338,8 +347,8 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                     ? Center(child: CircularProgressIndicator())
                     : RefreshIndicator(
                       onRefresh: _refreshPlaylist,
-                      color: Colors.purple,
-                      backgroundColor: Colors.grey[900],
+                      color: primaryColor,
+                      backgroundColor: isDark ? Colors.grey[900] : Colors.white,
                       strokeWidth: 3,
                       child:
                           _tracks.isEmpty
@@ -357,14 +366,14 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                                           Icon(
                                             Icons.playlist_play,
                                             size: 64,
-                                            color: Colors.grey,
+                                            color: isDark ? Colors.grey : Colors.grey[600],
                                           ),
                                           SizedBox(height: 16),
                                           Text(
                                             'No tracks in this playlist',
                                             style: TextStyle(
                                               fontSize: 18,
-                                              color: Colors.grey,
+                                              color: isDark ? Colors.grey : Colors.grey[600],
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
@@ -372,7 +381,7 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                                           Text(
                                             'Add some tracks to get started',
                                             style: TextStyle(
-                                              color: Colors.grey,
+                                              color: isDark ? Colors.grey : Colors.grey[600],
                                               fontSize: 14,
                                             ),
                                           ),
@@ -401,13 +410,15 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                                     title: Text(
                                       music.title,
                                       style: TextStyle(
-                                        color: Colors.white,
+                                        color: isDark ? Colors.white : Colors.black87,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                     subtitle: Text(
                                       music.artist.name,
-                                      style: TextStyle(color: Colors.white70),
+                                      style: TextStyle(
+                                        color: isDark ? Colors.white70 : Colors.black54
+                                      ),
                                     ),
                                     trailing: Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -418,7 +429,7 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                                           ),
                                           style: TextStyle(
                                             fontSize: 11,
-                                            color: Colors.white70,
+                                            color: isDark ? Colors.white70 : Colors.black54,
                                           ),
                                         ),
                                         SizedBox(width: 15),

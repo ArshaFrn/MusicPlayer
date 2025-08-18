@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'Model/User.dart';
 import 'TcpClient.dart';
+import 'package:provider/provider.dart';
+import 'utils/ThemeProvider.dart';
+import 'utils/SnackBarUtils.dart';
 
 class ChangePasswordPage extends StatefulWidget {
   final User user;
@@ -22,21 +25,11 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     final confirmPassword = _confirmPasswordController.text;
 
     if (newPassword != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('New passwords do not match!', style: TextStyle(color: Colors.white)),
-          backgroundColor: Colors.red.withOpacity(0.7),
-        ),
-      );
+      SnackBarUtils.showErrorSnackBar(context, 'New passwords do not match!');
       return;
     }
     if (newPassword.length < 8) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Password must be at least 8 characters.', style: TextStyle(color: Colors.white)),
-          backgroundColor: Colors.red.withOpacity(0.7),
-        ),
-      );
+      SnackBarUtils.showErrorSnackBar(context, 'Password must be at least 8 characters.');
       return;
     }
     setState(() { _isLoading = true; });
@@ -49,105 +42,106 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> {
     );
     setState(() { _isLoading = false; });
     if (response['status'] == 'passwordUpdateSuccess' || response['status'] == 'success') {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Password updated successfully!', style: TextStyle(color: Colors.white)),
-          backgroundColor: Color(0xFF8456FF),
-        ),
-      );
+      SnackBarUtils.showSuccessSnackBar(context, 'Password updated successfully!');
       Navigator.pop(context);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(response['message'] ?? 'Failed to update password', style: TextStyle(color: Colors.white)),
-          backgroundColor: Colors.red.withOpacity(0.7),
-        ),
-      );
+      SnackBarUtils.showErrorSnackBar(context, response['message'] ?? 'Failed to update password');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Change Password'),
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      backgroundColor: Colors.black,
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _oldPasswordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Old Password',
-                labelStyle: TextStyle(color: Colors.white70),
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.08),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Color(0xFF8456FF), width: 2),
+    return Consumer<ThemeProvider>(
+      builder: (context, theme, child) {
+        final isDark = theme.isDarkMode;
+        final primaryColor = isDark ? Color(0xFF8456FF) : Color(0xFFfc6997);
+        final backgroundColor = isDark ? Colors.black : Colors.white;
+        final textColor = isDark ? Colors.white : Colors.black87;
+        final labelColor = isDark ? Colors.white70 : Colors.black54;
+        final fillColor = isDark ? Colors.white.withOpacity(0.08) : Colors.grey.withOpacity(0.1);
+        
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('Change Password', style: TextStyle(color: textColor)),
+            backgroundColor: backgroundColor,
+            foregroundColor: textColor,
+            elevation: 0,
+          ),
+          backgroundColor: backgroundColor,
+          body: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TextField(
+                  controller: _oldPasswordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Old Password',
+                    labelStyle: TextStyle(color: labelColor),
+                    filled: true,
+                    fillColor: fillColor,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: primaryColor, width: 2),
+                    ),
+                  ),
+                  style: TextStyle(color: textColor),
                 ),
-              ),
-              style: TextStyle(color: Colors.white),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: _newPasswordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'New Password',
-                labelStyle: TextStyle(color: Colors.white70),
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.08),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Color(0xFF8456FF), width: 2),
+                SizedBox(height: 20),
+                TextField(
+                  controller: _newPasswordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'New Password',
+                    labelStyle: TextStyle(color: labelColor),
+                    filled: true,
+                    fillColor: fillColor,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: primaryColor, width: 2),
+                    ),
+                  ),
+                  style: TextStyle(color: textColor),
                 ),
-              ),
-              style: TextStyle(color: Colors.white),
-            ),
-            SizedBox(height: 20),
-            TextField(
-              controller: _confirmPasswordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Confirm New Password',
-                labelStyle: TextStyle(color: Colors.white70),
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.08),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide(color: Color(0xFF8456FF), width: 2),
+                SizedBox(height: 20),
+                TextField(
+                  controller: _confirmPasswordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm New Password',
+                    labelStyle: TextStyle(color: labelColor),
+                    filled: true,
+                    fillColor: fillColor,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: primaryColor, width: 2),
+                    ),
+                  ),
+                  style: TextStyle(color: textColor),
                 ),
-              ),
-              style: TextStyle(color: Colors.white),
+                SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: _isLoading ? null : _changePassword,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: _isLoading
+                      ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : Text('Change Password'),
+                ),
+              ],
             ),
-            SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _changePassword,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFF8456FF),
-                foregroundColor: Colors.white,
-                padding: EdgeInsets.symmetric(vertical: 16),
-                textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              child: _isLoading
-                  ? SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : Text('Change Password'),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

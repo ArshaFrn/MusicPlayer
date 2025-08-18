@@ -318,6 +318,9 @@ class ProfilePageController {
           isLoading = false;
           throw Exception(response['message'] ?? "Failed to upload profile picture");
         }
+      } else {
+        // No image selected - throw a specific exception for this case
+        throw Exception("No new picture selected");
       }
     } catch (e) {
       isLoading = false;

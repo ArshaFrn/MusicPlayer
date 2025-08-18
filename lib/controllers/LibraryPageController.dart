@@ -4,6 +4,7 @@ import '../Model/User.dart';
 import '../Application.dart';
 import '../TcpClient.dart';
 import '../PlayPage.dart';
+import '../utils/AudioController.dart';
 
 class LibraryPageController {
   final User user;
@@ -60,7 +61,7 @@ class LibraryPageController {
     selectedCategory = category;
   }
 
-  Future<void> onLikeTap(Music music) async {
+  Future<bool> onLikeTap(Music music) async {
     final success = await application.toggleLike(user, music);
     return success;
   }
@@ -68,7 +69,7 @@ class LibraryPageController {
   Future<void> onTrackTap(BuildContext context, Music music) async {
     try {
       // Check if the audio controller is already playing the same song
-      final audioController = application.cacheManager.audioController;
+      final audioController = AudioController.instance;
       if (audioController.hasTrack &&
           audioController.currentTrack!.id == music.id) {
         // The same song is already playing, navigate to PlayPage without reinitializing
