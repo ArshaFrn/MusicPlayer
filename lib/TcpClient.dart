@@ -1127,6 +1127,40 @@ class TcpClient {
     }
   }
 
+  /// Make music private
+  Future<Map<String, dynamic>> makeMusicPrivate(
+    String username,
+    int musicId,
+  ) async {
+    try {
+      final socket = await Socket.connect(serverAddress, serverPort);
+      print(
+        'Connected to: ${socket.remoteAddress.address}:${socket.remotePort}',
+      );
+
+      final payload = {"username": username, "musicId": musicId};
+
+      final request = {"Request": "makeMusicPrivate", "Payload": payload};
+
+      socket.write('${jsonEncode(request)}\n\n');
+      print("Request sent: ${jsonEncode(request)}");
+
+      final response =
+          await socket.cast<List<int>>().transform(const Utf8Decoder()).join();
+      socket.close();
+
+      if (response.isEmpty) {
+        return {"status": "error", "message": "Empty response from server"};
+      }
+
+      print('Raw response received: $response');
+      return jsonDecode(response);
+    } catch (e) {
+      print('Error making music private: $e');
+      return {"status": "error", "message": "Failed to connect to server: $e"};
+    }
+  }
+
   /// Get user's recently played songs
   Future<List<Music>> getRecentlyPlayedSongs(String username) async {
     try {

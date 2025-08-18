@@ -5,6 +5,8 @@ import 'package:second/TcpClient.dart';
 import 'main.dart';
 import 'package:second/HomePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import 'utils/ThemeProvider.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -417,11 +419,67 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context, listen: true);
+    final bool isDark = theme.isDarkMode;
+    final Color primaryColor = isDark ? Color(0xFF8456FF) : Color(0xFFfc6997);
+    final Color textColor = isDark ? Colors.white : Colors.black87;
+    final Color labelColor = isDark ? Colors.white70 : Colors.black54;
+    final Color fillColor = isDark ? Colors.white.withOpacity(0.15) : Colors.grey.withOpacity(0.1);
+    final Color borderColor = isDark ? Colors.white24 : Colors.grey.shade300;
+    final Color containerColor = isDark ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.95);
+
     return Scaffold(
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset('assets/images/LogInBG.jpg', fit: BoxFit.cover),
+            child: Container(
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(isDark ? 'assets/images/LogInBG.jpg' : 'assets/images/lightBG.jpg'),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+          // Theme toggle button (circular) in upper right corner
+          Positioned(
+            top: 50,
+            right: 20,
+            child: Consumer<ThemeProvider>(
+              builder: (context, theme, child) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: theme.isDarkMode
+                        ? Colors.black.withOpacity(0.3)
+                        : Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(
+                      color: theme.isDarkMode
+                          ? Color(0xFF8456FF)
+                          : Color(0xFFfc6997),
+                      width: 2,
+                    ),
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(25),
+                      onTap: () => theme.toggleTheme(),
+                      child: Padding(
+                        padding: EdgeInsets.all(12),
+                        child: Icon(
+                          theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                          color: theme.isDarkMode
+                              ? Color(0xFF8456FF)
+                              : Color(0xFFfc6997),
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
           Center(
             child: SingleChildScrollView(
@@ -433,8 +491,10 @@ class _SignUpPageState extends State<SignUpPage> {
                     // "Welcome to" in neon style
                     ShaderMask(
                       shaderCallback: (Rect bounds) {
-                        return const LinearGradient(
-                          colors: [Color(0xFFFF5AF7), Color(0xFF8456FF)],
+                        return LinearGradient(
+                          colors: isDark
+                              ? [Color(0xFF8456FF), Color(0xFFB388FF)]
+                              : [Color(0xFFfc6997), Color(0xFFf8f5f0)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ).createShader(bounds);
@@ -472,8 +532,10 @@ class _SignUpPageState extends State<SignUpPage> {
                     // * "Hertz" in neon style, centered
                     ShaderMask(
                       shaderCallback: (Rect bounds) {
-                        return const LinearGradient(
-                          colors: [Color(0xFFFF5AF7), Color(0xFF8456FF)],
+                        return LinearGradient(
+                          colors: isDark
+                              ? [Color(0xFF8456FF), Color(0xFFB388FF)]
+                              : [Color(0xFFfc6997), Color(0xFFf8f5f0)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ).createShader(bounds);
@@ -514,11 +576,11 @@ class _SignUpPageState extends State<SignUpPage> {
                       width: 350,
                       height: 480,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: containerColor,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
+                            color: (isDark ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(0.1)),
                             blurRadius: 20,
                             offset: Offset(0, 10),
                           ),
@@ -536,18 +598,18 @@ class _SignUpPageState extends State<SignUpPage> {
                                   SizedBox(height: 0),
                                   TextField(
                                     controller: _fullnameController,
-                                    style: TextStyle(color: Colors.white),
+                                    style: TextStyle(color: textColor),
                                     decoration: InputDecoration(
                                       prefixIcon: Icon(
                                         Icons.drive_file_rename_outline_sharp,
-                                        color: Colors.white70,
+                                        color: labelColor,
                                       ),
                                       hintText: 'Full Name',
                                       hintStyle: TextStyle(
-                                        color: Colors.white70,
+                                        color: labelColor,
                                       ),
                                       filled: true,
-                                      fillColor: Colors.white.withOpacity(0.15),
+                                      fillColor: fillColor,
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 18,
                                       ),
@@ -555,14 +617,14 @@ class _SignUpPageState extends State<SignUpPage> {
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: Colors.white24,
+                                          color: borderColor,
                                           width: 1.3,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: Color(0xFF8456FF),
+                                          color: primaryColor,
                                           width: 2,
                                         ),
                                       ),
@@ -578,34 +640,32 @@ class _SignUpPageState extends State<SignUpPage> {
                                     onTap: () {
                                       showUsernameRequirementsSnackBar(context);
                                     },
-                                    style: TextStyle(color: Colors.white),
+                                    style: TextStyle(color: textColor),
                                     decoration: InputDecoration(
                                       prefixIcon: Icon(
                                         Icons.person,
-                                        color: Colors.white70,
+                                        color: labelColor,
                                       ),
                                       hintText: 'Username',
                                       hintStyle: TextStyle(
-                                        color: Colors.white70,
+                                        color: labelColor,
                                         ),
                                       filled: true,
-                                      fillColor: Colors.white.withOpacity(0.15),
+                                      fillColor: fillColor,
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 18,
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: getBorderColor("Username"),
+                                          color: borderColor,
                                           width: 1.3,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: getFocusedBorderColor(
-                                            "Username",
-                                          ),
+                                          color: primaryColor,
                                           width: 2,
                                         ),
                                       ),
@@ -617,32 +677,32 @@ class _SignUpPageState extends State<SignUpPage> {
                                     onChanged: (value) {
                                       setState(() {});
                                     },
-                                    style: TextStyle(color: Colors.white),
+                                    style: TextStyle(color: textColor),
                                     decoration: InputDecoration(
                                       prefixIcon: Icon(
                                         Icons.email,
-                                        color: Colors.white70,
+                                        color: labelColor,
                                       ),
                                       hintText: 'Email Address',
                                       hintStyle: TextStyle(
-                                        color: Colors.white70,
+                                        color: labelColor,
                                       ),
                                       filled: true,
-                                      fillColor: Colors.white.withOpacity(0.15),
+                                      fillColor: fillColor,
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 18,
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: getBorderColor("Email"),
+                                          color: borderColor,
                                           width: 1.3,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: getFocusedBorderColor("Email"),
+                                          color: primaryColor,
                                           width: 2,
                                         ),
                                       ),
@@ -660,34 +720,32 @@ class _SignUpPageState extends State<SignUpPage> {
                                     onTap: () {
                                       showPasswordRequirementsSnackBar(context);
                                     },
-                                    style: TextStyle(color: Colors.white),
+                                    style: TextStyle(color: textColor),
                                     decoration: InputDecoration(
                                       prefixIcon: Icon(
                                         Icons.lock,
-                                        color: Colors.white70,
+                                        color: labelColor,
                                       ),
                                       hintText: 'Password',
                                       hintStyle: TextStyle(
-                                        color: Colors.white70,
+                                        color: labelColor,
                                       ),
                                       filled: true,
-                                      fillColor: Colors.white.withOpacity(0.15),
+                                      fillColor: fillColor,
                                       contentPadding: EdgeInsets.symmetric(
                                         vertical: 18,
                                       ),
                                       enabledBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: getBorderColor("Password"),
+                                          color: borderColor,
                                           width: 1.3,
                                         ),
                                       ),
                                       focusedBorder: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(14),
                                         borderSide: BorderSide(
-                                          color: getFocusedBorderColor(
-                                            "Password",
-                                          ),
+                                          color: primaryColor,
                                           width: 2,
                                         ),
                                       ),
@@ -701,8 +759,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                       }
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xFF671BAF),
-                                      // Deep dark purple
+                                      backgroundColor: primaryColor,
                                       foregroundColor: Colors.white,
                                       padding: EdgeInsets.symmetric(
                                         horizontal: 30,
@@ -721,8 +778,8 @@ class _SignUpPageState extends State<SignUpPage> {
                                         letterSpacing: 2,
                                         shadows: [
                                           Shadow(
-                                            blurRadius: 15,
-                                            color: Color(0xFF8456FF),
+                                            blurRadius: 12,
+                                            color: Color(0xFFfc6997),
                                             offset: Offset(1, 2),
                                           ),
                                         ],
@@ -736,7 +793,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                       Text(
                                         "Already have an account?",
                                         style: TextStyle(
-                                          color: Colors.white70,
+                                          color: labelColor,
                                           fontWeight: FontWeight.w500,
                                           fontSize: 16,
                                         ),
@@ -755,7 +812,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                         child: Text(
                                           "Log In",
                                           style: TextStyle(
-                                            color: Color(0xFFD644FF),
+                                            color: primaryColor,
                                             fontWeight: FontWeight.w500,
                                             fontSize: 16,
                                             decoration:
@@ -765,6 +822,7 @@ class _SignUpPageState extends State<SignUpPage> {
                                       ),
                                     ],
                                   ),
+                                  SizedBox(height: 8),
                                 ],
                               ),
                             ),

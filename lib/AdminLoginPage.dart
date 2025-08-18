@@ -328,7 +328,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                                     ElevatedButton(
                                       onPressed: _isLoading ? null : _login,
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: Color(0xFF671BAF),
+                                        backgroundColor: Color(0xFF8456FF),
                                         foregroundColor: Colors.white,
                                         padding: EdgeInsets.symmetric(
                                           horizontal: 30,
@@ -382,7 +382,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                                       child: Text(
                                         'User Login',
                                         style: TextStyle(
-                                          color: Color(0xFFD644FF),
+                                          color: Color(0xFF8456FF),
                                           fontWeight: FontWeight.bold,
                                           fontSize: 20,
                                           decoration: TextDecoration.underline,

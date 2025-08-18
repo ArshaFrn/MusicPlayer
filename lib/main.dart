@@ -414,8 +414,9 @@ class _LogInPage extends State<LogInPage> {
                                       }
                                     },
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color(0xFFfc6997),
-                                      // Pink color for light theme
+                                      backgroundColor: themeProvider.isDarkMode
+                                          ? Color(0xFF8456FF)
+                                          : Color(0xFFfc6997),
                                       foregroundColor: Colors.white,
                                       padding: EdgeInsets.symmetric(
                                         horizontal: 30,
@@ -467,7 +468,9 @@ class _LogInPage extends State<LogInPage> {
                                         child: Text(
                                           "Sign Up",
                                           style: TextStyle(
-                                            color: Color(0xFFD644FF),
+                                            color: themeProvider.isDarkMode
+                                                ? Color(0xFF8456FF)
+                                                : Color(0xFFfc6997),
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
                                             decoration:
@@ -495,7 +498,9 @@ class _LogInPage extends State<LogInPage> {
                                         child: Text(
                                           "Forgot Password?",
                                           style: TextStyle(
-                                            color: Color(0xFFD644FF),
+                                            color: themeProvider.isDarkMode
+                                                ? Color(0xFF8456FF)
+                                                : Color(0xFFfc6997),
                                             fontWeight: FontWeight.bold,
                                             fontSize: 16,
                                             decoration:
@@ -516,7 +521,9 @@ class _LogInPage extends State<LogInPage> {
                                         child: Text(
                                           "Admin?",
                                           style: TextStyle(
-                                            color: Color(0xFFF500FF),
+                                            color: themeProvider.isDarkMode
+                                                ? Color(0xFF8456FF)
+                                                : Color(0xFFfc6997),
                                             fontWeight: FontWeight.bold,
                                             fontSize: 17,
                                             decoration:

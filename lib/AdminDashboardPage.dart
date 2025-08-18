@@ -107,8 +107,27 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           ),
         ],
       ),
-      body: _buildContent(),
+      // Force dark appearance regardless of app theme
+      body: Theme(
+        data: ThemeData.dark().copyWith(
+          scaffoldBackgroundColor: Colors.black,
+          cardColor: Colors.grey[900],
+          appBarTheme: AppBarTheme(backgroundColor: Colors.grey[900]),
+          colorScheme: ColorScheme.dark(
+            primary: Color(0xFF8456FF),
+            secondary: Color(0xFF671BAF),
+            surface: Colors.grey[900]!,
+            background: Colors.black,
+            onPrimary: Colors.white,
+            onSecondary: Colors.white,
+            onSurface: Colors.white,
+            onBackground: Colors.white,
+          ),
+        ),
+        child: _buildContent(),
+      ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.grey[900],
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
@@ -424,6 +443,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                           ? (artistField['name']?.toString() ??
                               'Unknown Artist')
                           : (artistField?.toString() ?? 'Unknown Artist');
+                  final bool isPublic = (song['isPublic'] == true);
                   return ListTile(
                     title: Text(
                       song['title']?.toString() ?? 'Unknown',
@@ -433,13 +453,28 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
                       artistName,
                       style: TextStyle(color: Colors.grey[400]),
                     ),
-                    trailing:
-                        widget.admin.hasCapability(Capability.CHANGE_SONGS)
-                            ? IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _deleteMusic(song['id']),
-                            )
-                            : null,
+                    trailing: widget.admin.hasCapability(Capability.CHANGE_SONGS)
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  isPublic ? Icons.lock_open : Icons.lock,
+                                  color: isPublic ? Colors.greenAccent : Colors.amber,
+                                ),
+                                tooltip: isPublic ? 'Make Private' : 'Make Public',
+                                onPressed: () => _toggleMusicPublicity(
+                                  songId: song['id'],
+                                  isCurrentlyPublic: isPublic,
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _deleteMusic(song['id']),
+                              ),
+                            ],
+                          )
+                        : null,
                   );
                 },
               ),
@@ -452,6 +487,64 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
             ],
           ),
     );
+  }
+
+  // Toggle music public/private (admin)
+  Future<void> _toggleMusicPublicity({required int songId, required bool isCurrentlyPublic}) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.grey[900],
+        title: Text(
+          isCurrentlyPublic ? 'Make Private' : 'Make Public',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: Text(
+          isCurrentlyPublic
+              ? 'Are you sure you want to make this song private?'
+              : 'Are you sure you want to make this song public?',
+          style: TextStyle(color: Colors.grey[300]),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel', style: TextStyle(color: Colors.white)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              isCurrentlyPublic ? 'Make Private' : 'Make Public',
+              style: TextStyle(color: Colors.cyanAccent),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+        final response = isCurrentlyPublic
+            ? await tcpClient.makeMusicPrivate(widget.admin.username, songId)
+            : await tcpClient.makeMusicPublic(widget.admin.username, songId);
+
+        final successStatus = isCurrentlyPublic
+            ? 'makeMusicPrivateSuccess'
+            : 'makeMusicPublicSuccess';
+
+        if (response['status'] == successStatus) {
+          _showSuccessSnackBar(
+            isCurrentlyPublic ? 'Song is now private' : 'Song is now public',
+          );
+          Navigator.pop(context); // Close dialog
+          _showMusicList(); // Refresh list
+        } else {
+          _showErrorSnackBar(response['message'] ?? 'Operation failed');
+        }
+      } catch (e) {
+        _showErrorSnackBar('Error: ${e.toString()}');
+      }
+    }
   }
 
   // Network: Delete a user (with confirmation)
