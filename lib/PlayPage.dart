@@ -8,7 +8,7 @@ import 'Model/Music.dart';
 import 'Model/User.dart';
 import 'Application.dart';
 import 'utils/AudioController.dart';
-import 'LyricsPage.dart';
+
 import 'utils/ThemeProvider.dart';
 import 'package:provider/provider.dart';
 
@@ -266,19 +266,6 @@ class _PlayPageState extends State<PlayPage> {
 
         return GestureDetector(
           onPanUpdate: (details) {
-            // Swipe right to go to lyrics page
-            if (details.delta.dx > 50) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => LyricsPage(
-                    music: widget.music,
-                    user: widget.user,
-                    playlist: widget.playlist,
-                  ),
-                ),
-              );
-            }
             // Swipe down to minimize
             if (details.delta.dy > 50) {
               Navigator.pop(context);
@@ -362,26 +349,7 @@ class _PlayPageState extends State<PlayPage> {
               textAlign: TextAlign.center,
             ),
           ),
-          // Right arrow to go to lyrics page
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => LyricsPage(
-                    music: widget.music,
-                    user: widget.user,
-                    playlist: widget.playlist,
-                  ),
-                ),
-              );
-            },
-            icon: Icon(
-              Icons.arrow_forward,
-              color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
-              size: 30,
-            ),
-          ),
+
         ],
       ),
     );
@@ -557,11 +525,14 @@ class _PlayPageState extends State<PlayPage> {
   Widget _buildControlButtons(ThemeProvider themeProvider) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 40),
+      height: 80, // Fixed height for consistent positioning
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           // Previous Button
           Container(
+            width: 60, // Fixed width
+            height: 60, // Fixed height
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
@@ -594,6 +565,8 @@ class _PlayPageState extends State<PlayPage> {
 
           // Play/Pause Button
           Container(
+            width: 80, // Fixed width
+            height: 80, // Fixed height
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
@@ -638,6 +611,8 @@ class _PlayPageState extends State<PlayPage> {
 
           // Next Button
           Container(
+            width: 60, // Fixed width
+            height: 60, // Fixed height
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(

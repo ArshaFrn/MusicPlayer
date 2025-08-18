@@ -8,15 +8,15 @@ import 'utils/AudioController.dart';
 import 'PlayPage.dart';
 import 'package:provider/provider.dart';
 import 'utils/ThemeProvider.dart';
-import 'utils/ArtistImageService.dart';
+
 
 class LibraryPage extends StatefulWidget {
   final User user;
   final Function(int) onNavigateToPage;
 
   const LibraryPage({
-    super.key, 
-    required this.user, 
+    super.key,
+    required this.user,
     required this.onNavigateToPage,
   });
 
@@ -75,9 +75,9 @@ class _LibraryPageState extends State<LibraryPage> {
             return Row(
               children: [
                 Icon(
-                  Icons.library_music, 
-                  color: theme.isDarkMode ? Colors.white : Colors.black87, 
-                  size: 24
+                  Icons.library_music,
+                  color: theme.isDarkMode ? Colors.white : Colors.black87,
+                  size: 24,
                 ),
                 const SizedBox(width: 5),
                 Text(
@@ -98,229 +98,226 @@ class _LibraryPageState extends State<LibraryPage> {
           Consumer<ThemeProvider>(
             builder: (context, theme, child) {
               return IconButton(
-                icon: Icon(Icons.search, color: theme.isDarkMode ? Colors.white70 : Colors.black87),
+                icon: Icon(
+                  Icons.search,
+                  color: theme.isDarkMode ? Colors.white70 : Colors.black87,
+                ),
                 tooltip: "Search",
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => SearchPage(user: widget.user, onNavigateToPage: widget.onNavigateToPage),
+                      builder: (context) => SearchPage(
+                        user: widget.user,
+                        onNavigateToPage: widget.onNavigateToPage,
+                      ),
                     ),
                   );
                 },
               );
             },
           ),
-          Theme(
-            data: Theme.of(context).copyWith(
-              popupMenuTheme: PopupMenuThemeData(
-                color: Colors.black,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+          Consumer<ThemeProvider>(
+            builder: (context, theme, child) {
+              return PopupMenuButton<filterOption>(
+                icon: Icon(
+                  Icons.filter_list,
+                  color: theme.isDarkMode ? Colors.white70 : Colors.black87,
                 ),
+                tooltip: "Filter",
+                onSelected: (option) {
+                  setState(() {
+                    // If the same base sort is selected, toggle between ascending and descending
+                    if (application.getBaseSort(_selectedSort) ==
+                        application.getBaseSort(option)) {
+                      _selectedSort = application.getOppositeSort(_selectedSort);
+                    } else {
+                      _selectedSort = option;
+                    }
+                  });
+                },
+                itemBuilder: (context) => [
+                  // Date Modified
+                  PopupMenuItem(
+                    value: filterOption.dateModifiedDesc,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          color: Colors.purpleAccent,
+                          size: 20,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(child: Text('Date Modified')),
+                        Icon(
+                          application.isAscending(_selectedSort) &&
+                                  application.getBaseSort(_selectedSort) ==
+                                      filterOption.dateModifiedDesc
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          color: application.getBaseSort(_selectedSort) ==
+                                  filterOption.dateModifiedDesc
+                              ? Colors.purple
+                              : Colors.grey,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Title
+                  PopupMenuItem(
+                    value: filterOption.titleAsc,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.sort_by_alpha,
+                          color: Colors.blueAccent,
+                          size: 20,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(child: Text('Title')),
+                        Icon(
+                          application.isAscending(_selectedSort) &&
+                                  application.getBaseSort(_selectedSort) ==
+                                      filterOption.titleAsc
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          color: application.getBaseSort(_selectedSort) ==
+                                  filterOption.titleAsc
+                              ? Colors.blue
+                              : Colors.grey,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Artist
+                  PopupMenuItem(
+                    value: filterOption.artistAsc,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.person,
+                          color: Colors.greenAccent,
+                          size: 20,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(child: Text('Artist')),
+                        Icon(
+                          application.isAscending(_selectedSort) &&
+                                  application.getBaseSort(_selectedSort) ==
+                                      filterOption.artistAsc
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          color: application.getBaseSort(_selectedSort) ==
+                                  filterOption.artistAsc
+                              ? Colors.green
+                              : Colors.grey,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Album
+                  PopupMenuItem(
+                    value: filterOption.albumAsc,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.album,
+                          color: Colors.orangeAccent,
+                          size: 20,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(child: Text('Album')),
+                        Icon(
+                          application.isAscending(_selectedSort) &&
+                                  application.getBaseSort(_selectedSort) ==
+                                      filterOption.albumAsc
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          color: application.getBaseSort(_selectedSort) ==
+                                  filterOption.albumAsc
+                              ? Colors.orange
+                              : Colors.grey,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Duration
+                  PopupMenuItem(
+                    value: filterOption.durationDesc,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.timer,
+                          color: Colors.greenAccent,
+                          size: 20,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(child: Text('Duration')),
+                        Icon(
+                          application.isAscending(_selectedSort) &&
+                                  application.getBaseSort(_selectedSort) ==
+                                      filterOption.durationDesc
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          color: application.getBaseSort(_selectedSort) ==
+                                  filterOption.durationDesc
+                              ? Colors.green
+                              : Colors.grey,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Like Count
+                  PopupMenuItem(
+                    value: filterOption.likeCountDesc,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.favorite,
+                          color: Colors.redAccent,
+                          size: 20,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(child: Text('Like Count')),
+                        Icon(
+                          application.isAscending(_selectedSort) &&
+                                  application.getBaseSort(_selectedSort) ==
+                                      filterOption.likeCountDesc
+                              ? Icons.arrow_upward
+                              : Icons.arrow_downward,
+                          color: application.getBaseSort(_selectedSort) ==
+                                  filterOption.likeCountDesc
+                              ? Colors.red
+                              : Colors.grey,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+                offset: Offset(0, 46),
                 elevation: 17,
-                textStyle: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 17,
-                ),
-              ),
-            ),
-            child: PopupMenuButton<filterOption>(
-              icon: Icon(Icons.filter_list, color: Colors.white70),
-              tooltip: "Filter",
-              onSelected: (option) {
-                setState(() {
-                  // If the same base sort is selected, toggle between ascending and descending
-                  if (application.getBaseSort(_selectedSort) ==
-                      application.getBaseSort(option)) {
-                    _selectedSort = application.getOppositeSort(_selectedSort);
-                  } else {
-                    _selectedSort = option;
-                  }
-                });
-              },
-              itemBuilder:
-                  (context) => [
-                    // Date Modified
-                    PopupMenuItem(
-                      value: filterOption.dateModifiedDesc,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.calendar_today,
-                            color: Colors.purpleAccent,
-                            size: 20,
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(child: Text('Date Modified')),
-                          Icon(
-                            application.isAscending(_selectedSort) &&
-                                    application.getBaseSort(_selectedSort) ==
-                                        filterOption.dateModifiedDesc
-                                ? Icons.arrow_upward
-                                : Icons.arrow_downward,
-                            color:
-                                application.getBaseSort(_selectedSort) ==
-                                        filterOption.dateModifiedDesc
-                                    ? Colors.purple
-                                    : Colors.grey,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Title
-                    PopupMenuItem(
-                      value: filterOption.titleAsc,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.sort_by_alpha,
-                            color: Colors.blueAccent,
-                            size: 20,
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(child: Text('Title')),
-                          Icon(
-                            application.isAscending(_selectedSort) &&
-                                    application.getBaseSort(_selectedSort) ==
-                                        filterOption.titleAsc
-                                ? Icons.arrow_upward
-                                : Icons.arrow_downward,
-                            color:
-                                application.getBaseSort(_selectedSort) ==
-                                        filterOption.titleAsc
-                                    ? Colors.blue
-                                    : Colors.grey,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Artist
-                    PopupMenuItem(
-                      value: filterOption.artistAsc,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.person,
-                            color: Colors.greenAccent,
-                            size: 20,
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(child: Text('Artist')),
-                          Icon(
-                            application.isAscending(_selectedSort) &&
-                                    application.getBaseSort(_selectedSort) ==
-                                        filterOption.artistAsc
-                                ? Icons.arrow_upward
-                                : Icons.arrow_downward,
-                            color:
-                                application.getBaseSort(_selectedSort) ==
-                                        filterOption.artistAsc
-                                    ? Colors.green
-                                    : Colors.grey,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Album
-                    PopupMenuItem(
-                      value: filterOption.albumAsc,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.album,
-                            color: Colors.orangeAccent,
-                            size: 20,
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(child: Text('Album')),
-                          Icon(
-                            application.isAscending(_selectedSort) &&
-                                    application.getBaseSort(_selectedSort) ==
-                                        filterOption.albumAsc
-                                ? Icons.arrow_upward
-                                : Icons.arrow_downward,
-                            color:
-                                application.getBaseSort(_selectedSort) ==
-                                        filterOption.albumAsc
-                                    ? Colors.orange
-                                    : Colors.grey,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Duration
-                    PopupMenuItem(
-                      value: filterOption.durationDesc,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.timer,
-                            color: Colors.greenAccent,
-                            size: 20,
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(child: Text('Duration')),
-                          Icon(
-                            application.isAscending(_selectedSort) &&
-                                    application.getBaseSort(_selectedSort) ==
-                                        filterOption.durationDesc
-                                ? Icons.arrow_upward
-                                : Icons.arrow_downward,
-                            color:
-                                application.getBaseSort(_selectedSort) ==
-                                        filterOption.durationDesc
-                                    ? Colors.green
-                                    : Colors.grey,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Like Count
-                    PopupMenuItem(
-                      value: filterOption.likeCountDesc,
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.favorite,
-                            color: Colors.redAccent,
-                            size: 20,
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(child: Text('Like Count')),
-                          Icon(
-                            application.isAscending(_selectedSort) &&
-                                    application.getBaseSort(_selectedSort) ==
-                                        filterOption.likeCountDesc
-                                ? Icons.arrow_upward
-                                : Icons.arrow_downward,
-                            color:
-                                application.getBaseSort(_selectedSort) ==
-                                        filterOption.likeCountDesc
-                                    ? Colors.red
-                                    : Colors.grey,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-              offset: Offset(0, 46),
-              elevation: 17,
-              padding: EdgeInsets.symmetric(vertical: 6),
-            ),
+                padding: EdgeInsets.symmetric(vertical: 6),
+              );
+            },
           ),
-          IconButton(
-            icon: const Icon(Icons.storage, color: Colors.white70),
-            tooltip: "Cache Management",
-            onPressed: () {
-              application.showCacheManagementDialog(context, widget.user);
+          Consumer<ThemeProvider>(
+            builder: (context, theme, child) {
+              return IconButton(
+                icon: Icon(
+                  Icons.storage,
+                  color: theme.isDarkMode ? Colors.white70 : Colors.black87,
+                ),
+                tooltip: "Cache Management",
+                onPressed: () {
+                  application.showCacheManagementDialog(context, widget.user);
+                },
+              );
             },
           ),
         ],
@@ -342,15 +339,15 @@ class _LibraryPageState extends State<LibraryPage> {
                   itemBuilder: (context, index) {
                     final category = _categories[index];
                     final isSelected = _selectedCategory == category;
-                    
+
                     return Container(
                       margin: EdgeInsets.only(right: 12),
                       child: ChoiceChip(
                         label: Text(
                           category,
                           style: TextStyle(
-                            color: isSelected 
-                                ? Colors.white 
+                            color: isSelected
+                                ? Colors.white
                                 : (themeProvider.isDarkMode ? Colors.white70 : Colors.black54),
                             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                           ),
@@ -359,7 +356,7 @@ class _LibraryPageState extends State<LibraryPage> {
                         selectedColor: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
                         backgroundColor: Colors.transparent,
                         side: BorderSide(
-                          color: isSelected 
+                          color: isSelected
                               ? (themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997))
                               : (themeProvider.isDarkMode ? Colors.white30 : Colors.black26),
                           width: 1.5,
@@ -382,9 +379,9 @@ class _LibraryPageState extends State<LibraryPage> {
             child: _isLoading
                 ? Center(child: CircularProgressIndicator())
                 : RefreshIndicator(
-                  onRefresh: _fetchTracksFromServer,
-                  child: _buildCategoryContent(tracks),
-                ),
+                    onRefresh: _fetchTracksFromServer,
+                    child: _buildCategoryContent(tracks),
+                  ),
           ),
         ],
       ),
@@ -411,7 +408,10 @@ class _LibraryPageState extends State<LibraryPage> {
       return ListView(
         children: [
           SizedBox(
-            height: MediaQuery.of(context).size.height * 0.7,
+            height: MediaQuery
+                .of(context)
+                .size
+                .height * 0.7,
             child: Center(
               child: Consumer<ThemeProvider>(
                 builder: (context, themeProvider, child) {
@@ -419,7 +419,8 @@ class _LibraryPageState extends State<LibraryPage> {
                     "No tracks available :(\nPlease add some music to your library",
                     style: TextStyle(
                       fontSize: 19,
-                      color: themeProvider.isDarkMode ? Colors.blueGrey : Colors.blueGrey[600],
+                      color: themeProvider.isDarkMode ? Colors.blueGrey : Colors
+                          .blueGrey[600],
                       fontWeight: FontWeight.bold,
                       height: 1.9,
                     ),
@@ -445,18 +446,21 @@ class _LibraryPageState extends State<LibraryPage> {
               onLongPress: () => _onTrackLongPress(context, music),
               leading: Icon(
                 Icons.music_note,
-                color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(
+                    0xFFfc6997),
               ),
               title: Text(
                 music.title,
                 style: TextStyle(
-                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                  color: themeProvider.isDarkMode ? Colors.white : Colors
+                      .black87,
                 ),
               ),
               subtitle: Text(
                 music.artist.name,
                 style: TextStyle(
-                  color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                  color: themeProvider.isDarkMode ? Colors.white70 : Colors
+                      .black54,
                 ),
               ),
               trailing: Row(
@@ -466,22 +470,26 @@ class _LibraryPageState extends State<LibraryPage> {
                     application.formatDuration(music.durationInSeconds),
                     style: TextStyle(
                       fontSize: 11,
-                      color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                      color: themeProvider.isDarkMode ? Colors.white70 : Colors
+                          .black54,
                     ),
                   ),
                   SizedBox(width: 15),
                   AnimatedSwitcher(
                     duration: Duration(milliseconds: 400),
-                    transitionBuilder: (child, animation) => ScaleTransition(
-                      scale: animation,
-                      child: child,
-                    ),
+                    transitionBuilder: (child, animation) =>
+                        ScaleTransition(
+                          scale: animation,
+                          child: child,
+                        ),
                     child: GestureDetector(
                       key: ValueKey<bool>(isLiked),
                       onTap: () => _onLikeTap(music),
                       child: Icon(
                         isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                        color: themeProvider.isDarkMode
+                            ? Color(0xFF8456FF)
+                            : Color(0xFFfc6997),
                         size: 25,
                       ),
                     ),
@@ -513,8 +521,9 @@ class _LibraryPageState extends State<LibraryPage> {
             return Text(
               "No artists found",
               style: TextStyle(
-                fontSize: 18, 
-                color: themeProvider.isDarkMode ? Colors.grey : Colors.grey[600]
+                  fontSize: 18,
+                  color: themeProvider.isDarkMode ? Colors.grey : Colors
+                      .grey[600]
               ),
             );
           },
@@ -527,55 +536,65 @@ class _LibraryPageState extends State<LibraryPage> {
       itemBuilder: (context, index) {
         final artistName = artistGroups.keys.elementAt(index);
         final artistTracks = artistGroups[artistName]!;
-        
+
         return Consumer<ThemeProvider>(
           builder: (context, themeProvider, child) {
             return ExpansionTile(
               leading: CircleAvatar(
                 radius: 25,
-                backgroundColor: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
-                child: ClipOval(
-                  child: _getArtistImage(artistName),
-                ),
+                backgroundColor: themeProvider.isDarkMode
+                    ? Color(0xFF8456FF)
+                    : Color(0xFFfc6997),
+                child: _getDefaultArtistAvatar(artistName),
               ),
               title: Text(
                 artistName,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                  color: themeProvider.isDarkMode ? Colors.white : Colors
+                      .black87,
                 ),
               ),
               subtitle: Text(
                 "${artistTracks.length} tracks",
                 style: TextStyle(
-                  color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                  color: themeProvider.isDarkMode ? Colors.white70 : Colors
+                      .black54,
                 ),
               ),
-              children: artistTracks.map((track) => ListTile(
-                leading: Icon(
-                  Icons.music_note,
-                  color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
-                ),
-                title: Text(
-                  track.title,
-                  style: TextStyle(
-                    color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
-                  ),
-                ),
-                subtitle: Text(
-                  track.album?.name ?? 'Unknown Album',
-                  style: TextStyle(
-                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
-                  ),
-                ),
-                trailing: Text(
-                  application.formatDuration(track.durationInSeconds),
-                  style: TextStyle(
-                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
-                  ),
-                ),
-                onTap: () => _onTrackTap(context, track),
-              )).toList(),
+              children: artistTracks.map((track) =>
+                  ListTile(
+                    leading: Icon(
+                      Icons.music_note,
+                      color: themeProvider.isDarkMode
+                          ? Color(0xFF8456FF)
+                          : Color(0xFFfc6997),
+                    ),
+                    title: Text(
+                      track.title,
+                      style: TextStyle(
+                        color: themeProvider.isDarkMode ? Colors.white : Colors
+                            .black87,
+                      ),
+                    ),
+                    subtitle: Text(
+                      track.album?.name ?? 'Unknown Album',
+                      style: TextStyle(
+                        color: themeProvider.isDarkMode
+                            ? Colors.white70
+                            : Colors.black54,
+                      ),
+                    ),
+                    trailing: Text(
+                      application.formatDuration(track.durationInSeconds),
+                      style: TextStyle(
+                        color: themeProvider.isDarkMode
+                            ? Colors.white70
+                            : Colors.black54,
+                      ),
+                    ),
+                    onTap: () => _onTrackTap(context, track),
+                  )).toList(),
             );
           },
         );
@@ -583,14 +602,6 @@ class _LibraryPageState extends State<LibraryPage> {
     );
   }
 
-  Widget _getArtistImage(String artistName) {
-    // Use the new ArtistImageWidget for dynamic artist images
-    return ArtistImageWidget(
-      artistName: artistName,
-      size: 50,
-      errorBuilder: (context, artistName) => _getDefaultArtistAvatar(artistName),
-    );
-  }
 
   Widget _getDefaultArtistAvatar(String artistName) {
     return Consumer<ThemeProvider>(
@@ -599,14 +610,15 @@ class _LibraryPageState extends State<LibraryPage> {
           width: 50,
           height: 50,
           decoration: BoxDecoration(
-            color: application.getUniqueColor(artistName.hashCode, context: context),
+            color: application.getUniqueColor(
+                artistName.hashCode, context: context),
             shape: BoxShape.circle,
           ),
           child: Center(
             child: Text(
               artistName[0].toUpperCase(),
               style: TextStyle(
-                color: Colors.white, 
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
               ),
@@ -635,8 +647,9 @@ class _LibraryPageState extends State<LibraryPage> {
             return Text(
               "No albums found",
               style: TextStyle(
-                fontSize: 18, 
-                color: themeProvider.isDarkMode ? Colors.grey : Colors.grey[600]
+                  fontSize: 18,
+                  color: themeProvider.isDarkMode ? Colors.grey : Colors
+                      .grey[600]
               ),
             );
           },
@@ -649,14 +662,16 @@ class _LibraryPageState extends State<LibraryPage> {
       itemBuilder: (context, index) {
         final albumName = albumGroups.keys.elementAt(index);
         final albumTracks = albumGroups[albumName]!;
-        
+
         return Consumer<ThemeProvider>(
           builder: (context, themeProvider, child) {
             return ExpansionTile(
               leading: CircleAvatar(
-                backgroundColor: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                backgroundColor: themeProvider.isDarkMode
+                    ? Color(0xFF8456FF)
+                    : Color(0xFFfc6997),
                 child: Icon(
-                  Icons.album, 
+                  Icons.album,
                   color: Colors.white,
                   size: 30,
                 ),
@@ -665,40 +680,50 @@ class _LibraryPageState extends State<LibraryPage> {
                 albumName,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                  color: themeProvider.isDarkMode ? Colors.white : Colors
+                      .black87,
                 ),
               ),
               subtitle: Text(
                 "${albumTracks.length} tracks",
                 style: TextStyle(
-                  color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                  color: themeProvider.isDarkMode ? Colors.white70 : Colors
+                      .black54,
                 ),
               ),
-              children: albumTracks.map((track) => ListTile(
-                leading: Icon(
-                  Icons.music_note,
-                  color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
-                ),
-                title: Text(
-                  track.title,
-                  style: TextStyle(
-                    color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
-                  ),
-                ),
-                subtitle: Text(
-                  track.artist.name,
-                  style: TextStyle(
-                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
-                  ),
-                ),
-                trailing: Text(
-                  application.formatDuration(track.durationInSeconds),
-                  style: TextStyle(
-                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
-                  ),
-                ),
-                onTap: () => _onTrackTap(context, track),
-              )).toList(),
+              children: albumTracks.map((track) =>
+                  ListTile(
+                    leading: Icon(
+                      Icons.music_note,
+                      color: themeProvider.isDarkMode
+                          ? Color(0xFF8456FF)
+                          : Color(0xFFfc6997),
+                    ),
+                    title: Text(
+                      track.title,
+                      style: TextStyle(
+                        color: themeProvider.isDarkMode ? Colors.white : Colors
+                            .black87,
+                      ),
+                    ),
+                    subtitle: Text(
+                      track.artist.name,
+                      style: TextStyle(
+                        color: themeProvider.isDarkMode
+                            ? Colors.white70
+                            : Colors.black54,
+                      ),
+                    ),
+                    trailing: Text(
+                      application.formatDuration(track.durationInSeconds),
+                      style: TextStyle(
+                        color: themeProvider.isDarkMode
+                            ? Colors.white70
+                            : Colors.black54,
+                      ),
+                    ),
+                    onTap: () => _onTrackTap(context, track),
+                  )).toList(),
             );
           },
         );
@@ -724,8 +749,9 @@ class _LibraryPageState extends State<LibraryPage> {
             return Text(
               "No tracks found",
               style: TextStyle(
-                fontSize: 18, 
-                color: themeProvider.isDarkMode ? Colors.grey : Colors.grey[600]
+                  fontSize: 18,
+                  color: themeProvider.isDarkMode ? Colors.grey : Colors
+                      .grey[600]
               ),
             );
           },
@@ -734,23 +760,26 @@ class _LibraryPageState extends State<LibraryPage> {
     }
 
     // Sort years in descending order
-    final sortedYears = yearGroups.keys.toList()..sort((a, b) => b.compareTo(a));
+    final sortedYears = yearGroups.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
 
     return ListView.builder(
       itemCount: sortedYears.length,
       itemBuilder: (context, index) {
         final year = sortedYears[index];
         final yearTracks = yearGroups[year]!;
-        
+
         return Consumer<ThemeProvider>(
           builder: (context, themeProvider, child) {
             return ExpansionTile(
               leading: CircleAvatar(
-                backgroundColor: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                backgroundColor: themeProvider.isDarkMode
+                    ? Color(0xFF8456FF)
+                    : Color(0xFFfc6997),
                 child: Text(
                   year.toString(),
                   style: TextStyle(
-                    color: Colors.white, 
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -760,40 +789,51 @@ class _LibraryPageState extends State<LibraryPage> {
                 year.toString(),
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                  color: themeProvider.isDarkMode ? Colors.white : Colors
+                      .black87,
                 ),
               ),
               subtitle: Text(
                 "${yearTracks.length} tracks",
                 style: TextStyle(
-                  color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                  color: themeProvider.isDarkMode ? Colors.white70 : Colors
+                      .black54,
                 ),
               ),
-              children: yearTracks.map((track) => ListTile(
-                leading: Icon(
-                  Icons.music_note,
-                  color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
-                ),
-                title: Text(
-                  track.title,
-                  style: TextStyle(
-                    color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
-                  ),
-                ),
-                subtitle: Text(
-                  "${track.artist.name} • ${track.album?.name ?? 'Unknown Album'}",
-                  style: TextStyle(
-                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
-                  ),
-                ),
-                trailing: Text(
-                  application.formatDuration(track.durationInSeconds),
-                  style: TextStyle(
-                    color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
-                  ),
-                ),
-                onTap: () => _onTrackTap(context, track),
-              )).toList(),
+              children: yearTracks.map((track) =>
+                  ListTile(
+                    leading: Icon(
+                      Icons.music_note,
+                      color: themeProvider.isDarkMode
+                          ? Color(0xFF8456FF)
+                          : Color(0xFFfc6997),
+                    ),
+                    title: Text(
+                      track.title,
+                      style: TextStyle(
+                        color: themeProvider.isDarkMode ? Colors.white : Colors
+                            .black87,
+                      ),
+                    ),
+                    subtitle: Text(
+                      "${track.artist.name} • ${track.album?.name ??
+                          'Unknown Album'}",
+                      style: TextStyle(
+                        color: themeProvider.isDarkMode
+                            ? Colors.white70
+                            : Colors.black54,
+                      ),
+                    ),
+                    trailing: Text(
+                      application.formatDuration(track.durationInSeconds),
+                      style: TextStyle(
+                        color: themeProvider.isDarkMode
+                            ? Colors.white70
+                            : Colors.black54,
+                      ),
+                    ),
+                    onTap: () => _onTrackTap(context, track),
+                  )).toList(),
             );
           },
         );
@@ -805,7 +845,8 @@ class _LibraryPageState extends State<LibraryPage> {
     final result = await showModalBottomSheet<String>(
       context: context,
       builder:
-          (context) => SafeArea(
+          (context) =>
+          SafeArea(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -888,7 +929,7 @@ class _LibraryPageState extends State<LibraryPage> {
       // Implement download logic here
       // You can use the existing cache system or create a separate download manager
       final success = await application.downloadMusic(widget.user, music);
-      
+
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -930,7 +971,7 @@ class _LibraryPageState extends State<LibraryPage> {
 
       // Implement make public logic here
       final success = await application.makeMusicPublic(widget.user, music);
-      
+
       if (success) {
         setState(() {
           music.isPublic = true;
@@ -981,7 +1022,8 @@ class _LibraryPageState extends State<LibraryPage> {
           context,
           MaterialPageRoute(
             builder:
-                (context) => PlayPage(
+                (context) =>
+                PlayPage(
                   music: music,
                   user: widget.user,
                   playlist: widget.user.tracks,
