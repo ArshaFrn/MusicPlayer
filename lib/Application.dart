@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'Model/Music.dart';
 import 'Model/User.dart';
 import 'Model/Artist.dart';
@@ -15,6 +16,7 @@ import 'PlayPage.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:provider/provider.dart';
 import 'utils/ThemeProvider.dart';
+import 'package:flutter/services.dart';
 // Applicaation Flow Controller
 
 enum filterOption {
@@ -1011,10 +1013,49 @@ class Application {
     try {
       // Use the existing cache system to download and cache the music
       final cachedPath = await cacheManager.ensureCached(user: user, music: music);
-      return cachedPath != null;
+      if (cachedPath == null) return false;
+
+      // Also export to device public Music directory (Android, via MethodChannel)
+      try {
+        final file = File(cachedPath);
+        if (await file.exists()) {
+          final bytes = Uint8List.fromList(await file.readAsBytes());
+          final mimeType = _mimeTypeForExtension(music.extension);
+          const MethodChannel channel = MethodChannel('hertz/media_store');
+          final savedUri = await channel.invokeMethod<String>('saveAudioToPublic', {
+            'fileName': '${music.title}.${music.extension}',
+            'mimeType': mimeType,
+            'bytes': bytes,
+          });
+          print('Saved to device (MediaStore): $savedUri');
+        }
+      } catch (e) {
+        print('Error exporting to MediaStore: $e');
+        // Non-fatal: caching already succeeded
+      }
+
+      return true;
     } catch (e) {
       print('Error downloading music: $e');
       return false;
+    }
+  }
+
+  String _mimeTypeForExtension(String ext) {
+    final lower = ext.toLowerCase();
+    switch (lower) {
+      case 'mp3':
+        return 'audio/mpeg';
+      case 'aac':
+        return 'audio/aac';
+      case 'wav':
+        return 'audio/wav';
+      case 'flac':
+        return 'audio/flac';
+      case 'm4a':
+        return 'audio/mp4';
+      default:
+        return 'audio/*';
     }
   }
 
