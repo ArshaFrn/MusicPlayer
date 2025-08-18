@@ -7,12 +7,8 @@ import 'Model/Album.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
-import 'dart:math';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'TcpClient.dart';
-import 'LibraryPage.dart';
-import 'package:just_audio/just_audio.dart';
 import 'utils/CacheManager.dart';
 import 'utils/AudioController.dart';
 import 'PlayPage.dart';
@@ -169,7 +165,7 @@ class Application {
       final album = metadata.album?.trim() ?? 'Unknown Album';
       final genreList = metadata.genres;
       final genre =
-          (genreList != null && genreList.isNotEmpty)
+          (genreList.isNotEmpty)
               ? genreList.first
               : 'Unknown Genre';
       final releaseDate = metadata.year?.toString() ?? 'Unknown';
@@ -455,8 +451,8 @@ class Application {
         sorted.sort(
           (a, b) =>
               isAsc
-                  ? (a.album?.name ?? '').toLowerCase().compareTo((b.album?.name ?? '').toLowerCase())
-                  : (b.album?.name ?? '').toLowerCase().compareTo((a.album?.name ?? '').toLowerCase()),
+                  ? (a.album.name ?? '').toLowerCase().compareTo((b.album.name ?? '').toLowerCase())
+                  : (b.album.name ?? '').toLowerCase().compareTo((a.album.name ?? '').toLowerCase()),
         );
         break;
       case filterOption.durationDesc:

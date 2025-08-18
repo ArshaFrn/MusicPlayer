@@ -578,7 +578,7 @@ class _LibraryPageState extends State<LibraryPage> {
                       ),
                     ),
                     subtitle: Text(
-                      track.album?.name ?? 'Unknown Album',
+                      track.album.name ?? 'Unknown Album',
                       style: TextStyle(
                         color: themeProvider.isDarkMode
                             ? Colors.white70
@@ -633,7 +633,7 @@ class _LibraryPageState extends State<LibraryPage> {
     // Group tracks by album
     Map<String, List<Music>> albumGroups = {};
     for (var track in tracks) {
-      final albumName = track.album?.name ?? 'Unknown Album';
+      final albumName = track.album.name ?? 'Unknown Album';
       if (!albumGroups.containsKey(albumName)) {
         albumGroups[albumName] = [];
       }
@@ -816,7 +816,7 @@ class _LibraryPageState extends State<LibraryPage> {
                       ),
                     ),
                     subtitle: Text(
-                      "${track.artist.name} • ${track.album?.name ??
+                      "${track.artist.name} • ${track.album.name ??
                           'Unknown Album'}",
                       style: TextStyle(
                         color: themeProvider.isDarkMode

@@ -1,20 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'Model/User.dart';
-import 'TcpClient.dart';
-import 'SignUpPage.dart';
-import 'main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'LibraryPage.dart';
 import 'PlaylistsPage.dart';
-import 'SearchPage.dart';
 import 'AddPage.dart';
 import 'ProfilePage.dart';
-import 'widgets/MiniPlayer.dart';
-import 'FavouritesPage.dart';
-import 'RecentlyPlayedPage.dart';
 import 'package:provider/provider.dart';
 import 'utils/ThemeProvider.dart';
+import 'widgets/MiniPlayer.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

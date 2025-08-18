@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'Model/Music.dart';
 import 'Model/User.dart';
 import 'Application.dart';
-import 'TcpClient.dart';
-import 'utils/AudioController.dart';
-import 'PlayPage.dart';
-import 'package:provider/provider.dart';
-import 'utils/ThemeProvider.dart';
+
 
 class FavouritesPage extends StatefulWidget {
   final User user;

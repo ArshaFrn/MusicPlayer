@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:path_provider/path_provider.dart';
 import 'Model/Music.dart';
 import 'Model/User.dart';
 import 'Application.dart';
@@ -31,7 +29,7 @@ class PlayPage extends StatefulWidget {
 class _PlayPageState extends State<PlayPage> {
   final Application application = Application.instance;
   final AudioController _audioController = AudioController.instance;
-  String? _albumArtPath;
+
   Uint8List? _albumArtBytes;
   int? _lastExtractedTrackId;
   bool _isExtractingAlbumArt = false;
@@ -85,7 +83,6 @@ class _PlayPageState extends State<PlayPage> {
 
     // Clean up album art bytes
     _albumArtBytes = null;
-    _albumArtPath = null;
     _lastExtractedTrackId = null;
     _isExtractingAlbumArt = false;
 
@@ -110,7 +107,6 @@ class _PlayPageState extends State<PlayPage> {
       setState(() {
         // Clear album art when track changes
         _albumArtBytes = null;
-        _albumArtPath = null;
         _lastExtractedTrackId = null;
       });
       // Extract album art for the new track
@@ -118,62 +114,7 @@ class _PlayPageState extends State<PlayPage> {
     }
   }
 
-  Future<void> _showMoreOptions(BuildContext context) async {
-    final result = await showModalBottomSheet<String>(
-      context: context,
-      backgroundColor: Colors.grey.shade900.withOpacity(0.95),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder:
-          (context) => SafeArea(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: EdgeInsets.symmetric(vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade600,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                ListTile(
-                  leading: Icon(Icons.share, color: Colors.green),
-                  title: Text('Share', style: TextStyle(color: Colors.white)),
-                  onTap: () => Navigator.pop(context, 'share'),
-                ),
-                ListTile(
-                  leading: Icon(Icons.info_outline, color: Colors.blue),
-                  title: Text(
-                    'Track Details',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  onTap: () => Navigator.pop(context, 'details'),
-                ),
-                SizedBox(height: 10),
-              ],
-            ),
-          ),
-    );
 
-    if (result == 'share') {
-      final currentTrack = _audioController.currentTrack;
-      if (currentTrack != null) {
-        await application.shareMusic(
-          context: context,
-          user: widget.user,
-          music: currentTrack,
-        );
-      }
-    } else if (result == 'details') {
-      final currentTrack = _audioController.currentTrack;
-      if (currentTrack != null) {
-        application.showMusicDetailsDialog(context, currentTrack);
-      }
-    }
-  }
 
   Future<void> _extractAlbumArt() async {
     // Prevent multiple simultaneous extraction attempts
@@ -206,11 +147,10 @@ class _PlayPageState extends State<PlayPage> {
           final imageData = picture.bytes;
 
           if (imageData != null && imageData.isNotEmpty) {
-            setState(() {
-              _albumArtBytes = imageData;
-              _albumArtPath = null;
-              _lastExtractedTrackId = currentTrackId;
-            });
+                         setState(() {
+               _albumArtBytes = imageData;
+               _lastExtractedTrackId = currentTrackId;
+             });
 
             print(
               'Album art extracted and stored in memory for track: $currentTrackId',
@@ -218,20 +158,18 @@ class _PlayPageState extends State<PlayPage> {
           }
         } else {
           print('No album art found in metadata');
-          setState(() {
-            _albumArtBytes = null;
-            _albumArtPath = null;
-            _lastExtractedTrackId = currentTrackId;
-          });
+                     setState(() {
+             _albumArtBytes = null;
+             _lastExtractedTrackId = currentTrackId;
+           });
         }
       }
     } catch (e) {
       print('Error extracting album art: $e');
-      setState(() {
-        _albumArtBytes = null;
-        _albumArtPath = null;
-        _lastExtractedTrackId = _audioController.currentTrack?.id;
-      });
+             setState(() {
+         _albumArtBytes = null;
+         _lastExtractedTrackId = _audioController.currentTrack?.id;
+       });
     } finally {
       _isExtractingAlbumArt = false;
     }
