@@ -6,16 +6,11 @@ import 'package:provider/provider.dart';
 import 'utils/ThemeProvider.dart';
 import 'widgets/MiniPlayer.dart';
 
-
 class FavouritesPage extends StatefulWidget {
   final User user;
   final VoidCallback? onBackPressed;
 
-  const FavouritesPage({
-    super.key, 
-    required this.user,
-    this.onBackPressed,
-  });
+  const FavouritesPage({super.key, required this.user, this.onBackPressed});
 
   @override
   State<FavouritesPage> createState() => _FavouritesPageState();
@@ -67,7 +62,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
     final primaryColor = isDark ? Color(0xFF8456FF) : Color(0xFFfc6997);
-    
+
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Color(0xFFf8f5f0),
       appBar: AppBar(
@@ -134,7 +129,13 @@ class _FavouritesPageState extends State<FavouritesPage> {
                             return ListTile(
                               onLongPress:
                                   () => _onTrackLongPress(context, music),
-                              leading: Icon(Icons.music_note),
+                              leading: Icon(
+                                Icons.music_note,
+                                color: application.getUniqueColor(
+                                  music.id,
+                                  context: context,
+                                ),
+                              ),
                               title: Text(music.title),
                               subtitle: Text(music.artist.name),
                               trailing: Row(
@@ -171,11 +172,14 @@ class _FavouritesPageState extends State<FavouritesPage> {
                                   ),
                                 ],
                               ),
-                              iconColor: application.getUniqueColor(music.id, context: context),
+                              iconColor: application.getUniqueColor(
+                                music.id,
+                                context: context,
+                              ),
                             );
                           },
-                                                 ),
-               ),
+                        ),
+              ),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -183,9 +187,12 @@ class _FavouritesPageState extends State<FavouritesPage> {
           Consumer<ThemeProvider>(
             builder: (context, themeProvider, child) {
               return BottomNavigationBar(
-                selectedItemColor: themeProvider.isDarkMode ? Colors.white : Colors.white,
-                unselectedItemColor: themeProvider.isDarkMode ? Colors.white60 : Colors.white60,
-                backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                selectedItemColor:
+                    themeProvider.isDarkMode ? Colors.white : Colors.white,
+                unselectedItemColor:
+                    themeProvider.isDarkMode ? Colors.white60 : Colors.white60,
+                backgroundColor:
+                    themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
                 currentIndex: 3, // Profile index
                 onTap: (index) {
                   if (widget.onBackPressed != null) {
@@ -197,22 +204,34 @@ class _FavouritesPageState extends State<FavouritesPage> {
                   BottomNavigationBarItem(
                     icon: Icon(Icons.library_music),
                     label: "Library",
-                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                    backgroundColor:
+                        themeProvider.isDarkMode
+                            ? Colors.black
+                            : Color(0xFFfc6997),
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.playlist_play),
                     label: "Playlists",
-                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                    backgroundColor:
+                        themeProvider.isDarkMode
+                            ? Colors.black
+                            : Color(0xFFfc6997),
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.add_circle),
                     label: "Add",
-                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                    backgroundColor:
+                        themeProvider.isDarkMode
+                            ? Colors.black
+                            : Color(0xFFfc6997),
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.person),
                     label: "Profile",
-                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
+                    backgroundColor:
+                        themeProvider.isDarkMode
+                            ? Colors.black
+                            : Color(0xFFfc6997),
                   ),
                 ],
               );

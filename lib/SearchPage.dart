@@ -11,8 +11,8 @@ class SearchPage extends StatefulWidget {
   final Function(int) onNavigateToPage;
 
   const SearchPage({
-    super.key, 
-    required this.user, 
+    super.key,
+    required this.user,
     required this.onNavigateToPage,
   });
 
@@ -107,7 +107,13 @@ class _SearchPageState extends State<SearchPage> {
                     return ListTile(
                       onTap: () => _onTrackTap(context, music),
                       onLongPress: () => _onTrackLongPress(context, music),
-                      leading: Icon(Icons.music_note),
+                      leading: Icon(
+                        Icons.music_note,
+                        color: application.getUniqueColor(
+                          music.id,
+                          context: context,
+                        ),
+                      ),
                       title: Text(music.title),
                       subtitle: Text(
                         '${music.artist.name} • ${music.album.title}',
@@ -122,12 +128,18 @@ class _SearchPageState extends State<SearchPage> {
                           onTap: () => _onLikeTap(music),
                           child: Icon(
                             isLiked ? Icons.favorite : Icons.favorite_border,
-                            color: application.getUniqueColor(music.id, context: context),
+                            color: application.getUniqueColor(
+                              music.id,
+                              context: context,
+                            ),
                             size: 25,
                           ),
                         ),
                       ),
-                      iconColor: application.getUniqueColor(music.id, context: context),
+                      iconColor: application.getUniqueColor(
+                        music.id,
+                        context: context,
+                      ),
                     );
                   },
                 ),

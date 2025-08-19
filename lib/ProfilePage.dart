@@ -27,8 +27,8 @@ class ProfilePage extends StatefulWidget {
   final Function()? onNavigateToRecentlyPlayed;
 
   const ProfilePage({
-    super.key, 
-    required User user, 
+    super.key,
+    required User user,
     required this.onNavigateToPage,
     this.onNavigateToFavourites,
     this.onNavigateToRecentlyPlayed,
@@ -42,16 +42,38 @@ class _ProfilePage extends State<ProfilePage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _fullnameController = TextEditingController();
   late ProfilePageController _controller;
+  bool _isInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = ProfilePageController(
-      user: widget.user,
-      emailController: _emailController,
-      fullnameController: _fullnameController,
-    );
-    _controller.loadProfileImage();
+    _initializeController();
+  }
+
+  Future<void> _initializeController() async {
+    try {
+      _controller = ProfilePageController(
+        user: widget.user,
+        emailController: _emailController,
+        fullnameController: _fullnameController,
+      );
+
+      // Load profile image asynchronously
+      await _controller.loadProfileImage();
+
+      if (mounted) {
+        setState(() {
+          _isInitialized = true;
+        });
+      }
+    } catch (e) {
+      print('Error initializing ProfilePage: $e');
+      if (mounted) {
+        setState(() {
+          _isInitialized = true; // Set to true even on error to show the page
+        });
+      }
+    }
   }
 
   @override
@@ -60,8 +82,6 @@ class _ProfilePage extends State<ProfilePage> {
     super.dispose();
   }
 
-
-
   Widget _buildProfilePicture() {
     final themeProvider = Provider.of<ThemeProvider>(context);
     return GestureDetector(
@@ -69,12 +89,21 @@ class _ProfilePage extends State<ProfilePage> {
         try {
           await _controller.pickImage();
           setState(() {});
-          SnackBarUtils.showSuccessSnackBar(context, "Profile picture updated!");
+          SnackBarUtils.showSuccessSnackBar(
+            context,
+            "Profile picture updated!",
+          );
         } catch (e) {
           if (e.toString().contains("No new picture selected")) {
-            SnackBarUtils.showWarningSnackBar(context, "No new picture selected");
+            SnackBarUtils.showWarningSnackBar(
+              context,
+              "No new picture selected",
+            );
           } else {
-            SnackBarUtils.showErrorSnackBar(context, "Error updating profile picture: $e");
+            SnackBarUtils.showErrorSnackBar(
+              context,
+              "Error updating profile picture: $e",
+            );
           }
         }
       },
@@ -84,12 +113,18 @@ class _ProfilePage extends State<ProfilePage> {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
-            color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997), 
-            width: 3
+            color:
+                themeProvider.isDarkMode
+                    ? Color(0xFF8456FF)
+                    : Color(0xFFfc6997),
+            width: 3,
           ),
           boxShadow: [
             BoxShadow(
-              color: (themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997)).withOpacity(0.3),
+              color: (themeProvider.isDarkMode
+                      ? Color(0xFF8456FF)
+                      : Color(0xFFfc6997))
+                  .withOpacity(0.3),
               blurRadius: 15,
               spreadRadius: 2,
             ),
@@ -108,21 +143,33 @@ class _ProfilePage extends State<ProfilePage> {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            color: themeProvider.isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                            color:
+                                themeProvider.isDarkMode
+                                    ? Colors.grey[800]
+                                    : Colors.grey[300],
                             child: Icon(
                               Icons.person,
                               size: 50,
-                              color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                              color:
+                                  themeProvider.isDarkMode
+                                      ? Colors.white70
+                                      : Colors.black54,
                             ),
                           );
                         },
                       )
                       : Container(
-                        color: themeProvider.isDarkMode ? Colors.grey[800] : Colors.grey[300],
+                        color:
+                            themeProvider.isDarkMode
+                                ? Colors.grey[800]
+                                : Colors.grey[300],
                         child: Icon(
                           Icons.person,
                           size: 85,
-                          color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                          color:
+                              themeProvider.isDarkMode
+                                  ? Colors.white70
+                                  : Colors.black54,
                         ),
                       ),
             ),
@@ -135,7 +182,10 @@ class _ProfilePage extends State<ProfilePage> {
                   ),
                   child: Center(
                     child: CircularProgressIndicator(
-                      color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997)
+                      color:
+                          themeProvider.isDarkMode
+                              ? Color(0xFF8456FF)
+                              : Color(0xFFfc6997),
                     ),
                   ),
                 ),
@@ -194,7 +244,10 @@ class _ProfilePage extends State<ProfilePage> {
                   Text(
                     "Username",
                     style: TextStyle(
-                      color: themeProvider.isDarkMode ? Colors.white70 : Colors.black54,
+                      color:
+                          themeProvider.isDarkMode
+                              ? Colors.white70
+                              : Colors.black54,
                       fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
@@ -209,7 +262,10 @@ class _ProfilePage extends State<ProfilePage> {
                               ? widget.user.username
                               : widget.user.username,
                           style: TextStyle(
-                            color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                            color:
+                                themeProvider.isDarkMode
+                                    ? Colors.white
+                                    : Colors.black87,
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
@@ -225,19 +281,23 @@ class _ProfilePage extends State<ProfilePage> {
                                 color: Colors.white.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: theme.isDarkMode 
-                                      ? Color(0xFF8456FF)
-                                      : Color(0xFFfc6997),
+                                  color:
+                                      theme.isDarkMode
+                                          ? Color(0xFF8456FF)
+                                          : Color(0xFFfc6997),
                                   width: 2,
                                 ),
                               ),
                               child: IconButton(
                                 onPressed: () => theme.toggleTheme(),
                                 icon: Icon(
-                                  theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                                  color: theme.isDarkMode 
-                                      ? Color(0xFF8456FF)
-                                      : Color(0xFFfc6997),
+                                  theme.isDarkMode
+                                      ? Icons.light_mode
+                                      : Icons.dark_mode,
+                                  color:
+                                      theme.isDarkMode
+                                          ? Color(0xFF8456FF)
+                                          : Color(0xFFfc6997),
                                   size: 20,
                                 ),
                                 tooltip: 'Toggle Theme',
@@ -246,7 +306,6 @@ class _ProfilePage extends State<ProfilePage> {
                           );
                         },
                       ),
-
                     ],
                   ),
                 ],
@@ -268,29 +327,37 @@ class _ProfilePage extends State<ProfilePage> {
         SizedBox(height: 8),
         TextField(
           controller: _emailController,
-          style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black87),
+          style: TextStyle(
+            color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+          ),
           decoration: InputDecoration(
             filled: true,
-            fillColor: themeProvider.isDarkMode 
-                ? Colors.white.withOpacity(0.1) 
-                : Colors.black.withOpacity(0.05),
+            fillColor:
+                themeProvider.isDarkMode
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.05),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: themeProvider.isDarkMode ? Colors.white24 : Colors.black12
+                color:
+                    themeProvider.isDarkMode ? Colors.white24 : Colors.black12,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997), 
-                width: 2
+                color:
+                    themeProvider.isDarkMode
+                        ? Color(0xFF8456FF)
+                        : Color(0xFFfc6997),
+                width: 2,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: themeProvider.isDarkMode ? Colors.white24 : Colors.black12
+                color:
+                    themeProvider.isDarkMode ? Colors.white24 : Colors.black12,
               ),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -310,29 +377,37 @@ class _ProfilePage extends State<ProfilePage> {
         SizedBox(height: 8),
         TextField(
           controller: _fullnameController,
-          style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black87),
+          style: TextStyle(
+            color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+          ),
           decoration: InputDecoration(
             filled: true,
-            fillColor: themeProvider.isDarkMode 
-                ? Colors.white.withOpacity(0.1) 
-                : Colors.black.withOpacity(0.05),
+            fillColor:
+                themeProvider.isDarkMode
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.05),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: themeProvider.isDarkMode ? Colors.white24 : Colors.black12
+                color:
+                    themeProvider.isDarkMode ? Colors.white24 : Colors.black12,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997), 
-                width: 2
+                color:
+                    themeProvider.isDarkMode
+                        ? Color(0xFF8456FF)
+                        : Color(0xFFfc6997),
+                width: 2,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: themeProvider.isDarkMode ? Colors.white24 : Colors.black12
+                color:
+                    themeProvider.isDarkMode ? Colors.white24 : Colors.black12,
               ),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -346,7 +421,10 @@ class _ProfilePage extends State<ProfilePage> {
           child: ElevatedButton(
             onPressed: _updateUserInfo,
             style: ElevatedButton.styleFrom(
-              backgroundColor: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+              backgroundColor:
+                  themeProvider.isDarkMode
+                      ? Color(0xFF8456FF)
+                      : Color(0xFFfc6997),
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 12),
               textStyle: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
@@ -354,7 +432,10 @@ class _ProfilePage extends State<ProfilePage> {
                 borderRadius: BorderRadius.circular(12),
               ),
               elevation: 8,
-              shadowColor: (themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997)).withOpacity(0.3),
+              shadowColor: (themeProvider.isDarkMode
+                      ? Color(0xFF8456FF)
+                      : Color(0xFFfc6997))
+                  .withOpacity(0.3),
             ),
             child: Text("Update Information"),
           ),
@@ -371,17 +452,24 @@ class _ProfilePage extends State<ProfilePage> {
         width: MediaQuery.of(context).size.width * 0.22,
         height: MediaQuery.of(context).size.width * 0.22,
         decoration: BoxDecoration(
-          color: themeProvider.isDarkMode 
-              ? Colors.white.withOpacity(0.1) 
-              : Colors.black.withOpacity(0.05),
+          color:
+              themeProvider.isDarkMode
+                  ? Colors.white.withOpacity(0.1)
+                  : Colors.black.withOpacity(0.05),
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997), 
-            width: 2
+            color:
+                themeProvider.isDarkMode
+                    ? Color(0xFF8456FF)
+                    : Color(0xFFfc6997),
+            width: 2,
           ),
           boxShadow: [
             BoxShadow(
-              color: (themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997)).withOpacity(0.2),
+              color: (themeProvider.isDarkMode
+                      ? Color(0xFF8456FF)
+                      : Color(0xFFfc6997))
+                  .withOpacity(0.2),
               blurRadius: 10,
               spreadRadius: 1,
             ),
@@ -391,9 +479,12 @@ class _ProfilePage extends State<ProfilePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              icon, 
-              size: 32, 
-              color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997)
+              icon,
+              size: 32,
+              color:
+                  themeProvider.isDarkMode
+                      ? Color(0xFF8456FF)
+                      : Color(0xFFfc6997),
             ),
             SizedBox(height: 8),
             Text(
@@ -414,34 +505,47 @@ class _ProfilePage extends State<ProfilePage> {
   Future<void> _updateUserInfo() async {
     try {
       await _controller.updateUserInfo();
-      
-      SnackBarUtils.showSuccessSnackBar(context, "Information updated successfully!");
+
+      SnackBarUtils.showSuccessSnackBar(
+        context,
+        "Information updated successfully!",
+      );
     } catch (e) {
-      SnackBarUtils.showErrorSnackBar(context, "Error updating information: $e");
+      SnackBarUtils.showErrorSnackBar(
+        context,
+        "Error updating information: $e",
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    
-    if (_controller.isLoadingProfile) {
+
+    if (!_isInitialized) {
       return Scaffold(
-        backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFf8f5f0),
+        backgroundColor:
+            themeProvider.isDarkMode ? Colors.black : Color(0xFFf8f5f0),
         body: SafeArea(
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CircularProgressIndicator(
-                  color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997)
+                  color:
+                      themeProvider.isDarkMode
+                          ? Color(0xFF8456FF)
+                          : Color(0xFFfc6997),
                 ),
                 SizedBox(height: 20),
                 Text(
                   "Loading profile...",
                   style: TextStyle(
-                    color: themeProvider.isDarkMode ? Colors.white : Colors.black87, 
-                    fontSize: 16
+                    color:
+                        themeProvider.isDarkMode
+                            ? Colors.white
+                            : Colors.black87,
+                    fontSize: 16,
                   ),
                 ),
               ],
@@ -452,7 +556,8 @@ class _ProfilePage extends State<ProfilePage> {
     }
 
     return Scaffold(
-      backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFf8f5f0),
+      backgroundColor:
+          themeProvider.isDarkMode ? Colors.black : Color(0xFFf8f5f0),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -476,6 +581,23 @@ class _ProfilePage extends State<ProfilePage> {
                             child: Image.asset(
                               themeProvider.logoPath,
                               fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                // Fallback to a colored container if logo fails to load
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color:
+                                        themeProvider.isDarkMode
+                                            ? Color(0xFF8456FF)
+                                            : Color(0xFFfc6997),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    Icons.music_note,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -485,55 +607,107 @@ class _ProfilePage extends State<ProfilePage> {
                           style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
-                            color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+                            color:
+                                themeProvider.isDarkMode
+                                    ? Colors.white
+                                    : Colors.black87,
                             letterSpacing: 1.2,
                           ),
                         ),
                       ],
                     ),
-                                         PopupMenuButton<String>(
-                       itemBuilder: (context) => [
-                         PopupMenuItem<String>(
-                           value: 'contact_us',
-                           child: Row(
-                             children: [
-                               Icon(Icons.email, color: Colors.blue, size: 20),
-                               SizedBox(width: 8),
-                               Text('Contact Us', style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black87)),
-                             ],
-                           ),
-                         ),
-                         PopupMenuItem<String>(
-                           value: 'refresh_profile',
-                           child: Row(
-                             children: [
-                               Icon(Icons.refresh, color: Colors.green, size: 20),
-                               SizedBox(width: 8),
-                               Text('Refresh Profile', style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black87)),
-                             ],
-                           ),
-                         ),
-                         PopupMenuItem<String>(
-                           value: 'change_password',
-                           child: Row(
-                             children: [
-                               Icon(Icons.lock, color: Colors.orange, size: 20),
-                               SizedBox(width: 8),
-                               Text('Change Password', style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black87)),
-                             ],
-                           ),
-                         ),
-                         PopupMenuItem<String>(
-                           value: 'logout',
-                           child: Row(
-                             children: [
-                               Icon(Icons.logout, color: Colors.red, size: 20),
-                               SizedBox(width: 8),
-                               Text('Log out', style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black87)),
-                             ],
-                           ),
-                         ),
-                       ],
+                    PopupMenuButton<String>(
+                      itemBuilder:
+                          (context) => [
+                            PopupMenuItem<String>(
+                              value: 'contact_us',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.email,
+                                    color: Colors.blue,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Contact Us',
+                                    style: TextStyle(
+                                      color:
+                                          themeProvider.isDarkMode
+                                              ? Colors.white
+                                              : Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<String>(
+                              value: 'refresh_profile',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.refresh,
+                                    color: Colors.green,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Refresh Profile',
+                                    style: TextStyle(
+                                      color:
+                                          themeProvider.isDarkMode
+                                              ? Colors.white
+                                              : Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<String>(
+                              value: 'change_password',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.lock,
+                                    color: Colors.orange,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Change Password',
+                                    style: TextStyle(
+                                      color:
+                                          themeProvider.isDarkMode
+                                              ? Colors.white
+                                              : Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem<String>(
+                              value: 'logout',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.logout,
+                                    color: Colors.red,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Log out',
+                                    style: TextStyle(
+                                      color:
+                                          themeProvider.isDarkMode
+                                              ? Colors.white
+                                              : Colors.black87,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                       onSelected: (value) async {
                         print('Menu selection: $value'); // Debug print
                         if (value == 'logout') {
@@ -542,29 +716,46 @@ class _ProfilePage extends State<ProfilePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ChangePasswordPage(user: widget.user),
+                              builder:
+                                  (context) =>
+                                      ChangePasswordPage(user: widget.user),
                             ),
                           );
                         } else if (value == 'refresh_profile') {
                           try {
                             await _controller.refreshProfileFromServer();
                             setState(() {});
-                            SnackBarUtils.showSuccessSnackBar(context, "Profile refreshed successfully!");
+                            SnackBarUtils.showSuccessSnackBar(
+                              context,
+                              "Profile refreshed successfully!",
+                            );
                           } catch (e) {
-                            SnackBarUtils.showErrorSnackBar(context, "Error refreshing profile: $e");
+                            SnackBarUtils.showErrorSnackBar(
+                              context,
+                              "Error refreshing profile: $e",
+                            );
                           }
                         } else if (value == 'contact_us') {
                           try {
                             _controller.contactUs();
-                            SnackBarUtils.showSuccessSnackBar(context, "Email app opened successfully! Please send your message to MusicAppShayan@gmail.com");
+                            SnackBarUtils.showSuccessSnackBar(
+                              context,
+                              "Email app opened successfully! Please send your message to MusicAppShayan@gmail.com",
+                            );
                           } catch (e) {
-                            SnackBarUtils.showErrorSnackBar(context, "Could not open email app. Please contact us at: MusicAppShayan@gmail.com");
+                            SnackBarUtils.showErrorSnackBar(
+                              context,
+                              "Could not open email app. Please contact us at: MusicAppShayan@gmail.com",
+                            );
                           }
                         }
                       },
                       icon: Icon(
                         Icons.more_vert,
-                        color: themeProvider.isDarkMode ? Color(0xFF8456FF) : Color(0xFFfc6997),
+                        color:
+                            themeProvider.isDarkMode
+                                ? Color(0xFF8456FF)
+                                : Color(0xFFfc6997),
                         size: 28,
                       ),
                     ),
@@ -585,32 +776,35 @@ class _ProfilePage extends State<ProfilePage> {
                       // Navigate to library page with all songs
                       widget.onNavigateToPage(0); // Library page index
                     }),
-                                         _buildActionSquare("Favorites", Icons.favorite, () {
-                       // Navigate to FavouritesPage with bottom navigation
-                       if (widget.onNavigateToFavourites != null) {
-                         widget.onNavigateToFavourites!();
-                       } else {
-                         Navigator.push(
-                           context,
-                           MaterialPageRoute(
-                             builder: (context) => FavouritesPage(user: widget.user),
-                           ),
-                         );
-                       }
-                     }),
-                     _buildActionSquare("Recently\nPlayed", Icons.history, () {
-                       // Navigate to RecentlyPlayedPage with bottom navigation
-                       if (widget.onNavigateToRecentlyPlayed != null) {
-                         widget.onNavigateToRecentlyPlayed!();
-                       } else {
-                         Navigator.push(
-                           context,
-                           MaterialPageRoute(
-                             builder: (context) => RecentlyPlayedPage(user: widget.user),
-                           ),
-                         );
-                       }
-                     }),
+                    _buildActionSquare("Favorites", Icons.favorite, () {
+                      // Navigate to FavouritesPage with bottom navigation
+                      if (widget.onNavigateToFavourites != null) {
+                        widget.onNavigateToFavourites!();
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => FavouritesPage(user: widget.user),
+                          ),
+                        );
+                      }
+                    }),
+                    _buildActionSquare("Recently\nPlayed", Icons.history, () {
+                      // Navigate to RecentlyPlayedPage with bottom navigation
+                      if (widget.onNavigateToRecentlyPlayed != null) {
+                        widget.onNavigateToRecentlyPlayed!();
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) =>
+                                    RecentlyPlayedPage(user: widget.user),
+                          ),
+                        );
+                      }
+                    }),
                   ],
                 ),
               ],

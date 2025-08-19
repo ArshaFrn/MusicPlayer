@@ -290,7 +290,6 @@ class Application {
       try {
         final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
         if (themeProvider.isLightMode) {
-          // Use pink shades for light theme
           final List<Color> lightColors = [
             Color(0xFFfc6997), // Main pink
             Color(0xFFff6b9d), // Lighter pink

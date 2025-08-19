@@ -129,12 +129,16 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
     final primaryColor = isDark ? Color(0xFF8456FF) : Color(0xFFfc6997);
-    final playlistColor = isDark ? _application.getPlaylistColor(widget.playlist.id) : primaryColor;
-    
+    final playlistColor =
+        isDark
+            ? _application.getPlaylistColor(widget.playlist.id)
+            : primaryColor;
+
     return Dialog(
-      backgroundColor: isDark 
-          ? Colors.grey.shade900.withOpacity(0.95)
-          : Colors.white.withOpacity(0.95),
+      backgroundColor:
+          isDark
+              ? Colors.grey.shade900.withOpacity(0.95)
+              : Colors.white.withOpacity(0.95),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         width: MediaQuery.of(context).size.width * 0.9,
@@ -145,9 +149,10 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: isDark 
-                    ? Colors.grey.shade800.withOpacity(0.5)
-                    : Colors.grey.shade100.withOpacity(0.5),
+                color:
+                    isDark
+                        ? Colors.grey.shade800.withOpacity(0.5)
+                        : Colors.grey.shade100.withOpacity(0.5),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(20),
                   topRight: Radius.circular(20),
@@ -155,11 +160,7 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.add_circle,
-                    color: playlistColor,
-                    size: 28,
-                  ),
+                  Icon(Icons.add_circle, color: playlistColor, size: 28),
                   SizedBox(width: 12),
                   Expanded(
                     child: Column(
@@ -179,8 +180,8 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
                         Text(
                           'Select tracks from your library',
                           style: TextStyle(
-                            color: isDark ? Colors.white70 : Colors.black54, 
-                            fontSize: 14
+                            color: isDark ? Colors.white70 : Colors.black54,
+                            fontSize: 14,
                           ),
                         ),
                       ],
@@ -188,8 +189,8 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
                   ),
                   IconButton(
                     icon: Icon(
-                      Icons.close, 
-                      color: isDark ? Colors.white70 : Colors.black54
+                      Icons.close,
+                      color: isDark ? Colors.white70 : Colors.black54,
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
@@ -243,7 +244,10 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
                                 ), // ← Add tap handler to entire tile
                             leading: Icon(
                               Icons.music_note,
-                              color: _application.getUniqueColor(track.id, context: context),
+                              color: _application.getUniqueColor(
+                                track.id,
+                                context: context,
+                              ),
                             ),
                             title: Text(
                               track.title,
@@ -255,7 +259,7 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
                             subtitle: Text(
                               track.artist.name,
                               style: TextStyle(
-                                color: isDark ? Colors.white70 : Colors.black54
+                                color: isDark ? Colors.white70 : Colors.black54,
                               ),
                             ),
                             trailing: Row(
@@ -267,7 +271,10 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
                                   ),
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: isDark ? Colors.white70 : Colors.black54,
+                                    color:
+                                        isDark
+                                            ? Colors.white70
+                                            : Colors.black54,
                                   ),
                                 ),
                                 SizedBox(width: 8),

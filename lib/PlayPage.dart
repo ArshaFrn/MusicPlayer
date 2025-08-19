@@ -200,10 +200,7 @@ class _PlayPageState extends State<PlayPage> {
 
         return GestureDetector(
           onPanUpdate: (details) {
-            // Swipe down to minimize
-            if (details.delta.dy > 50) {
-              Navigator.pop(context);
-            }
+            Navigator.pop(context);
           },
           child: Scaffold(
             backgroundColor:
@@ -246,8 +243,8 @@ class _PlayPageState extends State<PlayPage> {
                       child: _buildTrackInfo(currentTrack, themeProvider),
                     ),
 
-                    // Spacer to push controls to bottom
-                    Expanded(child: SizedBox()),
+                    // Spacer to push controls closer to track info
+                    SizedBox(height: 40),
 
                     // Progress Bar - Fixed at bottom
                     Container(
@@ -298,6 +295,39 @@ class _PlayPageState extends State<PlayPage> {
               ),
               textAlign: TextAlign.center,
             ),
+          ),
+          // Three dots menu with share option
+          PopupMenuButton<String>(
+            icon: Icon(
+              Icons.more_vert,
+              color: themeProvider.isDarkMode ? Colors.white : Colors.black87,
+              size: 24,
+            ),
+            onSelected: (value) async {
+              if (value == 'share') {
+                final currentTrack = _audioController.currentTrack;
+                if (currentTrack != null) {
+                  await application.shareMusic(
+                    context: context,
+                    user: widget.user,
+                    music: currentTrack,
+                  );
+                }
+              }
+            },
+            itemBuilder:
+                (context) => [
+                  PopupMenuItem<String>(
+                    value: 'share',
+                    child: Row(
+                      children: [
+                        Icon(Icons.share, color: Colors.green, size: 20),
+                        SizedBox(width: 8),
+                        Text('Share'),
+                      ],
+                    ),
+                  ),
+                ],
           ),
         ],
       ),
