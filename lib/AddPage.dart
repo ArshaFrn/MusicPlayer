@@ -10,11 +10,8 @@ class AddPage extends StatefulWidget {
   final User _user;
   final Function(int) onNavigateToPage;
 
-  const AddPage({
-    super.key, 
-    required User user, 
-    required this.onNavigateToPage,
-  }) : _user = user;
+  const AddPage({super.key, required User user, required this.onNavigateToPage})
+    : _user = user;
 
   @override
   State<AddPage> createState() => _AddPage();
@@ -27,7 +24,8 @@ class _AddPage extends State<AddPage> {
   bool _isLoading = true;
   bool _isRefreshing = false;
   final TextEditingController _searchController = TextEditingController();
-  filterOption _selectedSort = filterOption.titleAsc; // Use the same enum as LibraryPage
+  filterOption _selectedSort =
+      filterOption.titleAsc; // Use the same enum as LibraryPage
 
   @override
   void initState() {
@@ -50,11 +48,12 @@ class _AddPage extends State<AddPage> {
       });
     } else {
       setState(() {
-        _filteredMusics = _publicMusics.where((music) {
-          return music.title.toLowerCase().contains(query) ||
-                 music.artist.name.toLowerCase().contains(query) ||
-                 (music.album?.name.toLowerCase().contains(query) ?? false);
-        }).toList();
+        _filteredMusics =
+            _publicMusics.where((music) {
+              return music.title.toLowerCase().contains(query) ||
+                  music.artist.name.toLowerCase().contains(query) ||
+                  (music.album?.name.toLowerCase().contains(query) ?? false);
+            }).toList();
       });
     }
     _sortMusics(); // Apply sorting after filtering
@@ -80,7 +79,8 @@ class _AddPage extends State<AddPage> {
 
       setState(() {
         _publicMusics = publicMusics;
-        _filteredMusics = publicMusics; // Initialize filtered list with all public musics
+        _filteredMusics =
+            publicMusics; // Initialize filtered list with all public musics
         _isLoading = false;
         _isRefreshing = false;
       });
@@ -106,9 +106,9 @@ class _AddPage extends State<AddPage> {
             return Row(
               children: [
                 Icon(
-                  Icons.add_circle, 
-                  color: theme.isDarkMode ? Colors.white : Colors.black87, 
-                  size: 24
+                  Icons.add_circle,
+                  color: theme.isDarkMode ? Colors.white : Colors.black87,
+                  size: 24,
                 ),
                 const SizedBox(width: 5),
                 Text(
@@ -131,7 +131,12 @@ class _AddPage extends State<AddPage> {
               return IconButton(
                 icon: Icon(
                   _isRefreshing ? Icons.refresh : Icons.refresh_outlined,
-                  color: _isRefreshing ? Colors.orange : (theme.isDarkMode ? Colors.white70 : Colors.black87),
+                  color:
+                      _isRefreshing
+                          ? Colors.orange
+                          : (theme.isDarkMode
+                              ? Colors.white70
+                              : Colors.black87),
                 ),
                 tooltip: "Refresh Public Music",
                 onPressed: _isRefreshing ? null : _refreshPublicMusics,
@@ -141,7 +146,10 @@ class _AddPage extends State<AddPage> {
           Consumer<ThemeProvider>(
             builder: (context, theme, child) {
               return PopupMenuButton<filterOption>(
-                icon: Icon(Icons.filter_list, color: theme.isDarkMode ? Colors.white70 : Colors.black87),
+                icon: Icon(
+                  Icons.filter_list,
+                  color: theme.isDarkMode ? Colors.white70 : Colors.black87,
+                ),
                 tooltip: "Filter",
                 onSelected: (option) {
                   print('Sort option selected: $option'); // Debug print
@@ -149,7 +157,9 @@ class _AddPage extends State<AddPage> {
                     // If the same base sort is selected, toggle between ascending and descending
                     if (application.getBaseSort(_selectedSort) ==
                         application.getBaseSort(option)) {
-                      _selectedSort = application.getOppositeSort(_selectedSort);
+                      _selectedSort = application.getOppositeSort(
+                        _selectedSort,
+                      );
                     } else {
                       _selectedSort = option;
                     }
@@ -319,23 +329,38 @@ class _AddPage extends State<AddPage> {
                   controller: _searchController,
                   decoration: InputDecoration(
                     hintText: 'Search songs, artists, or albums...',
-                    hintStyle: TextStyle(color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600]),
-                    prefixIcon: Icon(Icons.search, color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+                    hintStyle: TextStyle(
+                      color:
+                          theme.isDarkMode
+                              ? Colors.grey[400]
+                              : Colors.grey[600],
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      color:
+                          theme.isDarkMode
+                              ? Colors.grey[400]
+                              : Colors.grey[600],
+                    ),
                     filled: true,
-                    fillColor: theme.isDarkMode ? Colors.grey[800] : Colors.grey[100],
+                    fillColor:
+                        theme.isDarkMode ? Colors.grey[800] : Colors.grey[100],
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(25),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 15,
+                    ),
                   ),
-                  style: TextStyle(color: theme.isDarkMode ? Colors.white : Colors.black87),
+                  style: TextStyle(
+                    color: theme.isDarkMode ? Colors.white : Colors.black87,
+                  ),
                 ),
               );
             },
           ),
-
-
 
           // Header section
           Consumer<ThemeProvider>(
@@ -345,9 +370,12 @@ class _AddPage extends State<AddPage> {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.public, 
-                      color: theme.isDarkMode ? Colors.purpleAccent : Color(0xFFfc6997), 
-                      size: 24
+                      Icons.public,
+                      color:
+                          theme.isDarkMode
+                              ? Colors.purpleAccent
+                              : Color(0xFFfc6997),
+                      size: 24,
                     ),
                     SizedBox(width: 8),
                     Text(
@@ -362,8 +390,11 @@ class _AddPage extends State<AddPage> {
                     Text(
                       "${_filteredMusics.length} tracks",
                       style: TextStyle(
-                        fontSize: 14, 
-                        color: theme.isDarkMode ? Colors.grey[400] : Colors.grey[600]
+                        fontSize: 14,
+                        color:
+                            theme.isDarkMode
+                                ? Colors.grey[400]
+                                : Colors.grey[600],
                       ),
                     ),
                   ],
@@ -466,7 +497,8 @@ class _AddPage extends State<AddPage> {
                                         maxLines: 1,
                                       ),
                                       subtitle: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             music.artist.name,
@@ -498,8 +530,11 @@ class _AddPage extends State<AddPage> {
                                               vertical: 4,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: Colors.red.withOpacity(0.2),
-                                              borderRadius: BorderRadius.circular(12),
+                                              color: Colors.red.withOpacity(
+                                                0.2,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
@@ -548,7 +583,10 @@ class _AddPage extends State<AddPage> {
                                                 icon: Icon(
                                                   Icons.add_circle_outline,
                                                   color: application
-                                                      .getUniqueColor(music.id, context: context),
+                                                      .getUniqueColor(
+                                                        music.id,
+                                                        context: context,
+                                                      ),
                                                   size: 28,
                                                 ),
                                                 onPressed:
@@ -597,8 +635,6 @@ class _AddPage extends State<AddPage> {
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
-
-
 
   Future<void> _handlePickMusicFile() async {
     final file = await application.pickMusicFile();

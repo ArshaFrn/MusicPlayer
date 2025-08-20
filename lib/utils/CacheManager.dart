@@ -251,11 +251,6 @@ class CacheManager {
     }
   }
 
-  /// Private passthrough retained for backward compatibility.
-  Future<bool> _saveToCache(User user, Music music, String base64Data) async {
-    return saveToCache(user, music, base64Data);
-  }
-
   /// Returns the cached path (if present) or null.
   Future<String?> getCachedMusicPath(User user, Music music) async {
     try {

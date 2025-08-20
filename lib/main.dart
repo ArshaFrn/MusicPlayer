@@ -44,7 +44,8 @@ class MyApp extends StatelessWidget {
             darkTheme: themeProvider.getDarkTheme(),
             themeMode: themeProvider.themeMode,
             debugShowCheckedModeBanner: false,
-            home: isLoggedIn ? const HomePage() : const LogInPage(title: 'Hertz'),
+            home:
+                isLoggedIn ? const HomePage() : const LogInPage(title: 'Hertz'),
           );
         },
       ),
@@ -191,13 +192,22 @@ class _LogInPage extends State<LogInPage> {
         );
       } else if (response['status'] == "incorrectPassword") {
         print('Incorrect password!');
-        SnackBarUtils.showErrorSnackBar(context, "Incorrect password or username!");
+        SnackBarUtils.showErrorSnackBar(
+          context,
+          "Incorrect password or username!",
+        );
       } else if (response['status'] == "userNotFound") {
         print('User not found!');
-        SnackBarUtils.showErrorSnackBar(context, "Incorrect password or username!");
+        SnackBarUtils.showErrorSnackBar(
+          context,
+          "Incorrect password or username!",
+        );
       } else {
         print("Login failed: ${response['message'] ?? 'Unknown error'}");
-        SnackBarUtils.showErrorSnackBar(context, response['message'] ?? "Login failed!");
+        SnackBarUtils.showErrorSnackBar(
+          context,
+          response['message'] ?? "Login failed!",
+        );
       }
     } catch (e) {
       print("An error occurred during login: $e");
@@ -208,7 +218,7 @@ class _LogInPage extends State<LogInPage> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    
+
     return Scaffold(
       body: Stack(
         children: [
@@ -217,335 +227,387 @@ class _LogInPage extends State<LogInPage> {
           ),
           // Theme toggle button in upper right corner
           Positioned(
-            top: 50,
-            right: 20,
+            top: 60,
+            right: 22,
             child: Consumer<ThemeProvider>(
               builder: (context, theme, child) {
                 return Container(
                   decoration: BoxDecoration(
-                    color: theme.isDarkMode 
-                        ? Colors.black.withOpacity(0.3)
-                        : Colors.white.withOpacity(0.3),
+                    color:
+                        theme.isDarkMode
+                            ? Colors.black.withOpacity(0.3)
+                            : Colors.white.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(25),
                     border: Border.all(
-                      color: theme.isDarkMode 
-                          ? Color(0xFF8456FF)
-                          : Color(0xFFfc6997),
+                      color:
+                          theme.isDarkMode
+                              ? Color(0xFF8456FF)
+                              : Color(0xFFfc6997),
                       width: 2,
                     ),
                   ),
-                                     child: Material(
-                     color: Colors.transparent,
-                     child: InkWell(
-                       borderRadius: BorderRadius.circular(25),
-                       onTap: () => theme.toggleTheme(),
-                       child: Padding(
-                         padding: EdgeInsets.all(12),
-                         child: Icon(
-                           theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                           color: theme.isDarkMode 
-                               ? Color(0xFF8456FF)
-                               : Color(0xFFfc6997),
-                           size: 24,
-                         ),
-                       ),
-                     ),
-                   ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(25),
+                      onTap: () => theme.toggleTheme(),
+                      child: Padding(
+                        padding: EdgeInsets.all(12),
+                        child: Icon(
+                          theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                          color:
+                              theme.isDarkMode
+                                  ? Color(0xFF8456FF)
+                                  : Color(0xFFfc6997),
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
                 );
               },
             ),
           ),
-          Center(
-            child: SingleChildScrollView(
-                             child: Column(
-                 mainAxisAlignment: MainAxisAlignment.center,
-                 children: [
-                   SizedBox(height: 20),
-                   Container(
-                     width: 350,
-                     height: 450,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.5),
-                            blurRadius: 20,
-                            offset: Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: Stack(
-                        children: [
-                          Positioned(
-                            top: 25,
-                            left: 0,
-                            right: 0,
-                            child: Center(
-                              child: Consumer<ThemeProvider>(
-                                builder: (context, theme, child) {
-                                  return ShaderMask(
-                                    shaderCallback: (Rect bounds) {
-                                      return LinearGradient(
-                                        colors: theme.isDarkMode
-                                            ? [
-                                                Color(0xFF8456FF),
-                                                Color(0xFFB388FF),
-                                              ]
-                                            : [
-                                                Color(0xFFfc6997),
-                                                Color(0xFFf8f5f0),
-                                              ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ).createShader(bounds);
-                                    },
-                                    child: Text(
-                                      'LOG IN',
-                                      style: TextStyle(
-                                        fontSize: 40,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.white,
-                                        letterSpacing: 3,
-                                        shadows: [
-                                          Shadow(
-                                            blurRadius: 15,
-                                            color: theme.isDarkMode
-                                                ? Color(0xFF8456FF)
-                                                : Color(0xFFfc6997),
-                                            offset: Offset(1, 3),
-                                          ),
-                                          Shadow(
-                                            blurRadius: 15,
-                                            color: theme.isDarkMode
-                                                ? Color(0xFFB388FF)
-                                                : Color(0xFFfc6997),
-                                            offset: Offset(0, 0),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          Positioned.fill(
-                            top: 65,
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 25.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                                                     SizedBox(height: 25),
-                                   TextField(
-                                    controller: _usernameController,
-                                    style: TextStyle(color: Colors.white),
-                                    decoration: InputDecoration(
-                                      prefixIcon: Icon(
-                                        Icons.person,
-                                        color: Colors.white70,
-                                      ),
-                                      hintText: 'Username',
-                                      hintStyle: TextStyle(
-                                        color: Colors.white70,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.white.withOpacity(0.15),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        vertical: 18,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color: Colors.white24,
-                                          width: 1.3,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color: Color(0xFF8456FF),
-                                          width: 2,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 30),
-                                  TextField(
-                                    controller: _passwordController,
-                                    obscureText: true,
-                                    style: TextStyle(color: Colors.white),
-                                    decoration: InputDecoration(
-                                      prefixIcon: Icon(
-                                        Icons.lock,
-                                        color: Colors.white70,
-                                      ),
-                                      hintText: 'Password',
-                                      hintStyle: TextStyle(
-                                        color: Colors.white70,
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.white.withOpacity(0.15),
-                                      contentPadding: EdgeInsets.symmetric(
-                                        vertical: 18,
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color: Colors.white24,
-                                          width: 1.3,
-                                        ),
-                                      ),
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(14),
-                                        borderSide: BorderSide(
-                                          color: Color(0xFF8456FF),
-                                          width: 2,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                                                     SizedBox(height: 20),
-                                   ElevatedButton(
-                                    onPressed: () {
-                                      if (isLogInValid(context)) {
-                                        logInProcess(context);
-                                      }
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: themeProvider.isDarkMode
-                                          ? Color(0xFF8456FF)
-                                          : Color(0xFFfc6997),
-                                      foregroundColor: Colors.white,
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 30,
-                                        vertical: 14,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      'Log In',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        letterSpacing: 2,
-                                        shadows: [
-                                          Shadow(
-                                            blurRadius: 15,
-                                            color: Color(0xFF8456FF),
-                                            offset: Offset(1, 2),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                                                     SizedBox(height: 8),
-                                   Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        "Not registered on Hertz yet?",
-                                        style: TextStyle(
-                                          color: Colors.white70,
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (context) => SignUpPage(),
-                                            ),
-                                          );
-                                        },
-                                        child: Text(
-                                          "Sign Up",
-                                          style: TextStyle(
-                                            color: themeProvider.isDarkMode
-                                                ? Color(0xFF8456FF)
-                                                : Color(0xFFfc6997),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                            decoration:
-                                                TextDecoration.underline,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (context) =>
-                                                      ForgotPasswordPage(),
-                                            ),
-                                          );
-                                        },
-                                        child: Text(
-                                          "Forgot Password?",
-                                          style: TextStyle(
-                                            color: themeProvider.isDarkMode
-                                                ? Color(0xFF8456FF)
-                                                : Color(0xFFfc6997),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                            decoration:
-                                                TextDecoration.underline,
-                                          ),
-                                        ),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (context) => AdminLoginPage(),
-                                            ),
-                                          );
-                                        },
-                                        child: Text(
-                                          "Admin?",
-                                          style: TextStyle(
-                                            color: themeProvider.isDarkMode
-                                                ? Color(0xFF8456FF)
-                                                : Color(0xFFfc6997),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 17,
-                                            decoration:
-                                                TextDecoration.underline,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+          Positioned(
+            top: 100,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              ignoring: true,
+              child: Center(
+                child: ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return LinearGradient(
+                      colors:
+                          themeProvider.isDarkMode
+                              ? [Color(0xFF8456FF), Color(0xFFB388FF)]
+                              : [Color(0xFFfc6997), Color(0xFFf8f5f0)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ).createShader(bounds);
+                  },
+                  child: Text(
+                    'Hertz',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 60,
+                      fontWeight: FontWeight.w400,
+                      fontFamily: 'Orbitron',
+                      color: Colors.white,
+                      letterSpacing: 6,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 24,
+                          color: Color(0xFFFF5AF7),
+                          offset: Offset(0, 0),
+                        ),
+                        Shadow(
+                          blurRadius: 48,
+                          color: Color(0xFF8456FF),
+                          offset: Offset(0, 0),
+                        ),
+                        Shadow(
+                          blurRadius: 2,
+                          color: Colors.white,
+                          offset: Offset(0, 0),
+                        ),
+                      ],
                     ),
-                    SizedBox(height: 15),
-                    FingerprintLoginButton(),
-                  ],
+                  ),
                 ),
               ),
             ),
+          ),
+          Center(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(height: 80),
+                  Container(
+                    width: 350,
+                    height: 450,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 20,
+                          offset: Offset(0, 10),
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          top: 25,
+                          left: 0,
+                          right: 0,
+                          child: Center(
+                            child: Consumer<ThemeProvider>(
+                              builder: (context, theme, child) {
+                                return ShaderMask(
+                                  shaderCallback: (Rect bounds) {
+                                    return LinearGradient(
+                                      colors:
+                                          theme.isDarkMode
+                                              ? [
+                                                Color(0xFF8456FF),
+                                                Color(0xFFB388FF),
+                                              ]
+                                              : [
+                                                Color(0xFFfc6997),
+                                                Color(0xFFf8f5f0),
+                                              ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ).createShader(bounds);
+                                  },
+                                  child: Text(
+                                    'LOG IN',
+                                    style: TextStyle(
+                                      fontSize: 40,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                      letterSpacing: 3,
+                                      shadows: [
+                                        Shadow(
+                                          blurRadius: 15,
+                                          color:
+                                              theme.isDarkMode
+                                                  ? Color(0xFF8456FF)
+                                                  : Color(0xFFfc6997),
+                                          offset: Offset(1, 3),
+                                        ),
+                                        Shadow(
+                                          blurRadius: 15,
+                                          color:
+                                              theme.isDarkMode
+                                                  ? Color(0xFFB388FF)
+                                                  : Color(0xFFfc6997),
+                                          offset: Offset(0, 0),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        Positioned.fill(
+                          top: 65,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 25.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(height: 25),
+                                TextField(
+                                  controller: _usernameController,
+                                  style: TextStyle(color: Colors.white),
+                                  decoration: InputDecoration(
+                                    prefixIcon: Icon(
+                                      Icons.person,
+                                      color: Colors.white70,
+                                    ),
+                                    hintText: 'Username',
+                                    hintStyle: TextStyle(color: Colors.white70),
+                                    filled: true,
+                                    fillColor: Colors.white.withOpacity(0.15),
+                                    contentPadding: EdgeInsets.symmetric(
+                                      vertical: 18,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide(
+                                        color: Colors.white24,
+                                        width: 1.3,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide(
+                                        color: Color(0xFF8456FF),
+                                        width: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 30),
+                                TextField(
+                                  controller: _passwordController,
+                                  obscureText: true,
+                                  style: TextStyle(color: Colors.white),
+                                  decoration: InputDecoration(
+                                    prefixIcon: Icon(
+                                      Icons.lock,
+                                      color: Colors.white70,
+                                    ),
+                                    hintText: 'Password',
+                                    hintStyle: TextStyle(color: Colors.white70),
+                                    filled: true,
+                                    fillColor: Colors.white.withOpacity(0.15),
+                                    contentPadding: EdgeInsets.symmetric(
+                                      vertical: 18,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide(
+                                        color: Colors.white24,
+                                        width: 1.3,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                      borderSide: BorderSide(
+                                        color: Color(0xFF8456FF),
+                                        width: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 20),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    if (isLogInValid(context)) {
+                                      logInProcess(context);
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor:
+                                        themeProvider.isDarkMode
+                                            ? Color(0xFF8456FF)
+                                            : Color(0xFFfc6997),
+                                    foregroundColor: Colors.white,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 30,
+                                      vertical: 14,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Log In',
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                      letterSpacing: 2,
+                                      shadows: [
+                                        Shadow(
+                                          blurRadius: 15,
+                                          color: Color(0xFF8456FF),
+                                          offset: Offset(1, 2),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "Not registered on Hertz yet?",
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => SignUpPage(),
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        "Sign Up",
+                                        style: TextStyle(
+                                          color:
+                                              themeProvider.isDarkMode
+                                                  ? Color(0xFF8456FF)
+                                                  : Color(0xFFfc6997),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) =>
+                                                    ForgotPasswordPage(),
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        "Forgot Password?",
+                                        style: TextStyle(
+                                          color:
+                                              themeProvider.isDarkMode
+                                                  ? Color(0xFF8456FF)
+                                                  : Color(0xFFfc6997),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder:
+                                                (context) => AdminLoginPage(),
+                                          ),
+                                        );
+                                      },
+                                      child: Text(
+                                        "Admin?",
+                                        style: TextStyle(
+                                          color:
+                                              themeProvider.isDarkMode
+                                                  ? Color(0xFF8456FF)
+                                                  : Color(0xFFfc6997),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 17,
+                                          decoration: TextDecoration.underline,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 15),
+                  FingerprintLoginButton(),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

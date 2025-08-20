@@ -62,7 +62,7 @@ class _HomePageState extends State<HomePage> {
         PlaylistsPage(user: _user, onNavigateToPage: navigateToPage),
         AddPage(user: _user, onNavigateToPage: navigateToPage),
         ProfilePage(
-          user: _user, 
+          user: _user,
           onNavigateToPage: navigateToPage,
           onNavigateToFavourites: () {
             setState(() {
@@ -106,8 +106,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     if (!_isUserLoaded) {
@@ -127,56 +125,75 @@ class _HomePageState extends State<HomePage> {
         onBackPressed: () => goBackToMainNavigation(),
       );
     } else {
-      currentPage = IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
-      );
+      currentPage = IndexedStack(index: _selectedIndex, children: _pages);
     }
 
     return Scaffold(
       body: currentPage,
-      bottomNavigationBar: _showFavourites || _showRecentlyPlayed 
-        ? null 
-        : Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              MiniPlayer(),
-              Consumer<ThemeProvider>(
-                builder: (context, themeProvider, child) {
-                  return BottomNavigationBar(
-                    selectedItemColor: themeProvider.isDarkMode ? Colors.white : Colors.white,
-                    unselectedItemColor: themeProvider.isDarkMode ? Colors.white60 : Colors.white60,
-                    backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
-                    currentIndex: _selectedIndex,
-                    onTap: _onItemTapped,
-                    type: BottomNavigationBarType.shifting,
-                    items: [
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.library_music),
-                        label: "Library",
-                        backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.playlist_play),
-                        label: "Playlists",
-                        backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.add_circle),
-                        label: "Add",
-                        backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
-                      ),
-                      BottomNavigationBarItem(
-                        icon: Icon(Icons.person),
-                        label: "Profile",
-                        backgroundColor: themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
-                      ),
-                    ],
-                  );
-                },
+      bottomNavigationBar:
+          _showFavourites || _showRecentlyPlayed
+              ? null
+              : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  MiniPlayer(),
+                  Consumer<ThemeProvider>(
+                    builder: (context, themeProvider, child) {
+                      return BottomNavigationBar(
+                        selectedItemColor:
+                            themeProvider.isDarkMode
+                                ? Colors.white
+                                : Colors.white,
+                        unselectedItemColor:
+                            themeProvider.isDarkMode
+                                ? Colors.white60
+                                : Colors.white60,
+                        backgroundColor:
+                            themeProvider.isDarkMode
+                                ? Colors.black
+                                : Color(0xFFfc6997),
+                        currentIndex: _selectedIndex,
+                        onTap: _onItemTapped,
+                        type: BottomNavigationBarType.shifting,
+                        items: [
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.library_music),
+                            label: "Library",
+                            backgroundColor:
+                                themeProvider.isDarkMode
+                                    ? Colors.black
+                                    : Color(0xFFfc6997),
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.playlist_play),
+                            label: "Playlists",
+                            backgroundColor:
+                                themeProvider.isDarkMode
+                                    ? Colors.black
+                                    : Color(0xFFfc6997),
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.add_circle),
+                            label: "Add",
+                            backgroundColor:
+                                themeProvider.isDarkMode
+                                    ? Colors.black
+                                    : Color(0xFFfc6997),
+                          ),
+                          BottomNavigationBarItem(
+                            icon: Icon(Icons.person),
+                            label: "Profile",
+                            backgroundColor:
+                                themeProvider.isDarkMode
+                                    ? Colors.black
+                                    : Color(0xFFfc6997),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
               ),
-            ],
-          ),
     );
   }
 }
