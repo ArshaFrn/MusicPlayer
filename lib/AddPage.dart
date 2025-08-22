@@ -101,6 +101,7 @@ class _AddPage extends State<AddPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Consumer<ThemeProvider>(
           builder: (context, theme, child) {
             return Row(

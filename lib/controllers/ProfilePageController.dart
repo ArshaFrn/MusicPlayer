@@ -10,13 +10,14 @@ import '../TcpClient.dart';
 import '../main.dart';
 import '../ChangePasswordPage.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../utils/AudioController.dart';
 
 class ProfilePageController {
   final User user;
   final TextEditingController emailController;
   final TextEditingController fullnameController;
   final ImagePicker picker;
-  
+
   bool isLoading = false;
   bool isLoadingProfile = true;
 
@@ -32,8 +33,7 @@ class ProfilePageController {
   /// Check if profile image is cached locally
   Future<bool> isProfileImageCached() async {
     try {
-      if (user.profileImageUrl == null ||
-          user.profileImageUrl!.isEmpty) {
+      if (user.profileImageUrl == null || user.profileImageUrl!.isEmpty) {
         return false;
       }
 
@@ -243,6 +243,7 @@ class ProfilePageController {
     final prefs = await SharedPreferences.getInstance();
     // Only set isLoggedIn to false, keep other credentials for fingerprint login
     await prefs.setBool('isLoggedIn', false);
+    await AudioController.instance.stopAndReset();
     if (context.mounted) {
       Navigator.pushReplacement(
         context,
@@ -257,7 +258,7 @@ class ProfilePageController {
       path: 'MusicAppShayan@gmail.com',
       query: 'subject=Music App Support Request',
     );
-    
+
     if (await canLaunchUrl(emailUri)) {
       await launchUrl(emailUri);
     } else {
@@ -316,7 +317,9 @@ class ProfilePageController {
           isLoading = false;
         } else {
           isLoading = false;
-          throw Exception(response['message'] ?? "Failed to upload profile picture");
+          throw Exception(
+            response['message'] ?? "Failed to upload profile picture",
+          );
         }
       } else {
         // No image selected - throw a specific exception for this case
@@ -390,7 +393,9 @@ class ProfilePageController {
       } else if (response['status'] == 'emailAlreadyExists' ||
           response['status'] == 'duplicateEmail') {
         // Handle duplicate email error
-        throw Exception("Email already exists. Please use a different email address.");
+        throw Exception(
+          "Email already exists. Please use a different email address.",
+        );
       } else {
         throw Exception(response['message'] ?? 'Update failed');
       }

@@ -1031,7 +1031,7 @@ class _LibraryPageState extends State<LibraryPage> {
   Future<void> _onLikeTap(Music music) async {
     final success = await application.toggleLike(widget.user, music);
     if (success) {
-      setState(() {});
+      await _fetchTracksFromServer();
     }
   }
 

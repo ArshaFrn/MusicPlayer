@@ -25,6 +25,10 @@ class _SignUpPageState extends State<SignUpPage> {
   final FocusNode _passwordFocusNode = FocusNode();
   final FocusNode _usernameFocusNode = FocusNode();
 
+  void _onControllersChanged() {
+    setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
@@ -40,10 +44,17 @@ class _SignUpPageState extends State<SignUpPage> {
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
       }
     });
+
+    _usernameController.addListener(_onControllersChanged);
+    _emailController.addListener(_onControllersChanged);
+    _passwordController.addListener(_onControllersChanged);
   }
 
   @override
   void dispose() {
+    _usernameController.removeListener(_onControllersChanged);
+    _emailController.removeListener(_onControllersChanged);
+    _passwordController.removeListener(_onControllersChanged);
     _passwordFocusNode.dispose();
     _passwordController.dispose();
     _usernameController.dispose();
@@ -667,28 +678,10 @@ class _SignUpPageState extends State<SignUpPage> {
                                       ),
                                     ),
                                   ),
-                                  if (_fullnameController.text.isNotEmpty &&
-                                      _fullnameController.text.isEmpty)
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                        top: 8,
-                                        left: 12,
-                                      ),
-                                      child: Text(
-                                        'Full Name is required',
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
                                   SizedBox(height: 25),
                                   TextField(
                                     controller: _usernameController,
                                     focusNode: _usernameFocusNode,
-                                    onChanged: (value) {
-                                      setState(() {});
-                                    },
                                     onTap: () {
                                       showUsernameRequirementsSnackBar(context);
                                     },
@@ -723,29 +716,9 @@ class _SignUpPageState extends State<SignUpPage> {
                                       ),
                                     ),
                                   ),
-                                  if (_usernameController.text.isNotEmpty &&
-                                      !isUsernameValid(
-                                        _usernameController.text,
-                                      ))
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                        top: 8,
-                                        left: 12,
-                                      ),
-                                      child: Text(
-                                        'Username must be at least 8 characters, no spaces, only alphanumeric and underscores',
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
                                   SizedBox(height: 25),
                                   TextField(
                                     controller: _emailController,
-                                    onChanged: (value) {
-                                      setState(() {});
-                                    },
                                     style: TextStyle(color: textColor),
                                     decoration: InputDecoration(
                                       prefixIcon: Icon(
@@ -775,29 +748,11 @@ class _SignUpPageState extends State<SignUpPage> {
                                       ),
                                     ),
                                   ),
-                                  if (_emailController.text.isNotEmpty &&
-                                      !isEmailValid(_emailController.text))
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                        top: 8,
-                                        left: 12,
-                                      ),
-                                      child: Text(
-                                        'Please enter a valid email address',
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
                                   SizedBox(height: 25),
                                   TextField(
                                     controller: _passwordController,
                                     focusNode: _passwordFocusNode,
                                     obscureText: true,
-                                    onChanged: (value) {
-                                      setState(() {});
-                                    },
                                     onTap: () {
                                       showPasswordRequirementsSnackBar(context);
                                     },
@@ -832,26 +787,6 @@ class _SignUpPageState extends State<SignUpPage> {
                                       ),
                                     ),
                                   ),
-                                  if (_passwordController.text.isNotEmpty &&
-                                      !isPasswordValid(
-                                        _passwordController.text,
-                                        _usernameController.text,
-                                      ))
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                        top: 8,
-                                        left: 12,
-                                      ),
-                                      child: Text(
-                                        _passwordErrorText.isNotEmpty
-                                            ? _passwordErrorText
-                                            : 'Password must meet all requirements',
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
                                   SizedBox(height: 20),
                                   ElevatedButton(
                                     onPressed: () {

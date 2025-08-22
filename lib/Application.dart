@@ -116,7 +116,6 @@ class Application {
   }
 
   String? getFileExtension(String path) {
-    // Use path package to properly extract file extension
     final String extension = p.extension(path);
     return extension.isEmpty ? null : extension;
   }
@@ -166,10 +165,7 @@ class Application {
       final duration = metadata.duration?.inSeconds ?? 0;
       final album = metadata.album?.trim() ?? 'Unknown Album';
       final genreList = metadata.genres;
-      final genre =
-          (genreList.isNotEmpty)
-              ? genreList.first
-              : 'Unknown Genre';
+      final genre = (genreList.isNotEmpty) ? genreList.first : 'Unknown Genre';
       final releaseDate = metadata.year?.toString() ?? 'Unknown';
       return {
         'title': title,
@@ -211,9 +207,9 @@ class Application {
       durationInSeconds: duration,
       releaseDate: releaseDate,
       album: album,
-      filePath: '', // File path will be set later by decodeFile
+      filePath: '',
       extension: extension,
-      isPublic: false, // Default to public
+      isPublic: false,
     );
   }
 
@@ -288,7 +284,10 @@ class Application {
   Color getUniqueColor(int id, {BuildContext? context}) {
     if (context != null) {
       try {
-        final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+        final themeProvider = Provider.of<ThemeProvider>(
+          context,
+          listen: false,
+        );
         if (themeProvider.isLightMode) {
           final List<Color> lightColors = [
             Color(0xFFfc6997), // Main pink
@@ -309,7 +308,8 @@ class Application {
     return _colorList[id.abs() % _colorList.length];
   }
 
-  Color getPlaylistColor(int id, {BuildContext? context}) => getUniqueColor(id, context: context);
+  Color getPlaylistColor(int id, {BuildContext? context}) =>
+      getUniqueColor(id, context: context);
 
   void showMusicDetailsDialog(BuildContext context, Music music) {
     showDialog(
@@ -444,16 +444,24 @@ class Application {
         sorted.sort(
           (a, b) =>
               isAsc
-                  ? a.artist.name.toLowerCase().compareTo(b.artist.name.toLowerCase())
-                  : b.artist.name.toLowerCase().compareTo(a.artist.name.toLowerCase()),
+                  ? a.artist.name.toLowerCase().compareTo(
+                    b.artist.name.toLowerCase(),
+                  )
+                  : b.artist.name.toLowerCase().compareTo(
+                    a.artist.name.toLowerCase(),
+                  ),
         );
         break;
       case filterOption.albumAsc:
         sorted.sort(
           (a, b) =>
               isAsc
-                  ? (a.album.name ?? '').toLowerCase().compareTo((b.album.name ?? '').toLowerCase())
-                  : (b.album.name ?? '').toLowerCase().compareTo((a.album.name ?? '').toLowerCase()),
+                  ? (a.album.name ?? '').toLowerCase().compareTo(
+                    (b.album.name ?? '').toLowerCase(),
+                  )
+                  : (b.album.name ?? '').toLowerCase().compareTo(
+                    (a.album.name ?? '').toLowerCase(),
+                  ),
         );
         break;
       case filterOption.durationDesc:
@@ -1011,7 +1019,10 @@ class Application {
   Future<bool> downloadMusic(User user, Music music) async {
     try {
       // Use the existing cache system to download and cache the music
-      final cachedPath = await cacheManager.ensureCached(user: user, music: music);
+      final cachedPath = await cacheManager.ensureCached(
+        user: user,
+        music: music,
+      );
       if (cachedPath == null) return false;
 
       // Also export to device public Music directory (Android, via MethodChannel)
@@ -1021,11 +1032,12 @@ class Application {
           final bytes = Uint8List.fromList(await file.readAsBytes());
           final mimeType = _mimeTypeForExtension(music.extension);
           const MethodChannel channel = MethodChannel('hertz/media_store');
-          final savedUri = await channel.invokeMethod<String>('saveAudioToPublic', {
-            'fileName': '${music.title}.${music.extension}',
-            'mimeType': mimeType,
-            'bytes': bytes,
-          });
+          final savedUri = await channel
+              .invokeMethod<String>('saveAudioToPublic', {
+                'fileName': '${music.title}.${music.extension}',
+                'mimeType': mimeType,
+                'bytes': bytes,
+              });
           print('Saved to device (MediaStore): $savedUri');
         }
       } catch (e) {
@@ -1062,8 +1074,9 @@ class Application {
     try {
       final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
       final response = await tcpClient.makeMusicPublic(user.username, music.id);
-      
-      if (response['status'] == 'makeMusicPublicSuccess' || response['status'] == 'success') {
+
+      if (response['status'] == 'makeMusicPublicSuccess' ||
+          response['status'] == 'success') {
         music.isPublic = true;
         return true;
       }
