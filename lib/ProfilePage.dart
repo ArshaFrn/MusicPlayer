@@ -14,7 +14,6 @@ import 'LibraryPage.dart';
 import 'PlaylistsPage.dart';
 import 'RecentlyPlayedPage.dart';
 import 'FavouritesPage.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'utils/ThemeProvider.dart';
 import 'controllers/ProfilePageController.dart';
@@ -736,18 +735,10 @@ class _ProfilePage extends State<ProfilePage> {
                             );
                           }
                         } else if (value == 'contact_us') {
-                          try {
-                            _controller.contactUs();
-                            SnackBarUtils.showSuccessSnackBar(
-                              context,
-                              "Email app opened successfully! Please send your message to MusicAppShayan@gmail.com",
-                            );
-                          } catch (e) {
-                            SnackBarUtils.showErrorSnackBar(
-                              context,
-                              "Could not open email app. Please contact us at: MusicAppShayan@gmail.com",
-                            );
-                          }
+                          SnackBarUtils.showInfoSnackBar(
+                            context,
+                            "Please contact us at: MusicAppShayan@gmail.com",
+                          );
                         }
                       },
                       icon: Icon(

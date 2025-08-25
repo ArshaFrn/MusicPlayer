@@ -112,7 +112,6 @@ class _HomePageState extends State<HomePage> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Determine which page to show
     Widget currentPage;
     if (_showFavourites) {
       currentPage = FavouritesPage(

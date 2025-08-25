@@ -45,7 +45,6 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
     });
 
     try {
-      // Refresh the playlist data from server
       final playlists = await _tcpClient.getUserPlaylists(widget.user);
       final updatedPlaylist = playlists.firstWhere(
         (p) => p.id == widget.playlist.id,
@@ -54,7 +53,6 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
 
       setState(() {
         _tracks = updatedPlaylist.tracks;
-        // Sync like states for playlist tracks
         _application.syncLikeState(widget.user, _tracks);
         _isLoading = false;
       });
@@ -72,12 +70,10 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
 
   Future<void> _onTrackTap(BuildContext context, Music music) async {
     try {
-      // Check if the audio controller is already playing the same song from the same playlist
       final audioController = AudioController.instance;
       if (audioController.hasTrack &&
           audioController.currentTrack!.id == music.id &&
           audioController.playlist == _tracks) {
-        // The same song from the same playlist is already playing, navigate to PlayPage without reinitializing
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -92,7 +88,6 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
         return;
       }
 
-      // Always restart playback when playing from playlist (even if same song from different playlist)
       await _handlePlaylistMusicPlayback(context, music);
     } catch (e) {
       print('Error handling track tap: $e');
@@ -113,7 +108,6 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
     try {
       final CacheManager cacheManager = CacheManager.instance;
 
-      // Check if music is already cached
       final bool isCached = await cacheManager.isMusicCached(
         widget.user,
         music,
@@ -126,7 +120,6 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
           music,
         );
         if (cachedPath != null) {
-          // Navigate to play page with playlist tracks
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -134,8 +127,7 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                   (context) => PlayPage(
                     music: music,
                     user: widget.user,
-                    playlist:
-                        _tracks, // Use playlist tracks instead of user.tracks
+                    playlist: _tracks,
                   ),
             ),
           );
@@ -143,16 +135,13 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
         }
       }
 
-      // Music is not cached, download and cache it
       print('Downloading and caching music from playlist: ${music.title}');
 
-      // Show loading indicator
       _application.showDownloadingSnackBar(
         context,
         'Downloading ${music.title}...',
       );
 
-      // Download and cache the music
       final bool downloadSuccess = await cacheManager.downloadAndCacheMusic(
         user: widget.user,
         music: music,
@@ -161,7 +150,6 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
       if (downloadSuccess) {
         _application.hideSnackBar(context);
 
-        // Navigate to play page with playlist tracks
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -169,8 +157,7 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                 (context) => PlayPage(
                   music: music,
                   user: widget.user,
-                  playlist:
-                      _tracks, // Use playlist tracks instead of user.tracks
+                  playlist: _tracks,
                 ),
           ),
         );
@@ -247,6 +234,11 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
       );
 
       if (response['status'] == 'deleteSongFromPlaylistSuccess') {
+        final audioController = AudioController.instance;
+        if (audioController.hasTrack &&
+            audioController.currentTrack!.id == music.id) {
+          await audioController.stopAndReset();
+        }
         setState(() {
           _tracks.remove(music);
         });
@@ -284,7 +276,7 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
             playlist: widget.playlist,
             tcpClient: _tcpClient,
             onTrackAdded: () {
-              _loadPlaylistTracks(); // Refresh the playlist after adding track
+              _loadPlaylistTracks();
             },
           ),
     );
@@ -295,7 +287,10 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = themeProvider.isDarkMode;
     final primaryColor = isDark ? Color(0xFF8456FF) : Color(0xFFfc6997);
-    final playlistColor = isDark ? _application.getPlaylistColor(widget.playlist.id) : primaryColor;
+    final playlistColor =
+        isDark
+            ? _application.getPlaylistColor(widget.playlist.id)
+            : primaryColor;
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Color(0xFFf8f5f0),
@@ -321,8 +316,8 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                   Text(
                     '${_tracks.length} tracks',
                     style: TextStyle(
-                      color: isDark ? Colors.white70 : Colors.black54, 
-                      fontSize: 14
+                      color: isDark ? Colors.white70 : Colors.black54,
+                      fontSize: 14,
                     ),
                   ),
                 ],
@@ -366,14 +361,20 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                                           Icon(
                                             Icons.playlist_play,
                                             size: 64,
-                                            color: isDark ? Colors.grey : Colors.grey[600],
+                                            color:
+                                                isDark
+                                                    ? Colors.grey
+                                                    : Colors.grey[600],
                                           ),
                                           SizedBox(height: 16),
                                           Text(
                                             'No tracks in this playlist',
                                             style: TextStyle(
                                               fontSize: 18,
-                                              color: isDark ? Colors.grey : Colors.grey[600],
+                                              color:
+                                                  isDark
+                                                      ? Colors.grey
+                                                      : Colors.grey[600],
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
@@ -381,7 +382,10 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                                           Text(
                                             'Add some tracks to get started',
                                             style: TextStyle(
-                                              color: isDark ? Colors.grey : Colors.grey[600],
+                                              color:
+                                                  isDark
+                                                      ? Colors.grey
+                                                      : Colors.grey[600],
                                               fontSize: 14,
                                             ),
                                           ),
@@ -410,14 +414,20 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                                     title: Text(
                                       music.title,
                                       style: TextStyle(
-                                        color: isDark ? Colors.white : Colors.black87,
+                                        color:
+                                            isDark
+                                                ? Colors.white
+                                                : Colors.black87,
                                         fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                     subtitle: Text(
                                       music.artist.name,
                                       style: TextStyle(
-                                        color: isDark ? Colors.white70 : Colors.black54
+                                        color:
+                                            isDark
+                                                ? Colors.white70
+                                                : Colors.black54,
                                       ),
                                     ),
                                     trailing: Row(
@@ -429,7 +439,10 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                                           ),
                                           style: TextStyle(
                                             fontSize: 11,
-                                            color: isDark ? Colors.white70 : Colors.black54,
+                                            color:
+                                                isDark
+                                                    ? Colors.white70
+                                                    : Colors.black54,
                                           ),
                                         ),
                                         SizedBox(width: 15),
@@ -458,7 +471,10 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                                                   ? Icons.favorite
                                                   : Icons.favorite_border,
                                               color: _application
-                                                  .getUniqueColor(music.id, context: context),
+                                                  .getUniqueColor(
+                                                    music.id,
+                                                    context: context,
+                                                  ),
                                               size: 25,
                                             ),
                                           ),
@@ -470,10 +486,7 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
                               ),
                     ),
           ),
-          Container(
-            margin: EdgeInsets.only(bottom: 55), // ← Add bottom margin
-            child: MiniPlayer(),
-          ),
+          Container(margin: EdgeInsets.only(bottom: 55), child: MiniPlayer()),
         ],
       ),
     );

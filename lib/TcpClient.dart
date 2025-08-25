@@ -278,7 +278,6 @@ class TcpClient {
         socket.write('${jsonEncode(request)}\n\n');
         print("Request sent: ${jsonEncode(request)}");
 
-        // Accumulate incoming TCP packets until server closes connection
         final StringBuffer responseBuffer = StringBuffer();
         final Completer<String> responseCompleter = Completer<String>();
 
@@ -331,7 +330,7 @@ class TcpClient {
 
           if (fullResponse.length < 1000) {
             print(
-              'Error: Response seems too short: ${fullResponse.length} characters',
+              'Response seems too short: ${fullResponse.length} characters',
             );
             if (attempt < maxRetries) {
               print('Retrying...');
@@ -371,11 +370,11 @@ class TcpClient {
                   paddedData.substring(0, min(100, paddedData.length)),
                 );
                 print(
-                  'Padding added successfully. New length: ${paddedData.length}',
+                  'Padding added successfully.',
                 );
                 base64Data = paddedData;
               } catch (e) {
-                print('Error: Invalid Base64 format even with padding: $e');
+                print('Error: Invalid Base64 format with padding: $e');
                 if (attempt < maxRetries) {
                   print('Retrying...');
                   continue;
@@ -383,7 +382,7 @@ class TcpClient {
                 return null;
               }
             } else {
-              print('Data appears truncated, retrying download...');
+              print('Data is truncated, retrying download...');
               if (attempt < maxRetries) {
                 print('Retrying...');
                 continue;
@@ -902,13 +901,11 @@ class TcpClient {
 
       socket.write('${jsonEncode(request)}\n\n');
 
-      // Use a more robust approach for receiving large responses
       String response = '';
       await for (String chunk in socket.cast<List<int>>().transform(
         const Utf8Decoder(),
       )) {
         response += chunk;
-        // Check if we have received a complete JSON response
         if (response.contains('\n\n')) {
           break;
         }
@@ -919,7 +916,6 @@ class TcpClient {
         return {"status": "error", "message": "Empty response from server"};
       }
 
-      // Clean up the response if needed
       response = response.trim();
 
       return jsonDecode(response);

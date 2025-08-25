@@ -38,18 +38,15 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> {
     try {
       final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
 
-      // Get recently played music objects from server
       final recentlyPlayedMusic = await tcpClient.getRecentlyPlayedSongs(
         widget.user.username,
       );
 
-      // Create a map to maintain order and remove duplicates
       final Map<int, Music> uniqueTracks = {};
       for (final music in recentlyPlayedMusic) {
         uniqueTracks[music.id] = music;
       }
 
-      // Convert back to list maintaining order (newer first)
       final orderedTracks = uniqueTracks.values.toList();
 
       setState(() {
@@ -200,7 +197,7 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> {
                     themeProvider.isDarkMode ? Colors.white60 : Colors.white60,
                 backgroundColor:
                     themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
-                currentIndex: 3, // Profile index
+                currentIndex: 3,
                 onTap: (index) {
                   if (widget.onBackPressed != null) {
                     widget.onBackPressed!();
@@ -252,7 +249,6 @@ class _RecentlyPlayedPageState extends State<RecentlyPlayedPage> {
   Future<void> _onLikeTap(Music music) async {
     final success = await application.toggleLike(widget.user, music);
     if (success) {
-      // Refresh the list to show the updated state
       _fetchRecentlyPlayedTracks();
     }
   }

@@ -30,7 +30,6 @@ class _SearchPageState extends State<SearchPage> {
       _searchQuery = value;
       _searchResults =
           value.isEmpty ? [] : application.searchTracks(widget.user, value);
-      // Sync like states for search results
       if (_searchResults.isNotEmpty) {
         application.syncLikeState(widget.user, _searchResults);
       }
@@ -200,7 +199,7 @@ class _SearchPageState extends State<SearchPage> {
         user: widget.user,
         music: music,
       );
-      setState(() {}); //Refresh UI
+      setState(() {});
     } else if (result == 'details') {
       application.showMusicDetailsDialog(context, music);
     }
@@ -213,14 +212,11 @@ class _SearchPageState extends State<SearchPage> {
     }
   }
 
-  /// Handles tap events on music tracks
   Future<void> _onTrackTap(BuildContext context, Music music) async {
     try {
-      // Check if the audio controller is already playing the same song
       final audioController = AudioController.instance;
       if (audioController.hasTrack &&
           audioController.currentTrack!.id == music.id) {
-        // The same song is already playing, navigate to PlayPage without reinitializing
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -235,7 +231,6 @@ class _SearchPageState extends State<SearchPage> {
         return;
       }
 
-      // Handle music playback logic
       final success = await application.handleMusicPlayback(
         context: context,
         user: widget.user,

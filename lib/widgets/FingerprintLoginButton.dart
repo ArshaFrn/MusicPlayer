@@ -22,7 +22,7 @@ class _FingerprintLoginButtonState extends State<FingerprintLoginButton> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Refresh availability when dependencies change (like after login)
+    // Check biometric availability when dependencies change
     _checkBiometricAvailable();
   }
 
@@ -93,7 +93,6 @@ class _FingerprintLoginButtonState extends State<FingerprintLoginButton> {
       );
 
       if (isAuthenticated) {
-        // Set login state
         await prefs.setBool('isLoggedIn', true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -28,9 +28,8 @@ class _LibraryPageState extends State<LibraryPage> {
   final Application application = Application.instance;
   filterOption _selectedSort = filterOption.dateModifiedDesc;
   bool _isLoading = true;
-  String _selectedCategory = 'Songs'; // New: track selected category
+  String _selectedCategory = 'Songs';
 
-  // New: category options
   final List<String> _categories = ['Songs', 'Singers', 'Albums', 'Years'];
 
   @override
@@ -128,7 +127,6 @@ class _LibraryPageState extends State<LibraryPage> {
                 tooltip: "Filter",
                 onSelected: (option) {
                   setState(() {
-                    // If the same base sort is selected, toggle between ascending and descending
                     if (application.getBaseSort(_selectedSort) ==
                         application.getBaseSort(option)) {
                       _selectedSort = application.getOppositeSort(
@@ -141,7 +139,6 @@ class _LibraryPageState extends State<LibraryPage> {
                 },
                 itemBuilder:
                     (context) => [
-                      // Date Modified
                       PopupMenuItem(
                         value: filterOption.dateModifiedDesc,
                         child: Row(
@@ -398,7 +395,6 @@ class _LibraryPageState extends State<LibraryPage> {
             ),
           ),
 
-          // Content based on selected category
           Expanded(
             child:
                 _isLoading
@@ -530,7 +526,6 @@ class _LibraryPageState extends State<LibraryPage> {
   }
 
   Widget _buildSingersView(List<Music> tracks) {
-    // Group tracks by artist
     Map<String, List<Music>> artistGroups = {};
     for (var track in tracks) {
       final artistName = track.artist.name;
@@ -669,7 +664,6 @@ class _LibraryPageState extends State<LibraryPage> {
   }
 
   Widget _buildAlbumsView(List<Music> tracks) {
-    // Group tracks by album
     Map<String, List<Music>> albumGroups = {};
     for (var track in tracks) {
       final albumName = track.album.name ?? 'Unknown Album';
@@ -779,7 +773,6 @@ class _LibraryPageState extends State<LibraryPage> {
   }
 
   Widget _buildYearsView(List<Music> tracks) {
-    // Group tracks by year using release date
     Map<int, List<Music>> yearGroups = {};
     for (var track in tracks) {
       final year = track.year;
@@ -806,7 +799,6 @@ class _LibraryPageState extends State<LibraryPage> {
       );
     }
 
-    // Sort years in descending order
     final sortedYears =
         yearGroups.keys.toList()..sort((a, b) => b.compareTo(a));
 
@@ -975,11 +967,7 @@ class _LibraryPageState extends State<LibraryPage> {
 
   Future<void> _downloadMusic(Music music) async {
     try {
-      // Show download progress
       SnackBarUtils.showInfoSnackBar(context, "Downloading ${music.title}...");
-
-      // Implement download logic here
-      // You can use the existing cache system or create a separate download manager
       final success = await application.downloadMusic(widget.user, music);
 
       if (success) {
@@ -1000,13 +988,11 @@ class _LibraryPageState extends State<LibraryPage> {
 
   Future<void> _makeMusicPublic(Music music) async {
     try {
-      // Show making public progress
       SnackBarUtils.showWarningSnackBar(
         context,
         "Making ${music.title} public...",
       );
-
-      // Implement make public logic here
+      
       final success = await application.makeMusicPublic(widget.user, music);
 
       if (success) {
@@ -1031,18 +1017,17 @@ class _LibraryPageState extends State<LibraryPage> {
   Future<void> _onLikeTap(Music music) async {
     final success = await application.toggleLike(widget.user, music);
     if (success) {
-      await _fetchTracksFromServer();
+      setState(() {});
+    } else {
+      SnackBarUtils.showErrorSnackBar(context, 'Error toggling like');
     }
   }
 
-  /// Handles tap events on music tracks
   Future<void> _onTrackTap(BuildContext context, Music music) async {
     try {
-      // Check if the audio controller is already playing the same song
       final audioController = AudioController.instance;
       if (audioController.hasTrack &&
           audioController.currentTrack!.id == music.id) {
-        // The same song is already playing, navigate to PlayPage without reinitializing
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -1057,7 +1042,6 @@ class _LibraryPageState extends State<LibraryPage> {
         return;
       }
 
-      // Handle music playback logic
       final success = await application.handleMusicPlayback(
         context: context,
         user: widget.user,

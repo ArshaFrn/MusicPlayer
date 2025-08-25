@@ -33,10 +33,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
     });
 
     try {
-      // First, sync the like state with the user's liked songs list
       _syncLikeState();
-
-      // Filter user's tracks to get only liked ones
       final favouriteTracks =
           widget.user.tracks.where((track) => track.isLiked).toList();
 
@@ -52,7 +49,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
     }
   }
 
-  /// Synchronizes the like state of music tracks with the user's liked songs
+  /// Synchronizes the like state
   void _syncLikeState() {
     application.syncLikeState(widget.user, widget.user.tracks);
   }
@@ -193,7 +190,7 @@ class _FavouritesPageState extends State<FavouritesPage> {
                     themeProvider.isDarkMode ? Colors.white60 : Colors.white60,
                 backgroundColor:
                     themeProvider.isDarkMode ? Colors.black : Color(0xFFfc6997),
-                currentIndex: 3, // Profile index
+                currentIndex: 3,
                 onTap: (index) {
                   if (widget.onBackPressed != null) {
                     widget.onBackPressed!();
@@ -293,7 +290,6 @@ class _FavouritesPageState extends State<FavouritesPage> {
   Future<void> _onLikeTap(Music music) async {
     final success = await application.toggleLike(widget.user, music);
     if (success) {
-      // Refresh the list to show the updated state
       _fetchFavouriteTracks();
     }
   }

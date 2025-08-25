@@ -5,12 +5,10 @@ class ThemeProvider extends ChangeNotifier {
   static const String _themeKey = 'app_theme';
   static const String _logoKey = 'app_logo';
   
-  // Initialize with default values to avoid late initialization errors
   ThemeMode _themeMode = ThemeMode.dark;
   String _logoPath = darkLogoPath;
   bool _isDarkMode = true;
   
-  // Theme colors
   static const Color darkPrimaryColor = Color(0xFF8456FF);
   static const Color darkSecondaryColor = Color(0xFF671BAF);
   static const Color darkBackgroundColor = Colors.black;
@@ -21,11 +19,9 @@ class ThemeProvider extends ChangeNotifier {
   static const Color lightBackgroundColor = Color(0xFFf8f5f0);
   static const Color lightSurfaceColor = Colors.white;
   
-  // Logo paths
   static const String darkLogoPath = 'assets/images/darkLogo.jpg';
   static const String lightLogoPath = 'assets/images/lightLogo.jpg';
   
-  // Background paths
   static const String darkBackgroundPath = 'assets/images/LogInBG.jpg';
   static const String lightBackgroundPath = 'assets/images/lightBG.jpg';
 
@@ -52,7 +48,6 @@ class ThemeProvider extends ChangeNotifier {
       
       notifyListeners();
     } catch (e) {
-      // If there's an error loading preferences, keep default values
       print('Error loading theme preferences: $e');
     }
   }
@@ -63,7 +58,6 @@ class ThemeProvider extends ChangeNotifier {
     _themeMode = themeMode;
     _isDarkMode = themeMode == ThemeMode.dark;
     
-    // Automatically change logo based on theme
     if (_isDarkMode) {
       _logoPath = darkLogoPath;
     } else {

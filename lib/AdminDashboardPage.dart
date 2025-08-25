@@ -1,22 +1,8 @@
-// ==============================================
-// Admin Dashboard (Mobile-first)
-// Structure:
-// - Enum: Sections
-// - State & Initialization
-// - UI: build() with AppBar and BottomNavigationBar
-// - Content Builders (Dashboard, Users, Music, Admins)
-// - Dialogs (Users, Music)
-// - Network Calls (fetch lists, delete ops)
-// - Snackbars (error/success)
-// ==============================================
 import 'package:flutter/material.dart';
 import 'Model/Admin.dart';
 import 'TcpClient.dart';
 
-// Mobile sections for bottom navigation
-// ----------------------------------------------
-// Represents the tabs shown in the bottom navigation bar
-// Order is built dynamically based on admin capabilities
+
 enum _Section { dashboard, users, music, admins }
 
 class AdminDashboardPage extends StatefulWidget {
@@ -29,7 +15,6 @@ class AdminDashboardPage extends StatefulWidget {
 }
 
 class _AdminDashboardPageState extends State<AdminDashboardPage> {
-  // State: navigation index, loading flag, and dynamic sections
   int _selectedIndex = 0;
   bool _isLoading = false;
   List<_Section> _navSections = [];
@@ -37,11 +22,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   @override
   void initState() {
     super.initState();
-    // Build navigation sections based on admin capabilities
     _buildSections();
   }
 
-  // Build the list of sections for bottom nav dynamically
   void _buildSections() {
     _navSections = [_Section.dashboard];
     if (widget.admin.hasCapability(Capability.VIEW_USERS)) {
@@ -53,13 +36,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     if (widget.admin.hasCapability(Capability.VIEW_ADMINS)) {
       _navSections.add(_Section.admins);
     }
-    // Ensure selected index is within bounds
     if (_selectedIndex >= _navSections.length) {
       _selectedIndex = 0;
     }
   }
 
-  // UI: Scaffold with AppBar, body content, and BottomNavigationBar
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,7 +88,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           ),
         ],
       ),
-      // Force dark appearance regardless of app theme
       body: Theme(
         data: ThemeData.dark().copyWith(
           scaffoldBackgroundColor: Colors.black,
@@ -166,7 +146,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     );
   }
 
-  // Content Router: returns the page for the selected section
+  // Returns the page
   Widget _buildContent() {
     final section = _navSections[_selectedIndex];
     switch (section) {
@@ -181,7 +161,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     }
   }
 
-  // Page: Dashboard (welcome + capabilities)
   Widget _buildDashboard() {
     return Padding(
       padding: EdgeInsets.all(24),
@@ -236,7 +215,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     );
   }
 
-  // Page: Users Management (entry)
   Widget _buildUsersManagement() {
     return _buildManagementSection(
       'Users Management',
@@ -246,7 +224,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     );
   }
 
-  // Page: Music Management (entry)
   Widget _buildMusicManagement() {
     return _buildManagementSection(
       'Music Management',
@@ -266,7 +243,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     );
   }
 
-  // Shared UI: header + description + action button for a management section
+  // header
   Widget _buildManagementSection(
     String title,
     IconData icon,
@@ -314,7 +291,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     );
   }
 
-  // Network: Fetch all users and open the dialog
+  // Fetch all users and open the dialog
   Future<void> _showUsersList() async {
     setState(() {
       _isLoading = true;
@@ -340,7 +317,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     }
   }
 
-  // Network: Fetch all music and open the dialog
+  // Fetch all music and open the dialog
   Future<void> _showMusicList() async {
     setState(() {
       _isLoading = true;
@@ -367,7 +344,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
   }
 
   Future<void> _showAdminsList() async {
-    // This would need to be implemented based on your backend
     _showErrorSnackBar('Admins management not yet implemented');
   }
 
@@ -489,7 +465,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     );
   }
 
-  // Toggle music public/private (admin)
   Future<void> _toggleMusicPublicity({required int songId, required bool isCurrentlyPublic}) async {
     final confirmed = await showDialog<bool>(
       context: context,

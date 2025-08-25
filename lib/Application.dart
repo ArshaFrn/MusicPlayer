@@ -219,7 +219,6 @@ class Application {
     if (response['status'] == 'likeSuccess') {
       music.isLiked = true;
       music.likeCount += 1;
-      // Add the music object to likedSongs list
       if (!user.likedSongs.contains(music)) {
         user.likedSongs.add(music);
       }
@@ -241,11 +240,9 @@ class Application {
     if (response['status'] == 'dislikeSuccess') {
       music.isLiked = false;
       music.likeCount = (music.likeCount > 0) ? music.likeCount - 1 : 0;
-      // Remove the music object from likedSongs list
       user.likedSongs.removeWhere((likedMusic) => likedMusic.id == music.id);
       return true;
     } else if (response['status'] == 'NotLiked') {
-      // Song is not liked, ensure local state is correct
       music.isLiked = false;
       user.likedSongs.removeWhere((likedMusic) => likedMusic.id == music.id);
       return true;
@@ -262,7 +259,7 @@ class Application {
     }
   }
 
-  /// Synchronizes the like state of music tracks with the user's liked songs
+  /// Synchronizes the like state
   void syncLikeState(User user, List<Music> tracks) {
     for (Music track in tracks) {
       bool isLiked = user.likedSongs.any(
@@ -290,19 +287,18 @@ class Application {
         );
         if (themeProvider.isLightMode) {
           final List<Color> lightColors = [
-            Color(0xFFfc6997), // Main pink
-            Color(0xFFff6b9d), // Lighter pink
-            Color(0xFFff8fab), // Soft pink
-            Color(0xFFff6b8a), // Coral pink
-            Color(0xFFff7eb3), // Rose pink
-            Color(0xFFff6b95), // Deep pink
-            Color(0xFFff8fa3), // Light rose
-            Color(0xFFff6b8f), // Medium pink
+            Color(0xFFfc6997),
+            Color(0xFFff6b9d),
+            Color(0xFFff8fab),
+            Color(0xFFff6b8a),
+            Color(0xFFff7eb3),
+            Color(0xFFff6b95),
+            Color(0xFFff8fa3),
+            Color(0xFFff6b8f),
           ];
           return lightColors[id.abs() % lightColors.length];
         }
       } catch (e) {
-        // Fallback to default colors if Provider is not available
       }
     }
     return _colorList[id.abs() % _colorList.length];
@@ -514,11 +510,11 @@ class Application {
       case filterOption.likeCountAsc:
         return filterOption.likeCountDesc;
       default:
-        return filterOption.dateModifiedDesc; // Default fallback
+        return filterOption.dateModifiedDesc;
     }
   }
 
-  /// for display purposes
+  /// for display
   filterOption getBaseSort(filterOption sort) {
     switch (sort) {
       case filterOption.dateModifiedDesc:
@@ -540,7 +536,7 @@ class Application {
       case filterOption.likeCountAsc:
         return filterOption.likeCountDesc;
       default:
-        return filterOption.dateModifiedDesc; // Default fallback
+        return filterOption.dateModifiedDesc;
     }
   }
 
@@ -610,7 +606,7 @@ class Application {
     );
   }
 
-  /// Handles music playback using cache system
+  /// Handles music playback
   Future<bool> handleMusicPlayback({
     required BuildContext context,
     required User user,
@@ -619,7 +615,6 @@ class Application {
     try {
       final CacheManager cacheManager = CacheManager.instance;
 
-      // Check if music is already cached
       final bool isCached = await cacheManager.isMusicCached(user, music);
 
       if (isCached) {
@@ -629,11 +624,9 @@ class Application {
           music,
         );
         if (cachedPath != null) {
-          // Check if the audio controller is already playing the same song
           final audioController = AudioController.instance;
           if (audioController.hasTrack &&
               audioController.currentTrack!.id == music.id) {
-            // The same song is already playing, navigate to PlayPage without reinitializing
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -648,7 +641,6 @@ class Application {
             return true;
           }
 
-          //Navigate to play page
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -662,10 +654,8 @@ class Application {
       }
       print('Ensuring cached: ${music.title}');
 
-      // Show loading indicator
       _showDownloadingSnackBar(context, 'Downloading ${music.title}...');
 
-      // Ensure cached
       final String? cachedPath = await cacheManager.ensureCached(
         user: user,
         music: music,
@@ -673,11 +663,9 @@ class Application {
 
       if (cachedPath != null) {
         _hideSnackBar(context);
-        // Check if the audio controller is already playing the same song
         final audioController = AudioController.instance;
         if (audioController.hasTrack &&
             audioController.currentTrack!.id == music.id) {
-          // The same song is already playing, navigate to PlayPage without reinitializing
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -689,7 +677,6 @@ class Application {
           return true;
         }
 
-        //Navigate to play page
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -711,7 +698,7 @@ class Application {
     }
   }
 
-  /// Shows a snackbar indicating download is in progress
+  /// download is in progress
   void _showDownloadingSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -742,13 +729,13 @@ class Application {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        duration: Duration(seconds: 30), // Long duration for download
+        duration: Duration(seconds: 10),
         elevation: 15,
       ),
     );
   }
 
-  /// Shows a snackbar for successful playback
+  /// successful playback
   void _showPlaybackSuccessSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -773,13 +760,13 @@ class Application {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        duration: Duration(seconds: 3),
+        duration: Duration(seconds: 2),
         elevation: 15,
       ),
     );
   }
 
-  /// Shows a snackbar for playback errors
+  /// playback errors
   void _showPlaybackErrorSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -810,12 +797,10 @@ class Application {
     );
   }
 
-  /// Hides the current snackbar
   void _hideSnackBar(BuildContext context) {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
   }
 
-  // Public methods for snackbar management
   void showDownloadingSnackBar(BuildContext context, String message) {
     _showDownloadingSnackBar(context, message);
   }
@@ -832,10 +817,9 @@ class Application {
     _showPlaybackErrorSnackBar(context, message);
   }
 
-  /// Clear cache for a user (stops playback safely before deleting files)
+  /// Clear cache for a user
   Future<void> clearUserCache(User user) async {
     try {
-      // Stop playback and reset the audio controller to avoid deleting a file in use
       await AudioController.instance.stopAndReset();
 
       final CacheManager cacheManager = CacheManager.instance;
@@ -846,7 +830,7 @@ class Application {
     }
   }
 
-  /// Get cache information for a user
+  /// Get cache information
   Future<Map<String, dynamic>> getCacheInfo(User user) async {
     try {
       final CacheManager cacheManager = CacheManager.instance;
@@ -862,7 +846,7 @@ class Application {
     }
   }
 
-  /// Show cache management dialog
+  /// cache management dialog
   void showCacheManagementDialog(BuildContext context, User user) {
     showDialog(
       context: context,
@@ -962,17 +946,14 @@ class Application {
     required Music music,
   }) async {
     try {
-      // Check if music is already cached
       final bool isCached = await cacheManager.isMusicCached(user, music);
 
       if (!isCached) {
-        // Show downloading indicator
         _showDownloadingSnackBar(
           context,
           'Downloading ${music.title} for sharing...',
         );
 
-        // Download and cache the music without clearing existing cache
         final bool downloadSuccess = await cacheManager
             .downloadAndCacheMusicForSharing(user: user, music: music);
 
@@ -988,7 +969,6 @@ class Application {
         _hideSnackBar(context);
       }
 
-      // Get the cached file path
       final String? cachedPath = await cacheManager.getCachedMusicPath(
         user,
         music,
@@ -999,11 +979,9 @@ class Application {
         return false;
       }
 
-      // Share the music file with custom filename (just the title)
       await Share.shareXFiles(
         [XFile(cachedPath, name: '${music.title}.${music.extension}')],
-        text: 'Check out this song: ${music.title} by ${music.artist.name}',
-        subject: 'Music Share: ${music.title}',
+        text: '${music.title} by ${music.artist.name}',
       );
 
       _showPlaybackSuccessSnackBar(context, 'Music shared successfully!');
@@ -1018,14 +996,13 @@ class Application {
 
   Future<bool> downloadMusic(User user, Music music) async {
     try {
-      // Use the existing cache system to download and cache the music
       final cachedPath = await cacheManager.ensureCached(
         user: user,
         music: music,
       );
       if (cachedPath == null) return false;
 
-      // Also export to device public Music directory (Android, via MethodChannel)
+      // export to device public Music directory
       try {
         final file = File(cachedPath);
         if (await file.exists()) {
@@ -1042,7 +1019,6 @@ class Application {
         }
       } catch (e) {
         print('Error exporting to MediaStore: $e');
-        // Non-fatal: caching already succeeded
       }
 
       return true;
@@ -1059,8 +1035,6 @@ class Application {
         return 'audio/mpeg';
       case 'aac':
         return 'audio/aac';
-      case 'wav':
-        return 'audio/wav';
       case 'flac':
         return 'audio/flac';
       case 'm4a':
@@ -1075,8 +1049,7 @@ class Application {
       final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
       final response = await tcpClient.makeMusicPublic(user.username, music.id);
 
-      if (response['status'] == 'makeMusicPublicSuccess' ||
-          response['status'] == 'success') {
+      if (response['status'] == 'makeMusicPublicSuccess') {
         music.isPublic = true;
         return true;
       }

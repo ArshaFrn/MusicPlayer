@@ -70,7 +70,6 @@ class Music {
     return cleanExtension;
   }
 
-  /// Parses release date from various formats, with fallback to current date
   static DateTime _parseReleaseDate(dynamic releaseDate) {
     if (releaseDate == null || releaseDate.toString().isEmpty) {
       return DateTime.now();
@@ -124,12 +123,10 @@ class Music {
     : _id = map['id'],
       _title = _cleanTitle(map['title']),
       _artist = Artist(name: map['artist']),
-      // Handle artist as string
       _genre = map['genre'],
       _durationInSeconds = map['durationInSeconds'],
       _releaseDate = _parseReleaseDate(map['releaseDate']),
       _addedDate = DateTime.now(),
-      // Use current time since server doesn't provide this
       _album = Album(
         title: _cleanTitle(map['album']?['title'] ?? 'Unknown Album'),
         artist: Artist(
@@ -139,7 +136,6 @@ class Music {
               'Unknown Artist',
         ),
       ),
-      // Create album with proper title and artist
       _likeCount = map['likeCount'] ?? 0,
       _isLiked = map['isLiked'] ?? false,
       _extension = _cleanExtension(map['extension'] ?? 'mp3'),

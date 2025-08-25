@@ -122,7 +122,6 @@ class _PlayPageState extends State<PlayPage> {
 
       final currentTrackId = currentTrack.id;
 
-      // Early return if we already have album art for this track
       if (_lastExtractedTrackId == currentTrackId && _albumArtBytes != null) {
         return;
       }
@@ -140,7 +139,7 @@ class _PlayPageState extends State<PlayPage> {
           final picture = metadata.pictures.first;
           final imageData = picture.bytes;
 
-          if (imageData != null && imageData.isNotEmpty) {
+          if (imageData.isNotEmpty) {
             setState(() {
               _albumArtBytes = imageData;
               _lastExtractedTrackId = currentTrackId;
@@ -200,7 +199,9 @@ class _PlayPageState extends State<PlayPage> {
 
         return GestureDetector(
           onPanUpdate: (details) {
-            Navigator.pop(context);
+            if (details.delta.dy > 50.0) {
+              Navigator.pop(context);
+            }
           },
           child: Scaffold(
             backgroundColor:

@@ -60,7 +60,6 @@ class _MiniPlayerState extends State<MiniPlayer> {
 
     return GestureDetector(
       onTap: () {
-        // Navigate to PlayPage with the current track
         Navigator.push(
           context,
           MaterialPageRoute(

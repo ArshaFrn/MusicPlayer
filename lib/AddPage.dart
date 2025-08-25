@@ -25,7 +25,7 @@ class _AddPage extends State<AddPage> {
   bool _isRefreshing = false;
   final TextEditingController _searchController = TextEditingController();
   filterOption _selectedSort =
-      filterOption.titleAsc; // Use the same enum as LibraryPage
+      filterOption.titleAsc;
 
   @override
   void initState() {
@@ -56,7 +56,7 @@ class _AddPage extends State<AddPage> {
             }).toList();
       });
     }
-    _sortMusics(); // Apply sorting after filtering
+    _sortMusics();
   }
 
   void _sortMusics() {
@@ -80,7 +80,7 @@ class _AddPage extends State<AddPage> {
       setState(() {
         _publicMusics = publicMusics;
         _filteredMusics =
-            publicMusics; // Initialize filtered list with all public musics
+            publicMusics;
         _isLoading = false;
         _isRefreshing = false;
       });
@@ -153,9 +153,7 @@ class _AddPage extends State<AddPage> {
                 ),
                 tooltip: "Filter",
                 onSelected: (option) {
-                  print('Sort option selected: $option'); // Debug print
                   setState(() {
-                    // If the same base sort is selected, toggle between ascending and descending
                     if (application.getBaseSort(_selectedSort) ==
                         application.getBaseSort(option)) {
                       _selectedSort = application.getOppositeSort(
@@ -168,9 +166,7 @@ class _AddPage extends State<AddPage> {
                   });
                 },
                 itemBuilder: (context) {
-                  print('Building sort menu items'); // Debug print
                   return [
-                    // Title
                     PopupMenuItem<filterOption>(
                       value: filterOption.titleAsc,
                       child: Row(
@@ -198,7 +194,6 @@ class _AddPage extends State<AddPage> {
                         ],
                       ),
                     ),
-                    // Artist
                     PopupMenuItem<filterOption>(
                       value: filterOption.artistAsc,
                       child: Row(
@@ -226,7 +221,6 @@ class _AddPage extends State<AddPage> {
                         ],
                       ),
                     ),
-                    // Album
                     PopupMenuItem<filterOption>(
                       value: filterOption.albumAsc,
                       child: Row(
@@ -254,7 +248,6 @@ class _AddPage extends State<AddPage> {
                         ],
                       ),
                     ),
-                    // Duration
                     PopupMenuItem<filterOption>(
                       value: filterOption.durationDesc,
                       child: Row(
@@ -282,7 +275,6 @@ class _AddPage extends State<AddPage> {
                         ],
                       ),
                     ),
-                    // Like Count
                     PopupMenuItem<filterOption>(
                       value: filterOption.likeCountDesc,
                       child: Row(
@@ -321,7 +313,6 @@ class _AddPage extends State<AddPage> {
       ),
       body: Column(
         children: [
-          // Search bar
           Consumer<ThemeProvider>(
             builder: (context, theme, child) {
               return Container(
@@ -363,7 +354,6 @@ class _AddPage extends State<AddPage> {
             },
           ),
 
-          // Header section
           Consumer<ThemeProvider>(
             builder: (context, theme, child) {
               return Container(
@@ -404,7 +394,6 @@ class _AddPage extends State<AddPage> {
             },
           ),
 
-          // Public music list
           Expanded(
             child:
                 _isLoading
@@ -524,7 +513,6 @@ class _AddPage extends State<AddPage> {
                                       trailing: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          // Like count
                                           Container(
                                             padding: EdgeInsets.symmetric(
                                               horizontal: 8,
@@ -558,7 +546,6 @@ class _AddPage extends State<AddPage> {
                                             ),
                                           ),
                                           SizedBox(width: 8),
-                                          // Add button or Added indicator
                                           isAlreadyAdded
                                               ? Container(
                                                 padding: EdgeInsets.symmetric(
@@ -653,10 +640,8 @@ class _AddPage extends State<AddPage> {
           return;
         }
 
-        // Show public/private choice dialog
         final bool? isPublic = await _showPublicPrivateDialog(context, music);
         if (isPublic == null) {
-          // User cancelled
           return;
         }
 
@@ -777,7 +762,7 @@ class _AddPage extends State<AddPage> {
       base64Data,
       isPublic: isPublic,
     );
-    base64Data = null; // Clear the variable to free memory
+    base64Data = null;
 
     if (response['status'] == 'uploadMusicSuccess') {
       _showSnackBar(
@@ -791,7 +776,6 @@ class _AddPage extends State<AddPage> {
         widget._user.tracks.add(music);
       });
 
-      // Refresh public music list if we added a public music
       if (isPublic) {
         await _fetchPublicMusics();
       }
@@ -820,12 +804,10 @@ class _AddPage extends State<AddPage> {
         music,
       );
 
-      // Handle different response statuses based on server response
       switch (response['status']) {
         case 'addMusicSuccess':
           setState(() {
             widget._user.tracks.add(music);
-            // Sync the like state for the newly added track
             application.syncLikeState(widget._user, [music]);
           });
           _showSnackBar(

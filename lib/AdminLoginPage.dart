@@ -40,11 +40,9 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
       );
 
       if (response['status'] == 'adminLoginSuccess') {
-        // Parse admin data from response
         final adminData = response['adminData'];
         final admin = Admin.fromMap(adminData);
 
-        // Navigate to admin dashboard
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
@@ -90,7 +88,6 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    // Welcome header like SignUpPage
                     ShaderMask(
                       shaderCallback: (Rect bounds) {
                         return const LinearGradient(
@@ -168,7 +165,6 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                     ),
                     SizedBox(height: 30),
 
-                    // Container for fields like LoginPage, with more purple accents
                     Container(
                       width: 350,
                       height: 450,

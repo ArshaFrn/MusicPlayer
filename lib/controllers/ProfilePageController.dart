@@ -9,7 +9,6 @@ import '../Model/User.dart';
 import '../TcpClient.dart';
 import '../main.dart';
 import '../ChangePasswordPage.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../utils/AudioController.dart';
 
 class ProfilePageController {
@@ -235,34 +234,19 @@ class ProfilePageController {
       print('Profile image saved successfully to: $imagePath');
     } catch (e) {
       print('Error saving profile image: $e');
-      // Don't throw the error, just log it and continue
     }
   }
 
   void logout(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
-    // Only set isLoggedIn to false, keep other credentials for fingerprint login
     await prefs.setBool('isLoggedIn', false);
+    await clearProfileImageCache();
     await AudioController.instance.stopAndReset();
     if (context.mounted) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => LogInPage(title: 'Hertz')),
       );
-    }
-  }
-
-  void contactUs() async {
-    final Uri emailUri = Uri(
-      scheme: 'mailto',
-      path: 'MusicAppShayan@gmail.com',
-      query: 'subject=Music App Support Request',
-    );
-
-    if (await canLaunchUrl(emailUri)) {
-      await launchUrl(emailUri);
-    } else {
-      throw Exception('Could not open email app');
     }
   }
 

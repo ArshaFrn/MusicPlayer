@@ -13,9 +13,9 @@ enum Capability {
 class Admin {
   final String username;
   final String hashedPassword;
-  final int? id; // ID for all admins except SuperAdmin
+  final int? id;
   final Set<Capability> capabilities;
-  final String adminType; // "SuperAdmin", "FullAdmin", "LimitedAdmin"
+  final String adminType;
 
   Admin({
     required this.username,
@@ -32,13 +32,11 @@ class Admin {
   bool canChangeAdminCapabilities(Admin targetAdmin) {
     switch (adminType) {
       case "SuperAdmin":
-        return true; // SuperAdmin can change any admin's capabilities
+        return true;
       case "FullAdmin":
-      // FullAdmin can only change capabilities of admins it has registered
-      // This would need to be implemented based on your backend logic
-        return false; // For now, return false
+        return false;
       case "LimitedAdmin":
-        return false; // LimitedAdmin cannot change admin capabilities
+        return false;
       default:
         return false;
     }
