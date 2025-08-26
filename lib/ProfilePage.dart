@@ -42,6 +42,17 @@ class _ProfilePage extends State<ProfilePage> {
   final TextEditingController _fullnameController = TextEditingController();
   late ProfilePageController _controller;
   bool _isInitialized = false;
+  int _profileImageVersion = 0;
+
+  Future<void> _evictProfileImageCache() async {
+    try {
+      final path = widget.user.profileImageUrl;
+      if (path != null && path.isNotEmpty) {
+        final provider = FileImage(File(path));
+        await provider.evict();
+      }
+    } catch (_) {}
+  }
 
   @override
   void initState() {
@@ -87,7 +98,10 @@ class _ProfilePage extends State<ProfilePage> {
       onTap: () async {
         try {
           await _controller.pickImage();
-          setState(() {});
+          await _evictProfileImageCache();
+          setState(() {
+            _profileImageVersion++;
+          });
           SnackBarUtils.showSuccessSnackBar(
             context,
             "Profile picture updated!",
@@ -137,6 +151,9 @@ class _ProfilePage extends State<ProfilePage> {
                           widget.user.profileImageUrl!.isNotEmpty
                       ? Image.file(
                         File(widget.user.profileImageUrl!),
+                        key: ValueKey(
+                          '${widget.user.profileImageUrl}_v$_profileImageVersion',
+                        ),
                         width: double.infinity,
                         height: double.infinity,
                         fit: BoxFit.cover,
@@ -723,7 +740,10 @@ class _ProfilePage extends State<ProfilePage> {
                         } else if (value == 'refresh_profile') {
                           try {
                             await _controller.refreshProfileFromServer();
-                            setState(() {});
+                            await _evictProfileImageCache();
+                            setState(() {
+                              _profileImageVersion++;
+                            });
                             SnackBarUtils.showSuccessSnackBar(
                               context,
                               "Profile refreshed successfully!",
