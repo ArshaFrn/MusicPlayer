@@ -74,9 +74,14 @@
 
 <div align="center">
 
-<img src="screenshots/Screenshot_2025-08-26-17-54-13-726_com.example.second.jpg" alt="Home" width="30%" />
-<img src="screenshots/Screenshot_2025-08-26-17-54-26-449_com.example.second.jpg" alt="Library" width="30%" />
-<img src="screenshots/Screenshot_2025-08-26-17-56-16-439_com.example.second.jpg" alt="Player" width="30%" />
+<img src="screenshots/Screenshot_2025-08-26-17-54-13-726_com.example.second.jpg" alt="Screenshot 1" width="30%" />
+<img src="screenshots/Screenshot_2025-08-26-17-54-26-449_com.example.second.jpg" alt="Screenshot 2" width="30%" />
+<img src="screenshots/Screenshot_2025-08-26-17-56-16-439_com.example.second.jpg" alt="Screenshot 3" width="30%" />
+<img src="screenshots/Screenshot_2025-08-26-17-56-55-857_com.example.second.jpg" alt="Screenshot 4" width="30%" />
+<img src="screenshots/Screenshot_2025-08-26-17-57-01-480_com.example.second.jpg" alt="Screenshot 5" width="30%" />
+<img src="screenshots/Screenshot_2025-08-26-17-57-11-392_com.example.second.jpg" alt="Screenshot 6" width="30%" />
+<img src="screenshots/Screenshot_2025-08-26-17-57-39-120_com.example.second.jpg" alt="Screenshot 7" width="30%" />
+<img src="screenshots/Screenshot_2025-08-26-17-57-57-476_com.example.second.jpg" alt="Screenshot 8" width="30%" />
 
 </div>
 
