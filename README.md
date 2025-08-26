@@ -208,12 +208,8 @@ path: ^1.9.0
 # Authentication
 local_auth: ^2.3.0
 
-# Networking & Communication
-http: ^1.1.0
-
 # Utilities
 share_plus: ^11.0.0
-url_launcher: ^6.2.5
 ```
 
 ---
