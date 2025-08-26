@@ -45,7 +45,6 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
     try {
       final tracks = await widget.tcpClient.getUserMusicList(widget.user);
 
-      // Filter out tracks that are already in the playlist
       final playlistTrackIds = widget.playlist.tracks.map((t) => t.id).toSet();
       final availableTracks =
           tracks
@@ -54,7 +53,6 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
 
       setState(() {
         _userTracks = availableTracks;
-        // Sync like states for available tracks
         _application.syncLikeState(widget.user, _userTracks);
         _isLoading = false;
       });
@@ -75,12 +73,10 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
       );
 
       if (response['status'] == 'addSongToPlaylistSuccess') {
-        // Remove the track from available tracks
         setState(() {
           _userTracks.remove(track);
         });
 
-        // Update the user's playlist object in frontend
         final userPlaylist = widget.user.playlists.firstWhere(
           (p) => p.id == widget.playlist.id,
           orElse: () => widget.playlist,
@@ -89,7 +85,6 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
           userPlaylist.tracks.add(track);
         }
 
-        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
@@ -101,7 +96,6 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
           ),
         );
 
-        // Call the callback to refresh the playlist
         widget.onTrackAdded();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -145,7 +139,6 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
         height: MediaQuery.of(context).size.height * 0.8,
         child: Column(
           children: [
-            // Header
             Container(
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -166,7 +159,6 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // make the playlist name (just playlist name) based on the color of the playlist
                         Text(
                           widget.playlist.name,
                           overflow: TextOverflow.ellipsis,
@@ -198,7 +190,6 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
               ),
             ),
 
-            // Tracks List
             Expanded(
               child:
                   _isLoading
@@ -241,7 +232,7 @@ class _AddTrackToPlaylistDialogState extends State<AddTrackToPlaylistDialog> {
                             onTap:
                                 () => _addTrackToPlaylist(
                                   track,
-                                ), // ← Add tap handler to entire tile
+                                ),
                             leading: Icon(
                               Icons.music_note,
                               color: _application.getUniqueColor(

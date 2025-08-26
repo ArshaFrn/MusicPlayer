@@ -50,7 +50,6 @@ class _MiniPlayerState extends State<MiniPlayer> {
 
   @override
   Widget build(BuildContext context) {
-    // Only show if there's a track playing
     if (!_audioController.hasTrack) {
       return SizedBox.shrink();
     }

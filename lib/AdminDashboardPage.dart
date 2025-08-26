@@ -233,7 +233,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     );
   }
 
-  // Page: Admins Management (entry)
+  // Page: Admins Management
   Widget _buildAdminsManagement() {
     return _buildManagementSection(
       'Admins Management',
@@ -291,7 +291,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     );
   }
 
-  // Fetch all users and open the dialog
   Future<void> _showUsersList() async {
     setState(() {
       _isLoading = true;
@@ -317,7 +316,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     }
   }
 
-  // Fetch all music and open the dialog
   Future<void> _showMusicList() async {
     setState(() {
       _isLoading = true;
@@ -347,7 +345,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     _showErrorSnackBar('Admins management not yet implemented');
   }
 
-  // Dialog: Users list
   void _showUsersDialog(List users) {
     showDialog(
       context: context,
@@ -395,7 +392,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     );
   }
 
-  // Dialog: Music list
   void _showMusicDialog(List music) {
     showDialog(
       context: context,
@@ -511,8 +507,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
           _showSuccessSnackBar(
             isCurrentlyPublic ? 'Song is now private' : 'Song is now public',
           );
-          Navigator.pop(context); // Close dialog
-          _showMusicList(); // Refresh list
+          Navigator.pop(context);
+          _showMusicList();
         } else {
           _showErrorSnackBar(response['message'] ?? 'Operation failed');
         }
@@ -522,7 +518,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     }
   }
 
-  // Network: Delete a user (with confirmation)
   Future<void> _deleteUser(String username) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -560,8 +555,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
         if (response['status'] == 'deleteUserSuccess') {
           _showSuccessSnackBar('User deleted successfully');
-          Navigator.pop(context); // Close dialog
-          _showUsersList(); // Refresh list
+          Navigator.pop(context);
+          _showUsersList();
         } else {
           _showErrorSnackBar(response['message'] ?? 'Failed to delete user');
         }
@@ -571,7 +566,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     }
   }
 
-  // Network: Delete a music (with confirmation)
   Future<void> _deleteMusic(int musicId) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -609,8 +603,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
         if (response['status'] == 'deleteMusicSuccess') {
           _showSuccessSnackBar('Music deleted successfully');
-          Navigator.pop(context); // Close dialog
-          _showMusicList(); // Refresh list
+          Navigator.pop(context);
+          _showMusicList();
         } else {
           _showErrorSnackBar(response['message'] ?? 'Failed to delete music');
         }
@@ -620,7 +614,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     }
   }
 
-  // UI Helper: Error snackbar
   void _showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -631,7 +624,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     );
   }
 
-  // UI Helper: Success snackbar
   void _showSuccessSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

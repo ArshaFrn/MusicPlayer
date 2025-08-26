@@ -29,7 +29,7 @@ class Album {
   int get id => _id;
 
   String get title => _title;
-  String get name => _title; // Alias for title
+  String get name => _title;
 
   Artist get artist => _artist;
 

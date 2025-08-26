@@ -22,7 +22,6 @@ class AudioController {
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
 
-  // Callbacks for UI updates
   final List<VoidCallback> _onStateChangedListeners = [];
   final List<VoidCallback> _onTrackChangedListeners = [];
 
@@ -31,7 +30,6 @@ class AudioController {
     _setupAudioPlayerListeners();
   }
 
-  // Set up audio player listeners
   void _setupAudioPlayerListeners() {
     _audioPlayer!.positionStream.listen((position) {
       _position = position;
@@ -52,28 +50,24 @@ class AudioController {
           state.processingState == ProcessingState.buffering;
       _notifyStateChanged();
 
-      // Listen for song completion
       if (state.processingState == ProcessingState.completed) {
         _autoAdvanceToNext();
       }
     });
   }
 
-  // Notify all state changed listeners
   void _notifyStateChanged() {
     for (final listener in _onStateChangedListeners) {
       listener();
     }
   }
 
-  // Notify all track changed listeners
   void _notifyTrackChanged() {
     for (final listener in _onTrackChangedListeners) {
       listener();
     }
   }
 
-  // Initialize the audio controller with a track and playlist
   Future<void> initialize({
     required Music currentTrack,
     required User user,
@@ -94,11 +88,9 @@ class AudioController {
 
     if (_currentTrackIndex == -1) _currentTrackIndex = 0;
 
-    // Load and play the current track
     await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
   }
 
-  // Exposed getters
   Music? get currentTrack => _currentTrack;
   User? get currentUser => _currentUser;
   bool get isPlaying => _isPlaying;
@@ -109,7 +101,6 @@ class AudioController {
   List<Music> get playlist => _playlist;
   int get currentTrackIndex => _currentTrackIndex;
 
-  // Add listeners for UI updates
   void addOnStateChangedListener(VoidCallback listener) {
     _onStateChangedListeners.add(listener);
   }
@@ -126,7 +117,7 @@ class AudioController {
     _onTrackChangedListeners.remove(listener);
   }
 
-  // Play/Pause functionality
+  // Play/Pause
   void playPause() {
     if (_isPlaying) {
       _audioPlayer?.pause();
@@ -135,7 +126,6 @@ class AudioController {
     }
   }
 
-  // Public: Stop playback and reset controller state (used before clearing cache)
   Future<void> stopAndReset() async {
     try {
       await _audioPlayer?.stop();
@@ -145,7 +135,7 @@ class AudioController {
     _position = Duration.zero;
     _duration = Duration.zero;
     _currentTrack = null;
-    _currentUser = _currentUser; // keep user reference
+    _currentUser = _currentUser;
     _playlist = [];
     _currentTrackIndex = 0;
     _notifyTrackChanged();
@@ -161,9 +151,7 @@ class AudioController {
     _currentTrackIndex =
         (_currentTrackIndex - 1 + _playlist.length) % _playlist.length;
 
-    // Update current track immediately for UI
     _currentTrack = _playlist[_currentTrackIndex];
-    // Defer notification to avoid calling setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _notifyTrackChanged();
     });
@@ -178,9 +166,7 @@ class AudioController {
     await _audioPlayer?.pause();
     _currentTrackIndex = (_currentTrackIndex + 1) % _playlist.length;
 
-    // Update current track immediately for UI
     _currentTrack = _playlist[_currentTrackIndex];
-    // Defer notification to avoid calling setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _notifyTrackChanged();
     });
@@ -188,16 +174,14 @@ class AudioController {
     await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
   }
 
-  // Auto advance to next track
+  // Auto advanc
   void _autoAdvanceToNext() async {
     if (_playlist.isEmpty || _playlist.length <= 1) return;
 
     _currentTrackIndex =
         (_currentTrackIndex - 1 + _playlist.length) % _playlist.length;
 
-    // Update current track immediately for UI
     _currentTrack = _playlist[_currentTrackIndex];
-    // Defer notification to avoid calling setState during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _notifyTrackChanged();
     });
@@ -205,16 +189,13 @@ class AudioController {
     await _loadAndPlayTrack(_playlist[_currentTrackIndex]);
   }
 
-  // Load and play track
   Future<void> _loadAndPlayTrack(Music track) async {
     try {
       _isLoading = true;
-      // Defer notification to avoid calling setState during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _notifyStateChanged();
       });
 
-      // Add recently played tracking here
       final tcpClient = TcpClient(serverAddress: "10.0.2.2", serverPort: 12345);
       await tcpClient.updateRecentlyPlayed(currentUser!.username, track.id);
       currentUser!.recentlyPlayed.add(track);
@@ -228,16 +209,13 @@ class AudioController {
       if (cachedPath != null && File(cachedPath).existsSync()) {
         await _audioPlayer!.setFilePath(cachedPath);
         await _audioPlayer!.play();
-        // Only update track if it hasn't been set already
         if (_currentTrack?.id != track.id) {
           _currentTrack = track;
-          // Defer notification to avoid calling setState during build
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _notifyTrackChanged();
           });
         }
       } else {
-        // Download track
         final bool downloadSuccess = await cacheManager.downloadAndCacheMusic(
           user: _currentUser!,
           music: track,
@@ -252,10 +230,8 @@ class AudioController {
           if (newCachedPath != null && File(newCachedPath).existsSync()) {
             await _audioPlayer!.setFilePath(newCachedPath);
             await _audioPlayer!.play();
-            // Only update track if it hasn't been set already
             if (_currentTrack?.id != track.id) {
               _currentTrack = track;
-              // Defer notification to avoid calling setState during build
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 _notifyTrackChanged();
               });
@@ -267,7 +243,6 @@ class AudioController {
       }
 
       _isLoading = false;
-      // Defer notification to avoid calling setState during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _notifyStateChanged();
       });
@@ -275,19 +250,16 @@ class AudioController {
       print('Error loading track in audio controller: $e');
       _isPlaying = false;
       _isLoading = false;
-      // Defer notification to avoid calling setState during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _notifyStateChanged();
       });
     }
   }
 
-  // Seek to position
   void seekTo(Duration position) {
     _audioPlayer?.seek(position);
   }
 
-  // Dispose
   void dispose() {
     _audioPlayer?.dispose();
     _audioPlayer = null;
@@ -298,7 +270,6 @@ class AudioController {
     _onTrackChangedListeners.clear();
   }
 
-  // Format duration
   String formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
     String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));

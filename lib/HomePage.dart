@@ -90,7 +90,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Method to navigate to specific pages while keeping navigation bar
   void navigateToPage(int pageIndex) {
     setState(() {
       _selectedIndex = pageIndex;
