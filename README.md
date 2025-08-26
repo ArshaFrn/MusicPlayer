@@ -286,30 +286,6 @@ Manages app theming:
 
 ---
 
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**1. Server Connection Failed**
-- Verify server is running on correct port
-- Check network connectivity
-- Ensure correct server address in TcpClient
-
-**2. Audio Playback Issues**
-- Check file permissions
-- Verify audio file format support
-- Ensure proper audio session configuration
-
-**3. Theme Not Persisting**
-- Check SharedPreferences implementation
-- Verify ThemeProvider initialization
-- Ensure proper state management
-
-### Debug Mode
-Enable developer mode by using the developer credentials in the login screen.
-
----
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
