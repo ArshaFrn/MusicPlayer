@@ -14,6 +14,13 @@
 
 ---
 
+## 🔗 Repositories
+
+- **Frontend (this repo)**: [github.com/ArshaFrn/MusicPlayer](https://github.com/ArshaFrn/MusicPlayer)
+- **Backend (server repo)**: [github.com/ShayanDZ/MusicPlayerServer](https://github.com/ShayanDZ/MusicPlayerServer)
+
+---
+
 ## ✨ Features
 
 ### 🎧 Music Streaming
@@ -63,6 +70,18 @@
 
 ---
 
+## 📸 Screenshots
+
+<div align="center">
+
+<img src="screenshots/Screenshot_2025-08-26-17-54-13-726_com.example.second.jpg" alt="Home" width="30%" />
+<img src="screenshots/Screenshot_2025-08-26-17-54-26-449_com.example.second.jpg" alt="Library" width="30%" />
+<img src="screenshots/Screenshot_2025-08-26-17-56-16-439_com.example.second.jpg" alt="Player" width="30%" />
+
+</div>
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -77,8 +96,8 @@
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd Flutter
+   git clone https://github.com/ArshaFrn/MusicPlayer.git
+   cd MusicPlayer
    ```
 
 2. **Install dependencies**
@@ -283,22 +302,6 @@ Manages app theming:
 
 ### Debug Mode
 Enable developer mode by using the developer credentials in the login screen.
-
----
-
-## 🤝 Contributing
-
-1. **Fork the repository**
-2. **Create a feature branch** (`git checkout -b feature/AmazingFeature`)
-3. **Commit your changes** (`git commit -m 'Add some AmazingFeature'`)
-4. **Push to the branch** (`git push origin feature/AmazingFeature`)
-5. **Open a Pull Request**
-
-### Code Style
-- Follow **Dart/Flutter conventions**
-- Use **meaningful variable names**
-- Add **proper documentation**
-- Include **error handling**
 
 ---
 
