@@ -209,7 +209,7 @@ class TcpClient {
     }
   }
 
-  /// Remove song from user's library (for regular users)
+  /// Remove song from user's library
   Future<Map<String, dynamic>> removeMusic({
     required User user,
     required Music music,
@@ -330,7 +330,7 @@ class TcpClient {
 
           if (fullResponse.length < 1000) {
             print(
-              'Response seems too short: ${fullResponse.length} characters',
+              'Response too short: ${fullResponse.length} characters',
             );
             if (attempt < maxRetries) {
               print('Retrying...');

@@ -72,8 +72,7 @@ class _PlaylistTracksPageState extends State<PlaylistTracksPage> {
     try {
       final audioController = AudioController.instance;
       if (audioController.hasTrack &&
-          audioController.currentTrack!.id == music.id &&
-          audioController.playlist == _tracks) {
+          audioController.currentTrack!.id == music.id) {
         Navigator.push(
           context,
           MaterialPageRoute(
