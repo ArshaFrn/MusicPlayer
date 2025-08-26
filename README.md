@@ -88,7 +88,7 @@
 
 3. **Configure the server connection**
    - Update the server address in `lib/TcpClient.dart`
-   - Default: `10.0.2.2:12345` (for Android emulator)
+   - Default: `192.168.43.173:12345` (for Android emulator)
 
 4. **Run the application**
    ```bash
@@ -221,7 +221,7 @@ Update the server configuration in `lib/TcpClient.dart`:
 
 ```dart
 final tcpClient = TcpClient(
-  serverAddress: '10.0.2.2',  // Change for your server
+  serverAddress: '192.168.43.173',  // Change for your server
   serverPort: 12345
 );
 ```

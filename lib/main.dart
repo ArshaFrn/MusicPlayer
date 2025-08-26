@@ -143,7 +143,7 @@ class _LogInPage extends State<LogInPage> {
     try {
       print("Processing login...");
 
-      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final tcpClient = TcpClient(serverAddress: '192.168.43.173', serverPort: 12345);
 
       final username = _usernameController.text;
       final password = _passwordController.text;
@@ -225,51 +225,56 @@ class _LogInPage extends State<LogInPage> {
           Positioned.fill(
             child: Image.asset(themeProvider.backgroundPath, fit: BoxFit.cover),
           ),
-          // Theme toggle button in upper right corner
-          Positioned(
-            top: 60,
-            right: 22,
-            child: Consumer<ThemeProvider>(
-              builder: (context, theme, child) {
-                return Container(
-                  decoration: BoxDecoration(
-                    color:
-                        theme.isDarkMode
-                            ? Colors.black.withOpacity(0.3)
-                            : Colors.white.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(
-                      color:
-                          theme.isDarkMode
-                              ? Color(0xFF8456FF)
-                              : Color(0xFFfc6997),
-                      width: 2,
-                    ),
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(25),
-                      onTap: () => theme.toggleTheme(),
-                      child: Padding(
-                        padding: EdgeInsets.all(12),
-                        child: Icon(
-                          theme.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+          Align(
+            alignment: Alignment.topRight,
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(top: 12, right: 16),
+                child: Consumer<ThemeProvider>(
+                  builder: (context, theme, child) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color:
+                            theme.isDarkMode
+                                ? Colors.black.withOpacity(0.3)
+                                : Colors.white.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(25),
+                        border: Border.all(
                           color:
                               theme.isDarkMode
                                   ? Color(0xFF8456FF)
                                   : Color(0xFFfc6997),
-                          size: 24,
+                          width: 2,
                         ),
                       ),
-                    ),
-                  ),
-                );
-              },
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(25),
+                          onTap: () => theme.toggleTheme(),
+                          child: Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Icon(
+                              theme.isDarkMode
+                                  ? Icons.light_mode
+                                  : Icons.dark_mode,
+                              color:
+                                  theme.isDarkMode
+                                      ? Color(0xFF8456FF)
+                                      : Color(0xFFfc6997),
+                              size: 24,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
           ),
           Positioned(
-            top: 100,
+            top: 70,
             left: 0,
             right: 0,
             child: IgnorePointer(
@@ -323,7 +328,7 @@ class _LogInPage extends State<LogInPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SizedBox(height: 80),
+                  SizedBox(height: 110),
                   Container(
                     width: 350,
                     height: 450,

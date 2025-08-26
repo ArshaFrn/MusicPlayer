@@ -33,7 +33,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
     });
 
     try {
-      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final tcpClient = TcpClient(serverAddress: '192.168.43.173', serverPort: 12345);
       final response = await tcpClient.adminLogin(
         _usernameController.text.trim(),
         _passwordController.text,

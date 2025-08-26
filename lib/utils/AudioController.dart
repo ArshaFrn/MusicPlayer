@@ -196,7 +196,7 @@ class AudioController {
         _notifyStateChanged();
       });
 
-      final tcpClient = TcpClient(serverAddress: "10.0.2.2", serverPort: 12345);
+      final tcpClient = TcpClient(serverAddress: "192.168.43.173", serverPort: 12345);
       await tcpClient.updateRecentlyPlayed(currentUser!.username, track.id);
       currentUser!.recentlyPlayed.add(track);
 

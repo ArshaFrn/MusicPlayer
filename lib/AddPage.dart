@@ -74,7 +74,7 @@ class _AddPage extends State<AddPage> {
     });
 
     try {
-      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final tcpClient = TcpClient(serverAddress: '192.168.43.173', serverPort: 12345);
       final publicMusics = await tcpClient.getPublicMusicList();
 
       setState(() {
@@ -743,7 +743,7 @@ class _AddPage extends State<AddPage> {
   }
 
   Future<void> _uploadMusic(Music music, dynamic file, bool isPublic) async {
-    final tcpClient = TcpClient(serverAddress: "10.0.2.2", serverPort: 12345);
+    final tcpClient = TcpClient(serverAddress: "192.168.43.173", serverPort: 12345);
 
     String? base64Data = await application.encodeFile(file);
     if (base64Data == null) {
@@ -798,7 +798,7 @@ class _AddPage extends State<AddPage> {
 
   Future<void> _addPublicMusicToLibrary(Music music) async {
     try {
-      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final tcpClient = TcpClient(serverAddress: '192.168.43.173', serverPort: 12345);
       final response = await tcpClient.addMusicToLibrary(
         widget._user.username,
         music,

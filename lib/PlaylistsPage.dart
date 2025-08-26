@@ -32,7 +32,7 @@ class _PlaylistsPageState extends State<PlaylistsPage> {
   @override
   void initState() {
     super.initState();
-    _tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+    _tcpClient = TcpClient(serverAddress: '192.168.43.173', serverPort: 12345);
     _fetchPlaylistsFromServer();
   }
 

@@ -94,7 +94,7 @@ class CacheManager {
 
       // Download music
       final TcpClient tcpClient = TcpClient(
-        serverAddress: '10.0.2.2',
+        serverAddress: '192.168.43.173',
         serverPort: 12345,
       );
       print('Downloading from server (ensureCached)...');
@@ -128,7 +128,7 @@ class CacheManager {
       print('Starting download and cache for: ${music.title}');
 
       final TcpClient tcpClient = TcpClient(
-        serverAddress: '10.0.2.2',
+        serverAddress: '192.168.43.173',
         serverPort: 12345,
       );
       print('Downloading from server...');

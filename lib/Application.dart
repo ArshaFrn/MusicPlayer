@@ -214,7 +214,7 @@ class Application {
   }
 
   Future<bool> likeSong(User user, Music music) async {
-    final tcpClient = TcpClient(serverAddress: "10.0.2.2", serverPort: 12345);
+    final tcpClient = TcpClient(serverAddress: "192.168.43.173", serverPort: 12345);
     final response = await tcpClient.likeSong(user: user, music: music);
     if (response['status'] == 'likeSuccess') {
       music.isLiked = true;
@@ -235,7 +235,7 @@ class Application {
   }
 
   Future<bool> dislikeSong(User user, Music music) async {
-    final tcpClient = TcpClient(serverAddress: "10.0.2.2", serverPort: 12345);
+    final tcpClient = TcpClient(serverAddress: "192.168.43.173", serverPort: 12345);
     final response = await tcpClient.dislikeSong(user: user, music: music);
     if (response['status'] == 'dislikeSuccess') {
       music.isLiked = false;
@@ -559,7 +559,7 @@ class Application {
     required User user,
     required Music music,
   }) async {
-    final tcpClient = TcpClient(serverAddress: "10.0.2.2", serverPort: 12345);
+    final tcpClient = TcpClient(serverAddress: "192.168.43.173", serverPort: 12345);
     final response = await tcpClient.removeMusic(user: user, music: music);
     if (response['status'] == 'removeMusicSuccess') {
       user.tracks.remove(music);
@@ -1046,7 +1046,7 @@ class Application {
 
   Future<bool> makeMusicPublic(User user, Music music) async {
     try {
-      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final tcpClient = TcpClient(serverAddress: '192.168.43.173', serverPort: 12345);
       final response = await tcpClient.makeMusicPublic(user.username, music.id);
 
       if (response['status'] == 'makeMusicPublicSuccess') {

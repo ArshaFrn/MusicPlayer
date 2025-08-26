@@ -149,7 +149,10 @@ class ProfilePageController {
 
   Future<void> loadProfileFromBackend() async {
     try {
-      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final tcpClient = TcpClient(
+        serverAddress: '192.168.43.173',
+        serverPort: 12345,
+      );
       final response = await tcpClient.getUserProfile(user.username);
 
       if (response['status'] == 'getProfileImageSuccess' ||
@@ -282,7 +285,7 @@ class ProfilePageController {
 
         // Upload image to backend
         final tcpClient = TcpClient(
-          serverAddress: '10.0.2.2',
+          serverAddress: '192.168.43.173',
           serverPort: 12345,
         );
         final response = await tcpClient.uploadProfileImage(
@@ -330,7 +333,10 @@ class ProfilePageController {
         throw Exception("Please enter a valid email address");
       }
 
-      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final tcpClient = TcpClient(
+        serverAddress: '192.168.43.173',
+        serverPort: 12345,
+      );
 
       // Check if any changes were made
       bool hasChanges = false;

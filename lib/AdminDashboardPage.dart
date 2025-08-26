@@ -297,7 +297,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     });
 
     try {
-      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final tcpClient = TcpClient(serverAddress: '192.168.43.173', serverPort: 12345);
       final response = await tcpClient.getAllUsers();
 
       if (response['status'] == 'getAllUsersSuccess') {
@@ -322,7 +322,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     });
 
     try {
-      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final tcpClient = TcpClient(serverAddress: '192.168.43.173', serverPort: 12345);
       final response = await tcpClient.getAllMusic();
 
       if (response['status'] == 'getAllMusicSuccess') {
@@ -494,7 +494,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
 
     if (confirmed == true) {
       try {
-        final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+        final tcpClient = TcpClient(serverAddress: '192.168.43.173', serverPort: 12345);
         final response = isCurrentlyPublic
             ? await tcpClient.makeMusicPrivate(widget.admin.username, songId)
             : await tcpClient.makeMusicPublic(widget.admin.username, songId);
@@ -548,7 +548,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     if (confirmed == true) {
       try {
         final tcpClient = TcpClient(
-          serverAddress: '10.0.2.2',
+          serverAddress: '192.168.43.173',
           serverPort: 12345,
         );
         final response = await tcpClient.deleteUser(username);
@@ -596,7 +596,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
     if (confirmed == true) {
       try {
         final tcpClient = TcpClient(
-          serverAddress: '10.0.2.2',
+          serverAddress: '192.168.43.173',
           serverPort: 12345,
         );
         final response = await tcpClient.deleteMusic(musicId);

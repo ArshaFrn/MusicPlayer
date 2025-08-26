@@ -232,7 +232,7 @@ class _SignUpPageState extends State<SignUpPage> {
     try {
       print("Processing sign-up...");
 
-      final tcpClient = TcpClient(serverAddress: '10.0.2.2', serverPort: 12345);
+      final tcpClient = TcpClient(serverAddress: '192.168.43.173', serverPort: 12345);
 
       final username = _usernameController.text;
       final email = _emailController.text;
@@ -482,9 +482,8 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
             ),
           ),
-          // Theme toggle button (circular) in upper right corner
           Positioned(
-            top: 50,
+            top: 40,
             right: 20,
             child: Consumer<ThemeProvider>(
               builder: (context, theme, child) {
@@ -528,11 +527,10 @@ class _SignUpPageState extends State<SignUpPage> {
           Center(
             child: SingleChildScrollView(
               child: SizedBox(
-                height: 673,
+                height: 650,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    // "Welcome to" in neon style
                     ShaderMask(
                       shaderCallback: (Rect bounds) {
                         return LinearGradient(
