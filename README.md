@@ -163,8 +163,6 @@ lib/
 │   └── SnackBarUtils.dart   # UI notifications
 │
 ├── controllers/             # Page controllers
-│   ├── LibraryPageController.dart
-│   ├── PlayPageController.dart
 │   └── ProfilePageController.dart
 │
 ├── widgets/                 # Reusable widgets
